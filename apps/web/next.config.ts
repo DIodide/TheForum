@@ -1,3 +1,6 @@
+// Validate env vars at build time — throws if required vars are missing.
+import "./src/env.ts";
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

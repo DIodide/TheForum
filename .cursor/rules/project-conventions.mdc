@@ -1,0 +1,54 @@
+---
+description: Core project conventions for The Forum monorepo
+globs: **/*.ts,**/*.tsx,**/*.js,**/*.jsx
+alwaysApply: true
+---
+
+## The Forum — Project Conventions
+
+### Package manager: bun only
+
+```bash
+bun install       # never npm install / yarn / pnpm
+bun add <pkg>
+bun add -d <pkg>
+bunx <tool>
+```
+
+### Linting & formatting: Biome only
+
+Never add ESLint or Prettier. Use Biome for all JS/TS/JSON/CSS files.
+
+```bash
+bun run check     # lint + format with auto-fix
+bun run format    # format only
+```
+
+### Monorepo structure
+
+```
+apps/web        — Next.js 15 (App Router)  → @the-forum/web
+apps/database   — Drizzle ORM              → @the-forum/database
+backends/fastapi — FastAPI Python          → @the-forum/fastapi
+```
+
+All tasks are orchestrated via Turborepo (`bun run dev`, `bun run build`, etc.).
+
+### UI: shadcn/ui + Tailwind v4
+
+- Install shadcn components: `bunx shadcn@latest add <component>` (from `apps/web`)
+- Components land in `apps/web/src/components/ui/`
+- Use `cn()` from `~/lib/utils` for conditional class merging
+- Never install a separate Tailwind config file — Tailwind v4 is CSS-first
+
+### Env vars: T3 env
+
+See the `env-validation` rule for details. Short version:
+- Use `import { env } from "~/env"` inside `apps/web`
+- Never `process.env.*` in Next.js app code
+
+### Python (backends/fastapi)
+
+- Dependency manager: `uv` (never pip install directly)
+- Run: `uv run <command>` or `bun run dev` from repo root
+- Linting: Ruff (`uv run ruff check .`)

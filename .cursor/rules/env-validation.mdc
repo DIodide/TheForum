@@ -1,0 +1,38 @@
+---
+description: Enforce T3 env usage for environment variables in apps/web
+globs: apps/web/**/*.ts,apps/web/**/*.tsx
+alwaysApply: true
+---
+
+## Environment Variables in apps/web
+
+Always use the validated env object from `~/env` to access environment variables.
+**Never use `process.env.*` directly inside `apps/web` application code.**
+
+### Correct usage
+
+```ts
+import { env } from "~/env";
+
+// Server component / API route
+const dbUrl = env.DATABASE_URL;
+
+// Any component (client or server)
+const apiUrl = env.NEXT_PUBLIC_API_URL;
+```
+
+### Adding a new variable
+
+1. **`apps/web/src/env.ts`** — add to the correct block:
+   - `server:` for server-only vars (no `NEXT_PUBLIC_` prefix)
+   - `client:` for client-accessible vars (must start with `NEXT_PUBLIC_`)
+   - Always add a matching entry to `runtimeEnv:`
+
+2. **`.env.local.example`** and root **`.env.example`** — document the new var
+
+3. Your local **`apps/web/.env.local`** — set the actual value
+
+### Exception
+
+`apps/database/src/db.ts` and `apps/database/drizzle.config.ts` are server-only
+CLI utilities and may use `process.env` directly.
