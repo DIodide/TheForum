@@ -1,8 +1,9 @@
 "use client";
 
-import { Bookmark, BookmarkCheck, Share2 } from "lucide-react";
+import { Bookmark, BookmarkCheck, Share2, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { AvatarStack } from "~/components/social/avatar-stack";
+import { Badge } from "~/components/ui/badge";
 
 // Color palette for event cards when no flyer is provided
 const CARD_COLORS = [
@@ -35,10 +36,16 @@ export interface EventCardProps {
   tags: string[];
   flyerUrl?: string | null;
   rsvpCount: number;
+  savedCount?: number;
+  detailOpenCount?: number;
+  qualityScore?: number;
+  reasons?: { code: string; label: string }[];
   friendsAttending: { id: string; displayName: string; avatarUrl?: string | null }[];
   isSaved: boolean;
   onSaveToggle?: () => void;
   onShare?: () => void;
+  onDismiss?: () => void;
+  onOpen?: () => void;
 }
 
 export function EventCard({
@@ -51,19 +58,46 @@ export function EventCard({
   tags,
   flyerUrl,
   rsvpCount,
+  savedCount = 0,
+  detailOpenCount = 0,
+  qualityScore,
+  reasons = [],
   friendsAttending,
   isSaved,
   onSaveToggle,
   onShare,
+  onDismiss,
+  onOpen,
 }: EventCardProps) {
   const color = getCardColor(id);
 
   return (
-    <Link href={`/events/${id}`} className="group">
+    <div className="group relative rounded-2xl">
+      <Link
+        href={`/events/${id}`}
+        aria-label={`View ${title}`}
+        className="absolute inset-0 rounded-2xl focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
+        onClick={() => onOpen?.()}
+      />
       <div
-        className="rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full"
+        className="relative flex h-full flex-col overflow-hidden rounded-2xl shadow-sm transition-shadow hover:shadow-md"
         style={{ background: color.bg }}
       >
+        {onDismiss && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDismiss();
+            }}
+            className="absolute top-3 right-3 z-10 rounded-full bg-white/85 p-1.5 text-gray-500 shadow-sm transition-colors hover:bg-white hover:text-gray-700"
+            aria-label={`Dismiss ${title}`}
+          >
+            <X size={12} />
+          </button>
+        )}
+
         {/* Image / Color area */}
         <div className="h-40 w-full relative overflow-hidden">
           {flyerUrl ? (
@@ -75,6 +109,21 @@ export function EventCard({
 
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
+          {reasons.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {reasons.slice(0, 2).map((reason) => (
+                <Badge
+                  key={reason.code}
+                  variant="outline"
+                  className="relative z-10 border-white/20 bg-white/10 text-[10px]"
+                  style={{ color: color.text }}
+                >
+                  <Sparkles size={10} />
+                  {reason.label}
+                </Badge>
+              ))}
+            </div>
+          )}
           <p
             className="text-sm font-semibold leading-tight line-clamp-2"
             style={{ color: color.text }}
@@ -84,11 +133,7 @@ export function EventCard({
           {orgName && (
             <p className="text-xs mt-0.5 opacity-70" style={{ color: color.text }}>
               {orgId ? (
-                <Link
-                  href={`/orgs/${orgId}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="hover:underline"
-                >
+                <Link href={`/orgs/${orgId}`} className="relative z-10 hover:underline">
                   {orgName}
                 </Link>
               ) : (
@@ -102,6 +147,19 @@ export function EventCard({
           <p className="text-xs opacity-50" style={{ color: color.text }}>
             {location}
           </p>
+
+          {(savedCount > 0 || detailOpenCount > 0 || qualityScore) && (
+            <p className="text-[11px] mt-2 opacity-70" style={{ color: color.text }}>
+              {savedCount > 0
+                ? `${savedCount} saved`
+                : detailOpenCount > 0
+                  ? `${detailOpenCount} opens`
+                  : null}
+              {qualityScore && qualityScore >= 80
+                ? `${savedCount > 0 || detailOpenCount > 0 ? " • " : ""}strong details`
+                : null}
+            </p>
+          )}
 
           {/* Tags */}
           {tags.length > 0 && (
@@ -136,9 +194,10 @@ export function EventCard({
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   onShare?.();
                 }}
-                className="p-1.5 rounded-full hover:bg-black/5 transition-colors"
+                className="relative z-10 p-1.5 rounded-full hover:bg-black/5 transition-colors"
               >
                 <Share2 size={13} className="text-gray-400" />
               </button>
@@ -146,9 +205,10 @@ export function EventCard({
                 type="button"
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   onSaveToggle?.();
                 }}
-                className="p-1.5 rounded-full hover:bg-black/5 transition-colors"
+                className="relative z-10 p-1.5 rounded-full hover:bg-black/5 transition-colors"
               >
                 {isSaved ? (
                   <BookmarkCheck size={13} className="text-blue-500" />
@@ -160,6 +220,6 @@ export function EventCard({
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

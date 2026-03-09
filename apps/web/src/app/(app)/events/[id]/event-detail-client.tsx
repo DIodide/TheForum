@@ -8,6 +8,7 @@ import {
   Clock,
   Edit3,
   ExternalLink,
+  Flag,
   MapPin,
   Share2,
   Trash2,
@@ -21,10 +22,13 @@ import {
   type EventDetail,
   type FeedEvent,
   deleteEvent,
+  reportEvent,
   toggleRsvp,
   toggleSave,
+  trackEventInteractions,
 } from "~/actions/events";
 import { getCardColor } from "~/components/events/event-card";
+import { OrganizerInsightsPanel } from "~/components/events/organizer-insights-panel";
 import { AvatarStack } from "~/components/social/avatar-stack";
 import { Button } from "~/components/ui/button";
 import {
@@ -36,6 +40,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
+import { Textarea } from "~/components/ui/textarea";
 import { cn } from "~/lib/utils";
 
 function buildGCalUrl(event: {
@@ -74,6 +79,9 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
   const [isSaved, setIsSaved] = useState(event.isSaved);
   const [rsvpCount, setRsvpCount] = useState(event.rsvpCount);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [isReporting, startReporting] = useTransition();
 
   const color = getCardColor(event.id);
 
@@ -96,7 +104,9 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
     setIsRsvped(!prev);
     setRsvpCount((c) => (prev ? c - 1 : c + 1));
     startTransition(async () => {
-      const result = await toggleRsvp(event.id);
+      const result = await toggleRsvp(event.id, {
+        surface: "event_detail",
+      });
       setIsRsvped(result.rsvped);
       setRsvpCount(result.count);
     });
@@ -105,7 +115,9 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
   const handleSave = () => {
     setIsSaved(!isSaved);
     startTransition(async () => {
-      const result = await toggleSave(event.id);
+      const result = await toggleSave(event.id, {
+        surface: "event_detail",
+      });
       setIsSaved(result.saved);
     });
   };
@@ -118,12 +130,35 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
       await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard");
     }
+
+    await trackEventInteractions([
+      {
+        eventId: event.id,
+        interactionType: "share",
+        surface: "event_detail",
+      },
+    ]);
   };
 
   const handleDelete = () => {
     startTransition(async () => {
       await deleteEvent(event.id);
       router.push("/explore");
+    });
+  };
+
+  const handleReport = () => {
+    startReporting(async () => {
+      try {
+        const result = await reportEvent(event.id, reportReason);
+        setReportOpen(false);
+        setReportReason("");
+        toast.success(
+          result.alreadyReported ? "You already reported this event" : "Report submitted",
+        );
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not submit report");
+      }
     });
   };
 
@@ -214,10 +249,57 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
               )}
             </div>
             <div className="flex items-center gap-2">
+              {!event.isOwner && (
+                <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                    >
+                      <Flag size={13} /> Report
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Report Event</DialogTitle>
+                      <DialogDescription>
+                        Share what seems wrong with this event listing. Your report will be
+                        reviewed.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Textarea
+                      value={reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      placeholder="Why are you reporting this event?"
+                      rows={5}
+                    />
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setReportOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleReport}
+                        disabled={isReporting || reportReason.trim().length === 0}
+                      >
+                        {isReporting ? "Submitting..." : "Submit Report"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
               <a
                 href={buildGCalUrl(event)}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => {
+                  void trackEventInteractions([
+                    {
+                      eventId: event.id,
+                      interactionType: "calendar_export",
+                      surface: "event_detail",
+                    },
+                  ]);
+                }}
                 className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 transition-colors"
               >
                 <Calendar size={13} /> Add to Calendar
@@ -249,9 +331,16 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
           <h1 className="text-3xl font-black text-gray-900 leading-tight mb-2">{event.title}</h1>
 
           {/* Org name */}
-          {event.orgName && (
-            <p className="text-sm text-indigo-500 font-semibold mb-3">{event.orgName}</p>
-          )}
+          {event.orgName &&
+            (event.orgId ? (
+              <Link href={`/orgs/${event.orgId}`} className="w-fit">
+                <p className="text-sm text-indigo-500 font-semibold mb-3 hover:underline">
+                  {event.orgName}
+                </p>
+              </Link>
+            ) : (
+              <p className="text-sm text-indigo-500 font-semibold mb-3">{event.orgName}</p>
+            ))}
 
           {/* Tags */}
           {event.tags.length > 0 && (
@@ -351,6 +440,10 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
 
           {/* Creator */}
           <p className="text-xs text-gray-400 mt-6">Posted by {event.creatorName}</p>
+
+          {event.isOwner && event.organizerInsights && (
+            <OrganizerInsightsPanel insights={event.organizerInsights} />
+          )}
         </div>
       </div>
 

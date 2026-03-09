@@ -3,9 +3,16 @@
 import { events, and, db, desc, eq, gte, lt, notifications, rsvps, sql } from "@the-forum/database";
 import { auth } from "~/auth";
 
+export type NotificationType =
+  | "friend_request"
+  | "event_reminder"
+  | "org_new_event"
+  | "social_activity"
+  | "weekly_briefing";
+
 export interface NotificationItem {
   id: string;
-  type: "friend_request" | "event_reminder" | "org_new_event";
+  type: NotificationType;
   payload: Record<string, unknown>;
   read: boolean;
   createdAt: string;

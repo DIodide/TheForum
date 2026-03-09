@@ -7,12 +7,11 @@ import {
   db,
   desc,
   eq,
+  eventReports,
   eventTags,
   friendships,
   gt,
-  ilike,
   inArray,
-  lt,
   ne,
   notifications,
   or,
@@ -27,21 +26,33 @@ import {
 } from "@the-forum/database";
 import { revalidatePath } from "next/cache";
 import { auth } from "~/auth";
+import {
+  type ExploreExperience,
+  type ExploreShelf,
+  type FeedEvent,
+  type MyWeekSummary,
+  type OrganizerAnalytics,
+  type RecommendationInteractionInput,
+  type SuggestedOrg,
+  type WeeklyBriefing,
+  buildExploreExperience,
+  dismissEventForUser,
+  ensureWeeklyBriefingNotification,
+  getOrganizerAnalyticsForEvent,
+  getRecentRecommendationDiagnostics,
+  recordEventInteractions,
+} from "~/lib/server/recommendations";
 
-export interface FeedEvent {
-  id: string;
-  title: string;
-  orgId: string | null;
-  orgName: string | null;
-  datetime: string;
-  location: string;
-  tags: string[];
-  flyerUrl: string | null;
-  rsvpCount: number;
-  friendsAttending: { id: string; displayName: string; avatarUrl: string | null }[];
-  isRsvped: boolean;
-  isSaved: boolean;
-}
+export type {
+  ExploreExperience,
+  ExploreShelf,
+  FeedEvent,
+  MyWeekSummary,
+  OrganizerAnalytics,
+  RecommendationInteractionInput,
+  SuggestedOrg,
+  WeeklyBriefing,
+} from "~/lib/server/recommendations";
 
 export async function getFeedEvents(params?: {
   search?: string;
@@ -52,225 +63,182 @@ export async function getFeedEvents(params?: {
   limit?: number;
   offset?: number;
 }): Promise<{ events: FeedEvent[]; total: number }> {
+  const limit = params?.limit ?? 20;
+  const offset = params?.offset ?? 0;
+  const experience = await getExploreExperience(params);
+  const flattenedEvents = experience.sections.flatMap((section) => section.events);
+
+  return {
+    events: flattenedEvents.slice(offset, offset + limit),
+    total: experience.totalCandidates,
+  };
+}
+
+export async function getExploreExperience(params?: {
+  search?: string;
+  tags?: string[];
+  orgCategory?: string;
+  locationId?: string;
+  dateRange?: "today" | "week" | "month";
+}): Promise<ExploreExperience> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const userId = session.user.id;
-  const limit = params?.limit ?? 20;
-  const offset = params?.offset ?? 0;
-
-  // Get user's interests for scoring
-  const myInterests = await db
-    .select({ tag: userInterests.tag })
-    .from(userInterests)
-    .where(eq(userInterests.userId, userId));
-  const myInterestTags = myInterests.map((i) => i.tag);
-
-  // Get user's friend IDs
-  const friendRows = await db
-    .select({ friendId: friendships.friendId })
-    .from(friendships)
-    .where(and(eq(friendships.userId, userId), eq(friendships.status, "accepted")));
-  const reverseFriendRows = await db
-    .select({ friendId: friendships.userId })
-    .from(friendships)
-    .where(and(eq(friendships.friendId, userId), eq(friendships.status, "accepted")));
-  const friendIds = [
-    ...friendRows.map((f) => f.friendId),
-    ...reverseFriendRows.map((f) => f.friendId),
-  ];
-
-  // Build base query conditions
-  const conditions = [gt(events.datetime, new Date())];
-
-  if (params?.search) {
-    const searchCondition = or(
-      ilike(events.title, `%${params.search}%`),
-      ilike(events.description, `%${params.search}%`),
-    );
-
-    if (searchCondition) {
-      conditions.push(searchCondition);
-    }
-  }
-
-  if (params?.tags && params.tags.length > 0) {
-    const typedTags = params.tags as (typeof eventTags.$inferSelect.tag)[];
-    const eventsWithTags = db
-      .select({ eventId: eventTags.eventId })
-      .from(eventTags)
-      .where(inArray(eventTags.tag, typedTags));
-    conditions.push(inArray(events.id, eventsWithTags));
-  }
-
-  if (params?.orgCategory) {
-    const orgsInCategory = db
-      .select({ id: organizations.id })
-      .from(organizations)
-      .where(
-        eq(
-          organizations.category,
-          params.orgCategory as typeof organizations.$inferSelect.category,
-        ),
-      );
-    conditions.push(inArray(events.orgId, orgsInCategory));
-  }
-
-  if (params?.locationId) {
-    conditions.push(eq(events.locationId, params.locationId));
-  }
-
-  if (params?.dateRange) {
-    const now = new Date();
-    let end: Date;
-    if (params.dateRange === "today") {
-      end = new Date(now);
-      end.setHours(23, 59, 59, 999);
-    } else if (params.dateRange === "week") {
-      end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    } else {
-      end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    }
-    conditions.push(lt(events.datetime, end));
-  }
-
-  // Get total count
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(events)
-    .where(and(...conditions));
-  const total = countResult?.count ?? 0;
-
-  // Fetch events with scoring
-  const rawEvents = await db
-    .select({
-      id: events.id,
-      title: events.title,
-      description: events.description,
-      datetime: events.datetime,
-      flyerUrl: events.flyerUrl,
-      locationName: campusLocations.name,
-      orgId: events.orgId,
-      orgName: organizations.name,
-      createdAt: events.createdAt,
-    })
-    .from(events)
-    .leftJoin(campusLocations, eq(events.locationId, campusLocations.id))
-    .leftJoin(organizations, eq(events.orgId, organizations.id))
-    .where(and(...conditions))
-    .orderBy(events.datetime)
-    .limit(limit)
-    .offset(offset);
-
-  // Enrich each event with tags, rsvp counts, friend attendance, user state
-  const enriched: FeedEvent[] = await Promise.all(
-    rawEvents.map(async (event) => {
-      // Get tags
-      const tags = await db
-        .select({ tag: eventTags.tag })
-        .from(eventTags)
-        .where(eq(eventTags.eventId, event.id));
-
-      // Get RSVP count
-      const [rsvpCount] = await db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(rsvps)
-        .where(eq(rsvps.eventId, event.id));
-
-      // Get friends attending
-      let friendsAttending: { id: string; displayName: string; avatarUrl: string | null }[] = [];
-      if (friendIds.length > 0) {
-        friendsAttending = await db
-          .select({
-            id: users.id,
-            displayName: users.displayName,
-            avatarUrl: users.avatarUrl,
-          })
-          .from(rsvps)
-          .innerJoin(users, eq(rsvps.userId, users.id))
-          .where(and(eq(rsvps.eventId, event.id), inArray(rsvps.userId, friendIds)));
-      }
-
-      // Check if user has RSVP'd or saved
-      const [userRsvp] = await db
-        .select()
-        .from(rsvps)
-        .where(and(eq(rsvps.userId, userId), eq(rsvps.eventId, event.id)))
-        .limit(1);
-
-      const [userSave] = await db
-        .select()
-        .from(savedEvents)
-        .where(and(eq(savedEvents.userId, userId), eq(savedEvents.eventId, event.id)))
-        .limit(1);
-
-      // Score for sorting
-      const tagNames = tags.map((t) => t.tag);
-      const interestOverlap =
-        myInterestTags.length > 0
-          ? tagNames.filter((t) => myInterestTags.includes(t)).length / myInterestTags.length
-          : 0.5;
-
-      const now = Date.now();
-      const eventTime = event.datetime.getTime();
-      const daysUntil = (eventTime - now) / (1000 * 60 * 60 * 24);
-      const timeProximity =
-        daysUntil <= 1
-          ? 1.0
-          : daysUntil <= 3
-            ? 0.8
-            : daysUntil <= 7
-              ? 0.6
-              : daysUntil <= 14
-                ? 0.3
-                : 0.1;
-
-      const friendRsvpScore = Math.min(1.0, friendsAttending.length / 3.0);
-
-      const hoursSinceCreated = (now - event.createdAt.getTime()) / (1000 * 60 * 60);
-      const recencyBoost = hoursSinceCreated <= 24 ? 1.0 : hoursSinceCreated <= 72 ? 0.5 : 0.0;
-
-      const score =
-        3.0 * interestOverlap +
-        2.0 * timeProximity +
-        4.0 * friendRsvpScore +
-        1.0 * recencyBoost +
-        0.5 * Math.random();
-
-      return {
-        id: event.id,
-        title: event.title,
-        orgId: event.orgId,
-        orgName: event.orgName,
-        datetime: event.datetime.toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-        location: event.locationName ?? "TBD",
-        tags: tagNames,
-        flyerUrl: event.flyerUrl,
-        rsvpCount: rsvpCount?.count ?? 0,
-        friendsAttending,
-        isRsvped: !!userRsvp,
-        isSaved: !!userSave,
-        _score: score,
-      };
-    }),
-  );
-
-  // Sort by score descending
-  enriched.sort(
-    (a, b) =>
-      (b as unknown as { _score: number })._score - (a as unknown as { _score: number })._score,
-  );
-
-  return { events: enriched, total };
+  const experience = await buildExploreExperience(session.user.id, params);
+  await ensureWeeklyBriefingNotification(session.user.id, experience.weeklyBriefing);
+  return experience;
 }
 
-export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; count: number }> {
+export async function trackEventInteractions(
+  inputs: RecommendationInteractionInput[],
+): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  await recordEventInteractions(session.user.id, inputs);
+}
+
+export async function dismissEvent(
+  eventId: string,
+  params?: { reason?: string; shelf?: string | null },
+): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await dismissEventForUser(session.user.id, eventId, "explore", params?.shelf, params?.reason);
+  revalidatePath("/explore");
+}
+
+export async function getRecommendationDiagnostics(limit = 20) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  return getRecentRecommendationDiagnostics(session.user.id, limit);
+}
+
+async function getAcceptedFriendIds(userId: string) {
+  const [sentRows, receivedRows] = await Promise.all([
+    db
+      .select({ friendId: friendships.friendId })
+      .from(friendships)
+      .where(and(eq(friendships.userId, userId), eq(friendships.status, "accepted"))),
+    db
+      .select({ friendId: friendships.userId })
+      .from(friendships)
+      .where(and(eq(friendships.friendId, userId), eq(friendships.status, "accepted"))),
+  ]);
+
+  return [...sentRows.map((row) => row.friendId), ...receivedRows.map((row) => row.friendId)];
+}
+
+async function getRelevantFriendRecipients(actorId: string, eventId: string) {
+  const friendIds = await getAcceptedFriendIds(actorId);
+  if (friendIds.length === 0) return [];
+
+  const [event] = await db
+    .select({ orgId: events.orgId, isPublic: events.isPublic })
+    .from(events)
+    .where(eq(events.id, eventId))
+    .limit(1);
+
+  if (!event?.isPublic) return [];
+
+  const tagRows = await db
+    .select({ tag: eventTags.tag })
+    .from(eventTags)
+    .where(eq(eventTags.eventId, eventId));
+
+  const tagValues = tagRows.map((row) => row.tag);
+  const relevanceConditions = [];
+
+  if (event.orgId) {
+    relevanceConditions.push(
+      inArray(
+        users.id,
+        db
+          .select({ userId: orgFollowers.userId })
+          .from(orgFollowers)
+          .where(eq(orgFollowers.orgId, event.orgId)),
+      ),
+    );
+  }
+
+  if (tagValues.length > 0) {
+    relevanceConditions.push(
+      inArray(
+        users.id,
+        db
+          .select({ userId: userInterests.userId })
+          .from(userInterests)
+          .where(inArray(userInterests.tag, tagValues)),
+      ),
+    );
+  }
+
+  if (relevanceConditions.length === 0) {
+    return friendIds;
+  }
+
+  const relevanceFilter =
+    relevanceConditions.length === 1 ? relevanceConditions[0] : or(...relevanceConditions);
+
+  const rows = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(inArray(users.id, friendIds), relevanceFilter));
+
+  return rows.map((row) => row.id);
+}
+
+async function createSocialActivityNotifications(
+  actorId: string,
+  eventId: string,
+  interactionType: "save" | "rsvp",
+) {
+  const [actor, event, recipientIds] = await Promise.all([
+    db.select({ displayName: users.displayName }).from(users).where(eq(users.id, actorId)).limit(1),
+    db.select({ title: events.title }).from(events).where(eq(events.id, eventId)).limit(1),
+    getRelevantFriendRecipients(actorId, eventId),
+  ]);
+
+  if (!actor[0] || !event[0] || recipientIds.length === 0) return;
+
+  const existingRows = await db
+    .select({ userId: notifications.userId })
+    .from(notifications)
+    .where(
+      and(
+        inArray(notifications.userId, recipientIds),
+        eq(notifications.type, "social_activity"),
+        sql`${notifications.payload}->>'actorId' = ${actorId}`,
+        sql`${notifications.payload}->>'eventId' = ${eventId}`,
+        sql`${notifications.payload}->>'interactionType' = ${interactionType}`,
+      ),
+    );
+
+  const existingUserIds = new Set(existingRows.map((row) => row.userId));
+  const newRecipientIds = recipientIds.filter((recipientId) => !existingUserIds.has(recipientId));
+
+  if (newRecipientIds.length === 0) return;
+
+  await db.insert(notifications).values(
+    newRecipientIds.map((userId) => ({
+      userId,
+      type: "social_activity" as const,
+      payload: {
+        actorId,
+        actorName: actor[0]?.displayName,
+        eventId,
+        eventTitle: event[0]?.title,
+        interactionType,
+      },
+    })),
+  );
+}
+
+export async function toggleRsvp(
+  eventId: string,
+  context?: Omit<RecommendationInteractionInput, "eventId" | "interactionType">,
+): Promise<{ rsvped: boolean; count: number }> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -294,6 +262,25 @@ export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; co
     .where(eq(rsvps.eventId, eventId));
 
   revalidatePath("/explore");
+  revalidatePath(`/events/${eventId}`);
+
+  if (context) {
+    await recordEventInteractions(userId, [
+      {
+        eventId,
+        interactionType: existing ? "unrsvp" : "rsvp",
+        surface: context.surface,
+        shelf: context.shelf,
+        rankingSnapshotId: context.rankingSnapshotId,
+        reasonCodes: context.reasonCodes,
+        metadata: context.metadata,
+      },
+    ]);
+  }
+
+  if (!existing) {
+    await createSocialActivityNotifications(userId, eventId, "rsvp");
+  }
 
   return {
     rsvped: !existing,
@@ -301,7 +288,10 @@ export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; co
   };
 }
 
-export async function toggleSave(eventId: string): Promise<{ saved: boolean }> {
+export async function toggleSave(
+  eventId: string,
+  context?: Omit<RecommendationInteractionInput, "eventId" | "interactionType">,
+): Promise<{ saved: boolean }> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -322,8 +312,70 @@ export async function toggleSave(eventId: string): Promise<{ saved: boolean }> {
   }
 
   revalidatePath("/explore");
+  revalidatePath(`/events/${eventId}`);
+
+  if (context) {
+    await recordEventInteractions(userId, [
+      {
+        eventId,
+        interactionType: existing ? "unsave" : "save",
+        surface: context.surface,
+        shelf: context.shelf,
+        rankingSnapshotId: context.rankingSnapshotId,
+        reasonCodes: context.reasonCodes,
+        metadata: context.metadata,
+      },
+    ]);
+  }
+
+  if (!existing) {
+    await createSocialActivityNotifications(userId, eventId, "save");
+  }
 
   return { saved: !existing };
+}
+
+export async function reportEvent(
+  eventId: string,
+  reason: string,
+): Promise<{ reported: true; alreadyReported: boolean }> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const trimmedReason = reason.trim();
+  if (!trimmedReason) {
+    throw new Error("Please include a reason for the report");
+  }
+
+  const reporterId = session.user.id;
+
+  const [existingEvent] = await db
+    .select({ id: events.id })
+    .from(events)
+    .where(eq(events.id, eventId))
+    .limit(1);
+
+  if (!existingEvent) {
+    throw new Error("Event not found");
+  }
+
+  const [existingReport] = await db
+    .select({ id: eventReports.id })
+    .from(eventReports)
+    .where(and(eq(eventReports.eventId, eventId), eq(eventReports.reporterId, reporterId)))
+    .limit(1);
+
+  if (existingReport) {
+    return { reported: true, alreadyReported: true };
+  }
+
+  await db.insert(eventReports).values({
+    eventId,
+    reporterId,
+    reason: trimmedReason,
+  });
+
+  return { reported: true, alreadyReported: false };
 }
 
 // ── Event CRUD ────────────────────────────────────────────
@@ -350,6 +402,7 @@ export interface EventDetail {
   isRsvped: boolean;
   isSaved: boolean;
   isOwner: boolean;
+  organizerInsights: OrganizerAnalytics | null;
 }
 
 export async function getEvent(eventId: string): Promise<EventDetail | null> {
@@ -430,7 +483,21 @@ export async function getEvent(eventId: string): Promise<EventDetail | null> {
     .where(and(eq(savedEvents.userId, userId), eq(savedEvents.eventId, eventId)))
     .limit(1);
 
-  // Similar events (same tags or same org)
+  const tagNames = tags.map((t) => t.tag);
+  const organizerInsights =
+    event.creatorId === userId
+      ? await getOrganizerAnalyticsForEvent(eventId, {
+          title: event.title,
+          description: event.description,
+          tags: tagNames,
+          flyerUrl: event.flyerUrl,
+          externalLink: event.externalLink,
+          endDatetime: event.endDatetime,
+          orgId: event.orgId,
+          isPublic: event.isPublic,
+        })
+      : null;
+
   return {
     id: event.id,
     title: event.title,
@@ -446,13 +513,14 @@ export async function getEvent(eventId: string): Promise<EventDetail | null> {
     flyerUrl: event.flyerUrl,
     externalLink: event.externalLink,
     isPublic: event.isPublic,
-    tags: tags.map((t) => t.tag),
+    tags: tagNames,
     rsvpCount: attendees.length,
     attendees,
     friendsAttending,
     isRsvped: !!userRsvp,
     isSaved: !!userSave,
     isOwner: event.creatorId === userId,
+    organizerInsights,
   };
 }
 
@@ -591,7 +659,13 @@ export async function createEvent(data: {
   }
 
   // Notify org followers about new event (exclude creator)
-  if (data.orgId) {
+  if (data.orgId && (data.isPublic ?? true)) {
+    const [organization] = await db
+      .select({ name: organizations.name })
+      .from(organizations)
+      .where(eq(organizations.id, data.orgId))
+      .limit(1);
+
     const followers = await db
       .select({ userId: orgFollowers.userId })
       .from(orgFollowers)
@@ -602,7 +676,12 @@ export async function createEvent(data: {
         followers.map((f) => ({
           userId: f.userId,
           type: "org_new_event" as const,
-          payload: { eventId: event.id, eventTitle: data.title, orgId: data.orgId },
+          payload: {
+            eventId: event.id,
+            eventTitle: data.title,
+            orgId: data.orgId,
+            orgName: organization?.name ?? null,
+          },
         })),
       );
     }

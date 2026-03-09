@@ -6,6 +6,7 @@
     "dev": "uv run uvicorn app.main:app --reload --port 8000",
     "start": "uv run uvicorn app.main:app --port 8000",
     "install": "uv sync",
-    "lint": "echo 'Python linting: run ruff from backends/fastapi directory'"
+    "lint": "uv run ruff check app",
+    "report": "uv run python -m app.scripts.recommendation_report"
   }
 }

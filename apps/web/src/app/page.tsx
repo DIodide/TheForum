@@ -1,5 +1,7 @@
 import { CalendarDays, MapIcon, Sparkles, Users } from "lucide-react";
+import Link from "next/link";
 import { signIn } from "~/auth";
+import { Button } from "~/components/ui/button";
 
 const FEATURES = [
   {
@@ -73,29 +75,38 @@ export default function LandingPage() {
         </p>
 
         {/* CTA */}
-        <form
-          action={async () => {
-            "use server";
-            await signIn("microsoft-entra-id", { redirectTo: "/explore" });
-          }}
-        >
-          <button
-            type="submit"
-            className="group relative px-10 py-4 rounded-2xl text-white font-bold text-base tracking-wide transition-all hover:scale-[1.02] active:scale-[0.98]"
-            style={{
-              background: "linear-gradient(135deg, #4f46e5, #3b82f6, #06b6d4)",
-              boxShadow: "0 0 40px rgba(99, 102, 241, 0.3), 0 4px 20px rgba(0,0,0,0.3)",
+        <div className="flex flex-col items-center gap-3">
+          <form
+            action={async () => {
+              "use server";
+              await signIn("microsoft-entra-id", { redirectTo: "/explore" });
             }}
           >
-            <div
-              className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+            <button
+              type="submit"
+              className="group relative px-10 py-4 rounded-2xl text-white font-bold text-base tracking-wide transition-all hover:scale-[1.02] active:scale-[0.98]"
               style={{
-                background: "linear-gradient(135deg, #6366f1, #3b82f6, #06b6d4)",
+                background: "linear-gradient(135deg, #4f46e5, #3b82f6, #06b6d4)",
+                boxShadow: "0 0 40px rgba(99, 102, 241, 0.3), 0 4px 20px rgba(0,0,0,0.3)",
               }}
-            />
-            <span className="relative z-10">Sign in with Princeton</span>
-          </button>
-        </form>
+            >
+              <div
+                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{
+                  background: "linear-gradient(135deg, #6366f1, #3b82f6, #06b6d4)",
+                }}
+              />
+              <span className="relative z-10">Sign in with Princeton</span>
+            </button>
+          </form>
+          <Button
+            asChild
+            variant="outline"
+            className="rounded-2xl border-white/15 bg-white/5 px-8 py-6 text-sm font-semibold text-slate-100 hover:bg-white/10 hover:text-white"
+          >
+            <Link href="/events/create">Post an Event</Link>
+          </Button>
+        </div>
 
         {/* Feature grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 w-full max-w-2xl">

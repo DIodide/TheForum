@@ -1,7 +1,9 @@
 "use client";
 
-import { Bell, Check, UserPlus } from "lucide-react";
+import { Bell, Check, Radar, Sparkles, UserPlus, Users } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { trackEventInteractions } from "~/actions/events";
 import {
   type NotificationItem,
   getNotifications,
@@ -29,7 +31,17 @@ function getNotificationText(n: NotificationItem): string {
     case "event_reminder":
       return `Reminder: ${(n.payload.eventTitle as string) ?? "An event"} is coming up soon`;
     case "org_new_event":
-      return `${(n.payload.orgName as string) ?? "An org"} posted a new event`;
+      return `${(n.payload.orgName as string) ?? "An org"} posted ${(n.payload.eventTitle as string) ?? "a new event"}`;
+    case "social_activity":
+      return `${(n.payload.actorName as string) ?? "A friend"} ${
+        n.payload.interactionType === "rsvp" ? "RSVP'd to" : "saved"
+      } ${(n.payload.eventTitle as string) ?? "an event"}`;
+    case "weekly_briefing": {
+      const titles = Array.isArray(n.payload.eventTitles)
+        ? n.payload.eventTitles.slice(0, 2).join(", ")
+        : "";
+      return titles ? `Your weekly briefing is ready: ${titles}` : "Your weekly briefing is ready";
+    }
     default:
       return "New notification";
   }
@@ -43,8 +55,39 @@ function getNotificationIcon(type: NotificationItem["type"]) {
       return <Bell size={14} className="text-amber-500" />;
     case "org_new_event":
       return <Bell size={14} className="text-emerald-500" />;
+    case "social_activity":
+      return <Users size={14} className="text-rose-500" />;
+    case "weekly_briefing":
+      return <Radar size={14} className="text-sky-500" />;
     default:
       return <Bell size={14} className="text-gray-400" />;
+  }
+}
+
+function getNotificationHref(notification: NotificationItem) {
+  switch (notification.type) {
+    case "friend_request":
+      return "/friends";
+    case "event_reminder":
+    case "social_activity":
+      return typeof notification.payload.eventId === "string"
+        ? `/events/${notification.payload.eventId}`
+        : null;
+    case "org_new_event":
+      if (typeof notification.payload.eventId === "string") {
+        return `/events/${notification.payload.eventId}`;
+      }
+      return typeof notification.payload.orgId === "string"
+        ? `/orgs/${notification.payload.orgId}`
+        : null;
+    case "weekly_briefing": {
+      const [firstEventId] = Array.isArray(notification.payload.eventIds)
+        ? notification.payload.eventIds
+        : [];
+      return typeof firstEventId === "string" ? `/events/${firstEventId}` : "/explore";
+    }
+    default:
+      return null;
   }
 }
 
@@ -87,6 +130,24 @@ export function NotificationDropdown() {
     await markAllNotificationsRead();
   };
 
+  const handleNotificationOpen = (notification: NotificationItem) => {
+    if (!notification.read) {
+      void handleMarkRead(notification.id);
+    }
+
+    if (typeof notification.payload.eventId !== "string") {
+      return;
+    }
+
+    void trackEventInteractions([
+      {
+        eventId: notification.payload.eventId,
+        interactionType: "detail_open",
+        surface: "notification",
+      },
+    ]);
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -121,40 +182,68 @@ export function NotificationDropdown() {
         {/* List */}
         <div className="max-h-80 overflow-y-auto">
           {items.length > 0 ? (
-            items.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() => {
-                  if (!n.read) handleMarkRead(n.id);
-                }}
-                className={cn(
+            items.map((n) =>
+              (() => {
+                const href = getNotificationHref(n);
+                const itemClassName = cn(
                   "w-full text-left flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors",
                   !n.read && "bg-indigo-50/40",
-                )}
-              >
-                <div className="mt-0.5 flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                  {getNotificationIcon(n.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={cn(
-                      "text-sm leading-snug",
-                      n.read ? "text-gray-500" : "text-gray-800 font-medium",
+                );
+                const content = (
+                  <>
+                    <div className="mt-0.5 flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+                      {getNotificationIcon(n.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={cn(
+                          "text-sm leading-snug",
+                          n.read ? "text-gray-500" : "text-gray-800 font-medium",
+                        )}
+                      >
+                        {getNotificationText(n)}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">{formatTimeAgo(n.createdAt)}</p>
+                    </div>
+                    {!n.read && (
+                      <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
                     )}
+                  </>
+                );
+
+                if (!href) {
+                  return (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => {
+                        if (!n.read) void handleMarkRead(n.id);
+                      }}
+                      className={itemClassName}
+                    >
+                      {content}
+                    </button>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={n.id}
+                    href={href}
+                    onClick={() => {
+                      setOpen(false);
+                      handleNotificationOpen(n);
+                    }}
+                    className={itemClassName}
                   >
-                    {getNotificationText(n)}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">{formatTimeAgo(n.createdAt)}</p>
-                </div>
-                {!n.read && (
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />
-                )}
-              </button>
-            ))
+                    {content}
+                  </Link>
+                );
+              })(),
+            )
           ) : (
             <div className="py-10 text-center">
-              <Bell size={20} className="text-gray-300 mx-auto mb-2" />
+              <Sparkles size={20} className="text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-400">No notifications yet</p>
             </div>
           )}

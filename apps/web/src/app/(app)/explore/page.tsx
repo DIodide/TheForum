@@ -1,4 +1,4 @@
-import { getFeedEvents, getFriendsEvents, getSavedEvents } from "~/actions/events";
+import { getCampusLocations, getExploreExperience } from "~/actions/events";
 import { ExploreClient } from "./explore-client";
 
 export default async function ExplorePage({
@@ -8,18 +8,15 @@ export default async function ExplorePage({
 }) {
   const { search } = await searchParams;
 
-  const [feedResult, savedEvents, friendsEvents] = await Promise.all([
-    getFeedEvents(search ? { search } : undefined),
-    getSavedEvents(),
-    getFriendsEvents(),
+  const [experience, locations] = await Promise.all([
+    getExploreExperience(search ? { search } : undefined),
+    getCampusLocations(),
   ]);
 
   return (
     <ExploreClient
-      initialEvents={feedResult.events}
-      initialTotal={feedResult.total}
-      savedEvents={savedEvents}
-      friendsEvents={friendsEvents}
+      initialExperience={experience}
+      locations={locations}
       initialSearch={search ?? ""}
     />
   );

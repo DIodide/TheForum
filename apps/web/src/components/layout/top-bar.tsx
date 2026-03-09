@@ -3,35 +3,59 @@
 import { Plus, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { NotificationDropdown } from "~/components/layout/notification-dropdown";
 import { Button } from "~/components/ui/button";
 
 export function TopBar() {
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const initial = session?.user?.name?.[0]?.toUpperCase() ?? "?";
+
+  useEffect(() => {
+    if (pathname === "/explore") {
+      setSearchQuery(searchParams.get("search") ?? "");
+      return;
+    }
+
+    setSearchQuery("");
+  }, [pathname, searchParams]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const trimmedQuery = searchQuery.trim();
+    if (trimmedQuery) {
+      router.push(`/explore?search=${encodeURIComponent(trimmedQuery)}`);
+      return;
+    }
+
+    router.push("/explore");
+  };
 
   return (
     <header className="flex items-center gap-4 px-6 py-3 bg-white border-b border-gray-200 flex-shrink-0">
       {/* Search bar */}
-      <div className="flex items-center gap-2 flex-1 px-4 py-2 rounded-full bg-[#ede9fe] max-w-[480px]">
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center gap-2 flex-1 px-4 py-2 rounded-full bg-[#ede9fe] max-w-[480px]"
+      >
         <Search size={14} className="text-purple-600" strokeWidth={2} />
         <input
           type="text"
           placeholder="Search for events..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && searchQuery.trim()) {
-              router.push(`/explore?search=${encodeURIComponent(searchQuery.trim())}`);
-            }
-          }}
           className="bg-transparent text-sm text-purple-900 placeholder:text-purple-400 outline-none flex-1"
         />
-      </div>
+        <button type="submit" className="sr-only">
+          Search
+        </button>
+      </form>
 
       <div className="flex items-center gap-2 ml-auto">
         <Link href="/events/create">
