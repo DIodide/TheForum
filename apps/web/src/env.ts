@@ -9,6 +9,12 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    AUTH_SECRET: z.string().min(1),
+    AUTH_AZURE_AD_CLIENT_ID: z.string().min(1),
+    AUTH_AZURE_AD_CLIENT_SECRET: z.string().min(1),
+    AUTH_AZURE_AD_TENANT_ID: z.string().min(1),
+    AWS_S3_BUCKET: z.string().min(1).optional(),
+    AWS_REGION: z.string().min(1).optional(),
   },
 
   /**
@@ -27,6 +33,12 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    AUTH_AZURE_AD_CLIENT_ID: process.env.AUTH_AZURE_AD_CLIENT_ID,
+    AUTH_AZURE_AD_CLIENT_SECRET: process.env.AUTH_AZURE_AD_CLIENT_SECRET,
+    AUTH_AZURE_AD_TENANT_ID: process.env.AUTH_AZURE_AD_TENANT_ID,
+    AWS_S3_BUCKET: process.env.AWS_S3_BUCKET,
+    AWS_REGION: process.env.AWS_REGION,
   },
 
   /**

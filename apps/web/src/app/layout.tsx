@@ -1,5 +1,18 @@
 import type { Metadata } from "next";
+import { Inter, Unbounded } from "next/font/google";
+import { Toaster } from "~/components/ui/sonner";
 import "./globals.css";
+
+const unbounded = Unbounded({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-unbounded",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
   title: "The Forum",
@@ -13,7 +26,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${unbounded.variable} ${inter.variable}`}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
