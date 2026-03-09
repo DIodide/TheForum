@@ -9,8 +9,7 @@ import {
   toggleRsvp,
   toggleSave,
 } from "~/actions/events";
-import { EventCard } from "~/components/events/event-card";
-import { getCardColor } from "~/components/events/event-card";
+import { EventCard, getCategoryColor } from "~/components/events/event-card";
 import { EventFilters } from "~/components/events/event-filters";
 import { cn } from "~/lib/utils";
 
@@ -216,7 +215,7 @@ export function ExploreClient({
             ) : (
               <div className="flex flex-col gap-3">
                 {savedEvents.map((event) => {
-                  const color = getCardColor(event.id);
+                  const color = getCategoryColor(event.tags);
                   return (
                     <div key={event.id} className="flex gap-3">
                       <div

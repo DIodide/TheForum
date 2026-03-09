@@ -24,7 +24,7 @@ import {
   toggleRsvp,
   toggleSave,
 } from "~/actions/events";
-import { getCardColor } from "~/components/events/event-card";
+import { getCategoryColor } from "~/components/events/event-card";
 import { AvatarStack } from "~/components/social/avatar-stack";
 import { Button } from "~/components/ui/button";
 import {
@@ -75,7 +75,7 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
   const [rsvpCount, setRsvpCount] = useState(event.rsvpCount);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const color = getCardColor(event.id);
+  const color = getCategoryColor(event.tags);
 
   const formatDate = (d: Date) =>
     d.toLocaleDateString("en-US", {
@@ -362,7 +362,7 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {similarEvents.map((se) => {
-              const seColor = getCardColor(se.id);
+              const seColor = getCategoryColor(se.tags);
               return (
                 <Link key={se.id} href={`/events/${se.id}`} className="group">
                   <div

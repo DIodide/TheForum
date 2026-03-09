@@ -4,25 +4,25 @@ import { Bookmark, BookmarkCheck, Share2 } from "lucide-react";
 import Link from "next/link";
 import { AvatarStack } from "~/components/social/avatar-stack";
 
-// Color palette for event cards when no flyer is provided
-const CARD_COLORS = [
-  { bg: "#1e1b4b", accent: "#818cf8", text: "white" },
-  { bg: "#fef3c7", accent: "#f59e0b", text: "#92400e" },
-  { bg: "#eff6ff", accent: "#3b82f6", text: "#1e3a8a" },
-  { bg: "#fef9c3", accent: "#ca8a04", text: "#854d0e" },
-  { bg: "#dc2626", accent: "#fca5a5", text: "white" },
-  { bg: "#f0fdf4", accent: "#22c55e", text: "#166534" },
-  { bg: "#fce7f3", accent: "#ec4899", text: "#9d174d" },
-  { bg: "#f0f4ff", accent: "#6366f1", text: "#3730a3" },
-];
+// Category color palette — shared source of truth for cards and filters
+export const CATEGORY_COLORS: Record<string, { bg: string; accent: string; text: string }> = {
+  art: { bg: "#fff7ed", accent: "#fb923c", text: "#9a3412" },
+  tech: { bg: "#f5f3ff", accent: "#a78bfa", text: "#5b21b6" },
+  music: { bg: "#fefce8", accent: "#fbbf24", text: "#854d0e" },
+  sports: { bg: "#eff6ff", accent: "#60a5fa", text: "#1e3a8a" },
+  social: { bg: "#fdf2f8", accent: "#f472b6", text: "#9d174d" },
+  career: { bg: "#ecfdf5", accent: "#34d399", text: "#065f46" },
+  "free-food": { bg: "#fef2f2", accent: "#f87171", text: "#991b1b" },
+};
 
-export function getCardColor(id: string) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash << 5) - hash + id.charCodeAt(i);
-    hash |= 0;
+const DEFAULT_COLOR = { bg: "#f9fafb", accent: "#9ca3af", text: "#374151" };
+
+export function getCategoryColor(tags: string[]) {
+  for (const tag of tags) {
+    const key = tag.toLowerCase();
+    if (CATEGORY_COLORS[key]) return CATEGORY_COLORS[key];
   }
-  return CARD_COLORS[Math.abs(hash) % CARD_COLORS.length] ?? CARD_COLORS[0];
+  return DEFAULT_COLOR;
 }
 
 export interface EventCardProps {
@@ -56,7 +56,7 @@ export function EventCard({
   onSaveToggle,
   onShare,
 }: EventCardProps) {
-  const color = getCardColor(id);
+  const color = getCategoryColor(tags);
 
   return (
     <Link href={`/events/${id}`} className="group">

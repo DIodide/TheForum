@@ -1,16 +1,17 @@
 "use client";
 
 import { MoreHorizontal } from "lucide-react";
+import { CATEGORY_COLORS } from "~/components/events/event-card";
 import { cn } from "~/lib/utils";
 
 const FILTER_CATEGORIES = [
-  { id: "art", color: "#fb923c", label: "Art" },
-  { id: "tech", color: "#a78bfa", label: "STEM" },
-  { id: "music", color: "#fbbf24", label: "Music" },
-  { id: "sports", color: "#60a5fa", label: "Sports" },
-  { id: "social", color: "#f472b6", label: "Social" },
-  { id: "career", color: "#34d399", label: "Career" },
-  { id: "free-food", color: "#f87171", label: "Free Food" },
+  { id: "art", label: "Art" },
+  { id: "tech", label: "STEM" },
+  { id: "music", label: "Music" },
+  { id: "sports", label: "Sports" },
+  { id: "social", label: "Social" },
+  { id: "career", label: "Career" },
+  { id: "free-food", label: "Free Food" },
 ] as const;
 
 interface EventFiltersProps {
@@ -21,7 +22,8 @@ interface EventFiltersProps {
 export function EventFilters({ activeFilters, onFilterToggle }: EventFiltersProps) {
   return (
     <div className="flex items-center gap-4 px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
-      {FILTER_CATEGORIES.map(({ id, color, label }) => {
+      {FILTER_CATEGORIES.map(({ id, label }) => {
+        const color = CATEGORY_COLORS[id]?.accent ?? "#9ca3af";
         const isActive = activeFilters.includes(id);
         return (
           <button

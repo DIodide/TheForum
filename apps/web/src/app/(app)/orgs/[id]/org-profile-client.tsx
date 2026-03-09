@@ -7,7 +7,7 @@ import { useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { type FriendProfile, searchUsers } from "~/actions/friends";
 import { type OrgDetail, addOfficer, removeOfficer, toggleFollowOrg } from "~/actions/orgs";
-import { getCardColor } from "~/components/events/event-card";
+import { getCategoryColor } from "~/components/events/event-card";
 import { cn } from "~/lib/utils";
 
 function colorFromString(str: string) {
@@ -166,7 +166,7 @@ export function OrgProfileClient({ org }: OrgProfileClientProps) {
           {org.upcomingEvents.length > 0 ? (
             <div className="space-y-3">
               {org.upcomingEvents.map((event) => {
-                const color = getCardColor(event.id);
+                const color = getCategoryColor(event.tags);
                 return (
                   <Link key={event.id} href={`/events/${event.id}`}>
                     <div className="flex items-center gap-4 bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:shadow-md transition-shadow">
