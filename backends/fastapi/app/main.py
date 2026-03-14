@@ -1,17 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.pipeline.router import router as pipeline_router
+
 app = FastAPI(
     title="The Forum API",
     description="Backend API for The Forum application",
     version="0.1.0",
 )
 
+app.include_router(pipeline_router)
+
 # Configure CORS — adjust origins for production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",  # Next.js dev server
+        "http://localhost:5173",  # Admin panel (Vite)
     ],
     allow_credentials=True,
     allow_methods=["*"],
