@@ -187,3 +187,16 @@ export async function updateProfile(data: {
   revalidatePath("/settings");
   revalidatePath("/explore");
 }
+
+export async function updateAvatar(avatarUrl: string): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await db
+    .update(users)
+    .set({ avatarUrl, updatedAt: new Date() })
+    .where(eq(users.id, session.user.id));
+
+  revalidatePath("/settings");
+  revalidatePath("/explore");
+}

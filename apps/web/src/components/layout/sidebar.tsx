@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, CalendarDays, Home, LogOut, Map as MapIcon, Users } from "lucide-react";
+import { Building2, CalendarDays, Home, LogOut, Map as MapIcon, Plus, Users } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,8 +18,8 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex flex-col w-48 h-full flex-shrink-0 py-6 bg-[#0f172a]">
-      <nav className="flex flex-col gap-1 px-3 flex-1">
+    <aside className="flex flex-col w-[200px] h-full flex-shrink-0 rounded-[16px] bg-forum-turquoise-20 shadow-[0px_3px_3px_0px_rgba(32,162,255,0.08)] m-3 mr-0">
+      <nav className="flex flex-col gap-[6px] px-[12px] pt-[14px] flex-1">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
           const isActive = pathname.startsWith(href);
           return (
@@ -27,24 +27,33 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors",
+                "flex items-center gap-[10px] px-[10px] py-[8px] rounded-[8px] text-[14px] font-semibold font-dm-sans transition-colors",
                 isActive
-                  ? "bg-indigo-500/15 text-indigo-400"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5",
+                  ? "bg-forum-turquoise text-black"
+                  : "text-black hover:bg-forum-turquoise/30",
               )}
             >
-              <Icon size={16} strokeWidth={1.8} />
+              <Icon size={20} strokeWidth={1.8} />
               {label}
             </Link>
           );
         })}
+
+        <Link
+          href="/events/create"
+          className="flex items-center gap-[6px] mt-3 px-[10px] py-[8px] rounded-[12px] bg-forum-cerulean text-white font-bold text-[12px] font-dm-sans hover:opacity-90 transition-opacity justify-center"
+        >
+          <Plus size={15} />
+          CREATE AN EVENT
+        </Link>
       </nav>
+
       <button
         type="button"
         onClick={() => signOut({ callbackUrl: "/" })}
-        className="flex items-center gap-3 px-7 py-3 text-sm text-slate-400 hover:text-slate-200 transition-colors w-full"
+        className="flex items-center gap-[10px] px-[22px] py-[8px] text-[14px] font-semibold font-inter text-forum-light-gray hover:text-forum-dark-gray transition-colors w-full mb-3"
       >
-        <LogOut size={16} strokeWidth={1.8} />
+        <LogOut size={18} strokeWidth={1.8} />
         Log Out
       </button>
     </aside>

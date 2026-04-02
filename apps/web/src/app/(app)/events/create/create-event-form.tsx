@@ -2,17 +2,21 @@
 
 import { format } from "date-fns";
 import {
-  Building2,
+  ArrowUp,
   CalendarIcon,
   ChevronDown,
-  Clock,
   ExternalLink,
+  Eye,
+  FileText,
   Globe,
   ImagePlus,
   Link2,
   Lock,
   MapPin,
-  Sparkles,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
   Upload,
   X,
 } from "lucide-react";
@@ -20,40 +24,19 @@ import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState, useTransition } from "react";
 import { createEvent } from "~/actions/events";
 import { getPresignedUploadUrl } from "~/actions/upload";
-import { Button } from "~/components/ui/button";
+import { CoverPresetsPicker } from "~/components/events/cover-presets";
+import { EventPreviewModal } from "~/components/events/event-preview-modal";
 import { Calendar } from "~/components/ui/calendar";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { cn } from "~/lib/utils";
 
-const EVENT_TAGS = [
-  { id: "free-food", label: "Free Food", emoji: "🍕" },
-  { id: "workshop", label: "Workshop", emoji: "🔧" },
-  { id: "performance", label: "Performance", emoji: "🎭" },
-  { id: "speaker", label: "Speaker", emoji: "🎤" },
-  { id: "social", label: "Social", emoji: "🎉" },
-  { id: "career", label: "Career", emoji: "💼" },
-  { id: "sports", label: "Sports", emoji: "⚽" },
-  { id: "music", label: "Music", emoji: "🎵" },
-  { id: "art", label: "Art", emoji: "🎨" },
-  { id: "academic", label: "Academic", emoji: "📚" },
-  { id: "cultural", label: "Cultural", emoji: "🌍" },
-  { id: "community-service", label: "Service", emoji: "🤝" },
-  { id: "religious", label: "Religious", emoji: "🕊️" },
-  { id: "political", label: "Political", emoji: "🏛️" },
-  { id: "tech", label: "Tech", emoji: "💻" },
-  { id: "gaming", label: "Gaming", emoji: "🎮" },
-  { id: "outdoor", label: "Outdoor", emoji: "🌲" },
-  { id: "wellness", label: "Wellness", emoji: "🧘" },
+const TIMELINE_SECTIONS = [
+  { id: "cover", label: "Cover & Title", color: "bg-forum-cerulean" },
+  { id: "details", label: "Details & Description", color: "bg-forum-coral" },
+  { id: "when-where", label: "When & Where", color: "bg-forum-coral" },
+  { id: "uploads", label: "Uploads & Links", color: "bg-forum-coral" },
 ];
 
 interface CreateEventFormProps {
@@ -67,49 +50,57 @@ export function CreateEventForm({ locations, userOrgs }: CreateEventFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeSection, setActiveSection] = useState("cover");
 
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date | undefined>();
-  const [time, setTime] = useState("18:00");
-  const [showEndDate, setShowEndDate] = useState(false);
-  const [endDate, setEndDate] = useState<Date | undefined>();
-  const [endTime, setEndTime] = useState("20:00");
+  const [startTime, setStartTime] = useState("06:00 PM");
+  const [endTime, setEndTime] = useState("08:00 PM");
   const [locationId, setLocationId] = useState("");
   const [selectedOrgId, setSelectedOrgId] = useState(PERSONAL_ORG_VALUE);
   const [locationSearch, setLocationSearch] = useState("");
   const [locationOpen, setLocationOpen] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
+  const [tagSearch, setTagSearch] = useState("");
   const [flyerUrl, setFlyerUrl] = useState<string | null>(null);
   const [flyerPreview, setFlyerPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [externalLink, setExternalLink] = useState("");
+  const [coverPreset, setCoverPreset] = useState<string | null>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uploadedFiles, setUploadedFiles] = useState<
+    { name: string; preview: string; type: string }[]
+  >([]);
 
-  const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(locationSearch.toLowerCase()),
+  const filteredLocations = locations.filter(
+    (loc) => !locationSearch || loc.name.toLowerCase().includes(locationSearch.toLowerCase()),
   );
-
   const selectedLocationName = locations.find((l) => l.id === locationId)?.name ?? "";
 
-  const toggleTag = (id: string) => {
-    setTags((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+  const addTag = (tag: string) => {
+    if (tag && !tags.includes(tag)) {
+      setTags((prev) => [...prev, tag]);
+    }
+    setTagSearch("");
+  };
+
+  const removeTag = (tag: string) => {
+    setTags((prev) => prev.filter((t) => t !== tag));
   };
 
   const handleImageUpload = useCallback(
     async (file: File) => {
       if (isUploading) return;
       setIsUploading(true);
-
       try {
-        // Preview
         const reader = new FileReader();
         reader.onload = (e) => setFlyerPreview(e.target?.result as string);
         reader.readAsDataURL(file);
 
-        // Upload
         const { uploadUrl, publicUrl } = await getPresignedUploadUrl({
           filename: file.name,
           contentType: file.type,
@@ -138,12 +129,25 @@ export function CreateEventForm({ locations, userOrgs }: CreateEventFormProps) {
     (e: React.DragEvent) => {
       e.preventDefault();
       const file = e.dataTransfer.files[0];
-      if (file?.type.startsWith("image/")) {
-        handleImageUpload(file);
-      }
+      if (file?.type.startsWith("image/")) handleImageUpload(file);
     },
     [handleImageUpload],
   );
+
+  const handleFileUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setUploadedFiles((prev) => [
+        ...prev,
+        {
+          name: file.name,
+          preview: e.target?.result as string,
+          type: file.type.startsWith("image/") ? "image" : "doc",
+        },
+      ]);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -151,367 +155,138 @@ export function CreateEventForm({ locations, userOrgs }: CreateEventFormProps) {
     if (!description.trim()) newErrors.description = "Description is required";
     if (!date) newErrors.date = "Date is required";
     if (!locationId) newErrors.location = "Location is required";
-    if (tags.length === 0) newErrors.tags = "Select at least one tag";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (!validate()) return;
+  const VALID_TAGS = [
+    "free-food",
+    "workshop",
+    "performance",
+    "speaker",
+    "social",
+    "career",
+    "sports",
+    "music",
+    "art",
+    "academic",
+    "cultural",
+    "community-service",
+    "religious",
+    "political",
+    "tech",
+    "gaming",
+    "outdoor",
+    "wellness",
+  ];
 
+  const doCreate = (status: "published" | "draft") => {
+    if (status === "published" && !validate()) return;
+    // For drafts, only require title
+    if (status === "draft" && !title.trim()) {
+      setErrors({ title: "Title is required even for drafts" });
+      return;
+    }
     startTransition(async () => {
-      const datetime = new Date(date as Date);
-      const [hours, minutes] = time.split(":").map(Number);
-      datetime.setHours(hours ?? 0, minutes ?? 0);
-
-      let endDatetime: string | undefined;
-      if (showEndDate && endDate) {
-        const end = new Date(endDate);
-        const [eh, em] = endTime.split(":").map(Number);
-        end.setHours(eh ?? 0, em ?? 0);
-        endDatetime = end.toISOString();
-      }
+      const datetime = date ? new Date(date) : new Date();
+      datetime.setHours(18, 0);
 
       const result = await createEvent({
         title: title.trim(),
-        description: description.trim(),
+        description: description.trim() || "Draft — no description yet",
         datetime: datetime.toISOString(),
-        endDatetime,
-        locationId,
+        locationId: locationId || "frist",
         orgId: selectedOrgId === PERSONAL_ORG_VALUE ? undefined : selectedOrgId,
-        tags,
+        tags: tags.filter((t) => VALID_TAGS.includes(t)),
         flyerUrl: flyerUrl ?? undefined,
+        coverPreset: coverPreset ?? undefined,
         externalLink: externalLink.trim() || undefined,
         isPublic,
+        status,
       });
 
-      router.push(`/events/${result.id}`);
+      router.push(status === "draft" ? "/events" : `/events/${result.id}`);
     });
   };
 
+  const handleSubmit = () => doCreate("published");
+  const handleSaveDraft = () => doCreate("draft");
+
   return (
-    <div className="space-y-8">
-      {/* ── Card container ───────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-8 space-y-8">
-          {/* Title */}
-          <div>
-            <Label htmlFor="title" className="text-sm font-semibold text-gray-700 mb-2 block">
-              Event Title
-            </Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
-              }}
-              placeholder="What's happening?"
-              maxLength={200}
-              className={cn(
-                "h-12 text-base border-gray-200 bg-gray-50/50 placeholder:text-gray-300 focus:bg-white transition-colors",
-                errors.title && "border-red-300 focus-visible:ring-red-200",
-              )}
-            />
-            <div className="flex justify-between mt-1.5">
-              {errors.title ? <p className="text-xs text-red-400">{errors.title}</p> : <span />}
-              <span className="text-xs text-gray-300">{title.length}/200</span>
-            </div>
-          </div>
+    <div className="px-[40px] py-[20px] max-w-[1100px] mx-auto">
+      {/* Top buttons */}
+      <div className="flex items-center justify-between mb-[30px]">
+        <div className="flex items-center gap-[10px]">
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={isPending}
+            className="px-[16px] py-[8px] border border-forum-medium-gray rounded-[6px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider hover:border-forum-dark-gray disabled:opacity-50 transition-colors"
+          >
+            {isPending ? "SAVING..." : "SAVE AS DRAFT"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowPreview(true)}
+            className="flex items-center gap-[5px] px-[16px] py-[8px] border border-forum-medium-gray rounded-[20px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider hover:border-forum-dark-gray transition-colors"
+          >
+            <Eye size={13} />
+            PREVIEW
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isPending}
+          className="px-[24px] py-[10px] bg-forum-cerulean text-white text-[12px] font-bold font-dm-sans rounded-[6px] tracking-wider hover:opacity-90 disabled:opacity-50 transition-all"
+        >
+          {isPending ? "PUBLISHING..." : "PUBLISH"}
+        </button>
+      </div>
 
-          {/* Description */}
-          <div>
-            <Label htmlFor="description" className="text-sm font-semibold text-gray-700 mb-2 block">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                if (errors.description) setErrors((prev) => ({ ...prev, description: "" }));
-              }}
-              placeholder="Tell people what to expect..."
-              rows={4}
-              className={cn(
-                "text-base border-gray-200 bg-gray-50/50 placeholder:text-gray-300 focus:bg-white transition-colors resize-none",
-                errors.description && "border-red-300 focus-visible:ring-red-200",
-              )}
-            />
-            {errors.description && (
-              <p className="text-xs text-red-400 mt-1.5">{errors.description}</p>
-            )}
-          </div>
-
-          {userOrgs.length > 0 && (
-            <div className="border-t border-gray-100 pt-8">
-              <div className="flex items-start gap-3 mb-5">
-                <Building2 size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-                <div>
-                  <span className="text-sm font-semibold text-gray-700">Post As</span>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    Attribute this event to one of your organizations or publish it personally.
-                  </p>
-                </div>
-              </div>
-
-              <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
-                <SelectTrigger className="w-full h-11 border-gray-200 bg-gray-50/50 text-left">
-                  <SelectValue placeholder="Choose who is posting this event" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={PERSONAL_ORG_VALUE}>Myself</SelectItem>
-                  {userOrgs.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* ── Date & Time row ───────────────────────────── */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <Clock size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <span className="text-sm font-semibold text-gray-700">When</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Date picker */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2 h-11 px-4 rounded-lg border text-sm transition-colors",
-                      date
-                        ? "border-gray-200 bg-white text-gray-700"
-                        : "border-gray-200 bg-gray-50/50 text-gray-300",
-                      errors.date && "border-red-300",
-                    )}
-                  >
-                    <CalendarIcon size={14} className="text-gray-400" />
-                    {date ? format(date, "EEE, MMM d, yyyy") : "Pick a date"}
-                    <ChevronDown size={12} className="text-gray-300 ml-1" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(d) => {
-                      setDate(d);
-                      if (errors.date) setErrors((prev) => ({ ...prev, date: "" }));
-                    }}
-                    disabled={{ before: new Date() }}
-                  />
-                </PopoverContent>
-              </Popover>
-
-              {/* Time input */}
-              <div className="flex items-center gap-2 h-11 px-4 rounded-lg border border-gray-200 bg-white">
-                <input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="text-sm text-gray-700 bg-transparent outline-none"
-                />
-              </div>
-            </div>
-
-            {errors.date && <p className="text-xs text-red-400 mt-1.5">{errors.date}</p>}
-
-            {/* End date toggle */}
-            <div className="mt-4">
-              {!showEndDate ? (
-                <button
-                  type="button"
-                  onClick={() => setShowEndDate(true)}
-                  className="text-xs text-indigo-500 hover:text-indigo-600 font-medium transition-colors"
-                >
-                  + Add end time
-                </button>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 font-medium w-6">to</span>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className={cn(
-                          "flex items-center gap-2 h-11 px-4 rounded-lg border text-sm transition-colors",
-                          endDate
-                            ? "border-gray-200 bg-white text-gray-700"
-                            : "border-gray-200 bg-gray-50/50 text-gray-300",
-                        )}
-                      >
-                        <CalendarIcon size={14} className="text-gray-400" />
-                        {endDate ? format(endDate, "EEE, MMM d, yyyy") : "End date"}
-                        <ChevronDown size={12} className="text-gray-300 ml-1" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={endDate}
-                        onSelect={setEndDate}
-                        disabled={{ before: date ?? new Date() }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <div className="flex items-center gap-2 h-11 px-4 rounded-lg border border-gray-200 bg-white">
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="text-sm text-gray-700 bg-transparent outline-none"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowEndDate(false);
-                      setEndDate(undefined);
-                    }}
-                    className="p-1 rounded hover:bg-gray-100 transition-colors"
-                  >
-                    <X size={14} className="text-gray-400" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ── Location ─────────────────────────────────── */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <MapPin size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <span className="text-sm font-semibold text-gray-700">Where</span>
-            </div>
-
-            <Popover open={locationOpen} onOpenChange={setLocationOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
+      <div className="flex gap-[40px]">
+        {/* Timeline sidebar */}
+        <div className="w-[160px] flex-shrink-0">
+          <div className="sticky top-[20px] flex flex-col gap-[12px]">
+            {TIMELINE_SECTIONS.map(({ id, label, color }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setActiveSection(id);
+                  document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="flex items-center gap-[10px] text-left"
+              >
+                <div
                   className={cn(
-                    "flex items-center justify-between w-full h-11 px-4 rounded-lg border text-sm transition-colors text-left",
-                    locationId
-                      ? "border-gray-200 bg-white text-gray-700"
-                      : "border-gray-200 bg-gray-50/50 text-gray-300",
-                    errors.location && "border-red-300",
+                    "w-[14px] h-[14px] rounded-full transition-colors flex-shrink-0",
+                    activeSection === id ? color : "bg-forum-medium-gray",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[13px] font-dm-sans transition-colors",
+                    activeSection === id ? "text-forum-cerulean font-bold" : "text-forum-dark-gray",
                   )}
                 >
-                  <span className="flex items-center gap-2">
-                    <MapPin size={14} className="text-gray-400" />
-                    {selectedLocationName || "Select a campus location"}
-                  </span>
-                  <ChevronDown size={14} className="text-gray-300" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                <div className="p-2 border-b border-gray-100">
-                  <Input
-                    placeholder="Search locations..."
-                    value={locationSearch}
-                    onChange={(e) => setLocationSearch(e.target.value)}
-                    className="h-9 border-0 shadow-none focus-visible:ring-0 bg-gray-50 text-sm"
-                  />
-                </div>
-                <div className="max-h-52 overflow-y-auto p-1">
-                  {filteredLocations.map((loc) => (
-                    <button
-                      key={loc.id}
-                      type="button"
-                      onClick={() => {
-                        setLocationId(loc.id);
-                        setLocationOpen(false);
-                        setLocationSearch("");
-                        if (errors.location) setErrors((prev) => ({ ...prev, location: "" }));
-                      }}
-                      className={cn(
-                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                        locationId === loc.id
-                          ? "bg-indigo-50 text-indigo-700"
-                          : "text-gray-600 hover:bg-gray-50",
-                      )}
-                    >
-                      <span className="font-medium">{loc.name}</span>
-                      <span className="text-xs text-gray-400 ml-2">{loc.category}</span>
-                    </button>
-                  ))}
-                  {filteredLocations.length === 0 && (
-                    <p className="text-xs text-gray-400 text-center py-4">No locations found</p>
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
-            {errors.location && <p className="text-xs text-red-400 mt-1.5">{errors.location}</p>}
+                  {label}
+                </span>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* ── Tags ──────────────────────────────────────── */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <Sparkles size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <div>
-                <span className="text-sm font-semibold text-gray-700">Categories</span>
-                <p className="text-xs text-gray-400 mt-0.5">Select all that apply</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-              {EVENT_TAGS.map(({ id, label, emoji }) => {
-                const selected = tags.includes(id);
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      toggleTag(id);
-                      if (errors.tags) setErrors((prev) => ({ ...prev, tags: "" }));
-                    }}
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all text-center",
-                      selected
-                        ? "border-indigo-400 bg-indigo-50 shadow-sm shadow-indigo-100"
-                        : "border-gray-100 hover:border-gray-200 bg-gray-50/30",
-                    )}
-                  >
-                    <span className="text-lg">{emoji}</span>
-                    <span
-                      className={cn(
-                        "text-[10px] font-medium leading-tight",
-                        selected ? "text-indigo-700" : "text-gray-500",
-                      )}
-                    >
-                      {label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            {errors.tags && <p className="text-xs text-red-400 mt-2">{errors.tags}</p>}
-          </div>
-
-          {/* ── Flyer Upload ──────────────────────────────── */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <ImagePlus size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <div>
-                <span className="text-sm font-semibold text-gray-700">Flyer</span>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Optional - JPEG, PNG, or WebP up to 5MB
-                </p>
-              </div>
-            </div>
-
+        {/* Form body — single continuous flow */}
+        <div className="flex-1 min-w-0">
+          {/* ── Cover Image ── */}
+          <div id="section-cover" className="mb-[30px]">
             {flyerPreview ? (
-              <div className="relative rounded-xl overflow-hidden border border-gray-100 inline-block">
+              <div className="relative rounded-[10px] overflow-hidden border border-forum-medium-gray mb-[20px]">
                 <img
                   src={flyerPreview}
-                  alt="Flyer preview"
-                  className="max-h-56 w-auto object-contain"
+                  alt="Cover preview"
+                  className="w-full h-[280px] object-cover"
                 />
                 <button
                   type="button"
@@ -519,16 +294,13 @@ export function CreateEventForm({ locations, userOrgs }: CreateEventFormProps) {
                     setFlyerPreview(null);
                     setFlyerUrl(null);
                   }}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  className="absolute top-3 right-3 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70"
                 >
-                  <X size={12} />
+                  <X size={14} />
                 </button>
                 {isUploading && (
                   <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Upload size={14} className="animate-bounce" />
-                      Uploading...
-                    </div>
+                    <Upload size={18} className="animate-bounce text-forum-dark-gray" />
                   </div>
                 )}
               </div>
@@ -538,22 +310,14 @@ export function CreateEventForm({ locations, userOrgs }: CreateEventFormProps) {
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
-                className="w-full h-36 rounded-xl border-2 border-dashed border-gray-200 hover:border-indigo-300 bg-gray-50/30 hover:bg-indigo-50/30 transition-colors flex flex-col items-center justify-center gap-2 group cursor-pointer"
+                className="w-full h-[280px] rounded-[10px] bg-forum-turquoise/15 border-2 border-dashed border-forum-turquoise/40 flex items-end justify-end p-[20px] cursor-pointer hover:bg-forum-turquoise/20 transition-colors mb-[20px]"
               >
-                <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
-                  <ImagePlus
-                    size={18}
-                    className="text-gray-400 group-hover:text-indigo-500 transition-colors"
-                  />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-gray-500 group-hover:text-indigo-600 font-medium transition-colors">
-                    Drop an image or click to upload
-                  </p>
-                </div>
+                <span className="flex items-center gap-[6px] text-[13px] font-bold font-dm-sans text-forum-cerulean">
+                  <Pencil size={13} />
+                  Add Cover Image
+                </span>
               </button>
             )}
-
             <input
               ref={fileInputRef}
               type="file"
@@ -566,88 +330,443 @@ export function CreateEventForm({ locations, userOrgs }: CreateEventFormProps) {
             />
           </div>
 
-          {/* ── External Link ─────────────────────────────── */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <Link2 size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <div>
-                <span className="text-sm font-semibold text-gray-700">External Link</span>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Optional - registration page or more info
-                </p>
+          {/* Cover presets — shown when no flyer is uploaded */}
+          {!flyerPreview && (
+            <div className="mb-[20px]">
+              <CoverPresetsPicker selected={coverPreset} onSelect={(id) => setCoverPreset(id)} />
+            </div>
+          )}
+
+          {/* ── Event Title ── */}
+          <div className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              Event Title *
+            </span>
+            <div className="flex items-center border-b-2 border-forum-medium-gray pb-[8px]">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
+                }}
+                placeholder="Super Interesting Event Title"
+                className={cn(
+                  "flex-1 text-[32px] font-serif font-bold text-black placeholder:text-forum-placeholder/40 outline-none",
+                  errors.title && "placeholder:text-red-300",
+                )}
+              />
+              <Pencil size={16} className="text-forum-cerulean flex-shrink-0 ml-2" />
+            </div>
+            {errors.title && <p className="text-[11px] text-red-400 mt-1">{errors.title}</p>}
+          </div>
+
+          {/* ── Affiliate Organizations ── */}
+          {userOrgs.length > 0 && (
+            <div className="mb-[30px]">
+              <span className="text-[12px] font-bold text-forum-dark-gray block mb-[8px]">
+                Affiliate Organizations
+              </span>
+              <div className="flex items-center gap-[10px] flex-wrap">
+                {selectedOrgId !== PERSONAL_ORG_VALUE && (
+                  <div className="flex items-center gap-[8px] border border-forum-medium-gray rounded-[6px] px-[10px] py-[6px]">
+                    <div className="w-[24px] h-[24px] rounded-[4px] bg-forum-cerulean/20 flex items-center justify-center">
+                      <div className="w-[14px] h-[14px] bg-forum-cerulean rounded-[2px]" />
+                    </div>
+                    <span className="text-[12px] font-bold font-dm-sans text-black">
+                      {userOrgs.find((o) => o.id === selectedOrgId)?.name}
+                    </span>
+                  </div>
+                )}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex items-center gap-[4px] text-[12px] font-dm-sans text-forum-cerulean hover:underline"
+                    >
+                      <Plus size={14} />
+                      Affiliate Organization
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[240px] p-1" align="start">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrgId(PERSONAL_ORG_VALUE)}
+                      className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-50"
+                    >
+                      None (Personal)
+                    </button>
+                    {userOrgs.map((org) => (
+                      <button
+                        key={org.id}
+                        type="button"
+                        onClick={() => setSelectedOrgId(org.id)}
+                        className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-forum-turquoise/10"
+                      >
+                        {org.name}
+                      </button>
+                    ))}
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
-            <div className="relative">
-              <ExternalLink
-                size={14}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <Input
-                value={externalLink}
-                onChange={(e) => setExternalLink(e.target.value)}
-                placeholder="https://"
-                className="h-11 pl-10 border-gray-200 bg-gray-50/50 placeholder:text-gray-300 focus:bg-white transition-colors"
-              />
+          )}
+
+          {/* ── Event Description ── */}
+          <div id="section-details" className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              Event Description *
+            </span>
+            <Textarea
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) setErrors((prev) => ({ ...prev, description: "" }));
+              }}
+              placeholder="Tell people what to expect..."
+              rows={8}
+              className={cn(
+                "border border-forum-medium-gray rounded-[8px] text-[14px] font-dm-sans placeholder:text-forum-placeholder resize-none focus:border-forum-cerulean",
+                errors.description && "border-red-400",
+              )}
+            />
+            {errors.description && (
+              <p className="text-[11px] text-red-400 mt-1">{errors.description}</p>
+            )}
+          </div>
+
+          {/* ── Date / Start / End ── */}
+          <div id="section-when-where" className="mb-[30px]">
+            <div className="flex items-end gap-[20px]">
+              <div>
+                <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+                  Date *
+                </span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex items-center gap-2 h-[40px] px-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans",
+                        date ? "text-black" : "text-forum-placeholder",
+                        errors.date && "border-red-400",
+                      )}
+                    >
+                      <CalendarIcon size={14} />
+                      {date ? format(date, "MM/dd/yyyy") : "mm/dd/yyyy"}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={(d) => {
+                        setDate(d);
+                        if (errors.date) setErrors((prev) => ({ ...prev, date: "" }));
+                      }}
+                      disabled={{ before: new Date() }}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {errors.date && <p className="text-[11px] text-red-400 mt-1">{errors.date}</p>}
+              </div>
+              <div>
+                <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+                  Start *
+                </span>
+                <input
+                  type="text"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="h-[40px] w-[110px] px-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans text-black outline-none focus:border-forum-cerulean"
+                />
+              </div>
+              <span className="text-[14px] text-forum-light-gray mb-[10px]">—</span>
+              <div>
+                <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">End *</span>
+                <input
+                  type="text"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="h-[40px] w-[110px] px-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans text-forum-placeholder outline-none focus:border-forum-cerulean"
+                />
+              </div>
             </div>
           </div>
 
-          {/* ── Visibility ────────────────────────────────── */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {isPublic ? (
-                  <Globe size={16} className="text-indigo-400" strokeWidth={2} />
-                ) : (
-                  <Lock size={16} className="text-amber-500" strokeWidth={2} />
+          {/* ── Location ── */}
+          <div className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              Location *
+            </span>
+            <div className="flex gap-[20px]">
+              <div className="flex-1">
+                <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+                  <PopoverTrigger asChild>
+                    <div className="relative">
+                      <Search
+                        size={14}
+                        className="absolute left-[12px] top-1/2 -translate-y-1/2 text-forum-placeholder"
+                      />
+                      <input
+                        type="text"
+                        value={locationSearch || selectedLocationName}
+                        onChange={(e) => {
+                          setLocationSearch(e.target.value);
+                          setLocationOpen(true);
+                        }}
+                        onFocus={() => setLocationOpen(true)}
+                        placeholder="Search by keyword or address"
+                        className={cn(
+                          "w-full h-[40px] pl-[34px] pr-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans outline-none focus:border-forum-cerulean",
+                          errors.location && "border-red-400",
+                        )}
+                      />
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-[var(--radix-popover-trigger-width)] p-0"
+                    align="start"
+                  >
+                    <div className="max-h-52 overflow-y-auto p-1">
+                      {filteredLocations.map((loc) => (
+                        <button
+                          key={loc.id}
+                          type="button"
+                          onClick={() => {
+                            setLocationId(loc.id);
+                            setLocationSearch("");
+                            setLocationOpen(false);
+                            if (errors.location) setErrors((prev) => ({ ...prev, location: "" }));
+                          }}
+                          className={cn(
+                            "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                            locationId === loc.id
+                              ? "bg-forum-turquoise/20 text-black"
+                              : "text-forum-dark-gray hover:bg-gray-50",
+                          )}
+                        >
+                          {loc.name}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {errors.location && (
+                  <p className="text-[11px] text-red-400 mt-1">{errors.location}</p>
                 )}
-                <div>
-                  <span className="text-sm font-semibold text-gray-700">
-                    {isPublic ? "Public Event" : "Private Event"}
-                  </span>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {isPublic
-                      ? "Anyone on campus can discover this event"
-                      : "Only people with the link can see this event"}
-                  </p>
+              </div>
+              {/* Map placeholder */}
+              <div className="w-[280px] h-[200px] rounded-[10px] bg-forum-turquoise/10 flex items-center justify-center text-[12px] text-forum-light-gray flex-shrink-0">
+                Select Location on map
+              </div>
+            </div>
+          </div>
+
+          {/* ── Upload Files ── */}
+          <div id="section-uploads" className="mb-[30px]">
+            <div className="flex items-center gap-[6px] mb-[10px]">
+              <Plus size={14} className="text-forum-cerulean" />
+              <span className="text-[13px] font-dm-sans text-forum-cerulean font-bold">
+                Upload Files
+              </span>
+            </div>
+            <div className="flex gap-[12px] flex-wrap">
+              {uploadedFiles.map((file, i) => (
+                <div
+                  key={file.name ?? `file-${i}`}
+                  className="relative w-[160px] h-[120px] rounded-[8px] border border-forum-medium-gray overflow-hidden"
+                >
+                  {file.type === "image" ? (
+                    <img
+                      src={file.preview}
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                      <FileText size={24} className="text-forum-light-gray" />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setUploadedFiles((prev) => prev.filter((_, j) => j !== i))}
+                    className="absolute top-2 right-2 p-1 rounded-full bg-forum-cerulean text-white"
+                  >
+                    <Trash2 size={10} />
+                  </button>
+                  <div className="absolute bottom-0 inset-x-0 bg-white/90 px-[8px] py-[4px]">
+                    <p className="text-[9px] font-dm-sans text-forum-dark-gray truncate">
+                      {file.name}
+                    </p>
+                  </div>
                 </div>
+              ))}
+              <label className="w-[160px] h-[120px] rounded-[8px] border-2 border-dashed border-forum-medium-gray flex items-center justify-center cursor-pointer hover:border-forum-cerulean transition-colors">
+                <Plus size={20} className="text-forum-light-gray" />
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file);
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* ── Add Tags ── */}
+          <div className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              Add Tags *
+            </span>
+            <div className="flex items-center gap-[10px] mb-[10px]">
+              <div className="relative flex-1">
+                <Search
+                  size={14}
+                  className="absolute left-[12px] top-1/2 -translate-y-1/2 text-forum-placeholder"
+                />
+                <input
+                  type="text"
+                  value={tagSearch}
+                  onChange={(e) => setTagSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && tagSearch.trim()) {
+                      addTag(tagSearch.trim().toLowerCase());
+                    }
+                  }}
+                  placeholder="Free food, tech talk, volunteering"
+                  className="w-full h-[40px] pl-[34px] pr-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans outline-none focus:border-forum-cerulean"
+                />
               </div>
               <button
                 type="button"
-                onClick={() => setIsPublic(!isPublic)}
-                className={cn(
-                  "relative w-11 h-6 rounded-full transition-colors",
-                  isPublic ? "bg-indigo-500" : "bg-gray-300",
-                )}
+                className="h-[40px] px-[16px] rounded-[8px] border border-forum-cerulean text-forum-cerulean text-[12px] font-bold font-dm-sans hover:bg-forum-cerulean/5 transition-colors"
               >
-                <div
-                  className={cn(
-                    "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform",
-                    isPublic ? "translate-x-5.5" : "translate-x-0.5",
-                  )}
+                Keyword
+              </button>
+              <button
+                type="button"
+                className="h-[40px] px-[16px] rounded-[8px] border border-forum-cerulean text-forum-cerulean text-[12px] font-bold font-dm-sans hover:bg-forum-cerulean/5 transition-colors"
+              >
+                Organization
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-[6px]">
+              {tags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="flex items-center gap-[4px] h-[28px] px-[12px] rounded-[14px] bg-forum-cerulean text-white text-[11px] font-bold font-dm-sans"
+                >
+                  {tag}
+                  <X size={11} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── External Links ── */}
+          <div className="mb-[30px]">
+            <button
+              type="button"
+              className="flex items-center gap-[6px] mb-[10px] text-[13px] font-dm-sans text-forum-cerulean font-bold"
+            >
+              <Plus size={14} />
+              Add External Links
+            </button>
+            {externalLink ? (
+              <div className="flex items-center gap-[8px]">
+                <Link2 size={14} className="text-forum-cerulean" />
+                <a
+                  href={externalLink}
+                  className="text-[13px] font-dm-sans text-forum-cerulean underline"
+                >
+                  {externalLink}
+                </a>
+                <button type="button" onClick={() => setExternalLink("")}>
+                  <X size={12} className="text-forum-light-gray" />
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <Link2
+                  size={14}
+                  className="absolute left-[12px] top-1/2 -translate-y-1/2 text-forum-placeholder"
                 />
+                <input
+                  type="text"
+                  value={externalLink}
+                  onChange={(e) => setExternalLink(e.target.value)}
+                  placeholder="www.registerforsomething.com"
+                  className="w-full h-[40px] pl-[34px] pr-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans outline-none focus:border-forum-cerulean"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ── Bottom actions ── */}
+          <div className="flex items-center justify-between pt-[20px] border-t border-forum-medium-gray mb-[40px]">
+            <div className="flex items-center gap-[16px]">
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="flex items-center gap-[4px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider"
+              >
+                <ArrowUp size={12} />
+                BACK TO TOP
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowPreview(true)}
+                className="flex items-center gap-[5px] px-[14px] py-[6px] border border-forum-medium-gray rounded-[20px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider hover:border-forum-dark-gray transition-colors"
+              >
+                <Eye size={12} />
+                PREVIEW
+              </button>
+            </div>
+            <div className="flex items-center gap-[10px]">
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={isPending}
+                className="px-[16px] py-[8px] border border-forum-medium-gray rounded-[6px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider hover:border-forum-dark-gray disabled:opacity-50 transition-colors"
+              >
+                {isPending ? "SAVING..." : "SAVE AS DRAFT"}
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isPending}
+                className="px-[24px] py-[10px] bg-forum-cerulean text-white text-[12px] font-bold font-dm-sans rounded-[6px] tracking-wider hover:opacity-90 disabled:opacity-50 transition-all"
+              >
+                {isPending ? "PUBLISHING..." : "PUBLISH"}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Submit ──────────────────────────────────────── */}
-      <div className="flex items-center justify-end gap-3 pb-8">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={isPending}
-          className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-8 h-11 font-semibold shadow-sm shadow-indigo-200 transition-all"
-        >
-          {isPending ? "Publishing..." : "Publish Event"}
-        </Button>
-      </div>
+      {/* Preview Modal */}
+      <EventPreviewModal
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        title={title}
+        description={description}
+        datetime={date ? format(date, "EEE, MMM d, yyyy") : ""}
+        endTime={endTime}
+        location={locations.find((l) => l.id === locationId)?.name ?? ""}
+        tags={tags}
+        orgName={
+          selectedOrgId !== PERSONAL_ORG_VALUE
+            ? userOrgs.find((o) => o.id === selectedOrgId)?.name
+            : undefined
+        }
+        flyerPreview={flyerPreview}
+        coverPreset={coverPreset}
+      />
     </div>
   );
 }

@@ -1,12 +1,25 @@
 import type { Metadata } from "next";
-import { Inter, Unbounded } from "next/font/google";
+import { DM_Mono, DM_Sans, Inter, Source_Serif_4 } from "next/font/google";
 import { Toaster } from "~/components/ui/sonner";
 import "./globals.css";
 
-const unbounded = Unbounded({
+const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-unbounded",
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-source-serif",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-dm-sans",
+});
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
 });
 
 const inter = Inter({
@@ -15,8 +28,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The Forum",
-  description: "A community platform",
+  title: "Forum — Princeton Campus Events",
+  description: "Your social life, curated. Discover campus events personalized for you.",
 };
 
 export default function RootLayout({
@@ -26,7 +39,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${unbounded.variable} ${inter.variable}`}>
+      <body
+        className={`${sourceSerif.variable} ${dmSans.variable} ${dmMono.variable} ${inter.variable} font-dm-sans antialiased`}
+      >
         {children}
         <Toaster />
       </body>

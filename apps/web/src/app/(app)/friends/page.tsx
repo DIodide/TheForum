@@ -5,11 +5,8 @@ export default async function FriendsPage() {
   const [friends, pending] = await Promise.all([getFriends(), getPendingRequests()]);
 
   return (
-    <div className="px-8 py-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Friends</h1>
-        <p className="text-sm text-gray-400 mt-1">Find people. See who&apos;s going where.</p>
-      </div>
+    <div className="px-[40px] py-[20px] max-w-4xl mx-auto">
+      <h1 className="font-serif text-[60px] text-black leading-none mb-[24px]">My Friends</h1>
       <FriendsClient initialFriends={friends} initialPending={pending} />
     </div>
   );

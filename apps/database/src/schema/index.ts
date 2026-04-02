@@ -71,6 +71,19 @@ export const orgCategoryEnum = pgEnum("org_category", [
 
 export const orgRoleEnum = pgEnum("org_role", ["owner", "officer", "member"]);
 
+export const eventStatusEnum = pgEnum("event_status", ["draft", "published"]);
+
+export const interactionTypeEnum = pgEnum("interaction_type", [
+  "view",
+  "click",
+  "rsvp",
+  "save",
+  "share",
+  "hide",
+]);
+
+export const itemTypeEnum = pgEnum("item_type", ["event", "organization"]);
+
 export const locationCategoryEnum = pgEnum("location_category", [
   "academic",
   "residential",
@@ -185,8 +198,10 @@ export const events = pgTable("events", {
     .notNull()
     .references(() => users.id),
   flyerUrl: text("flyer_url"),
+  coverPreset: varchar("cover_preset", { length: 50 }),
   externalLink: text("external_link"),
   isPublic: boolean("is_public").default(true).notNull(),
+  status: eventStatusEnum("status").default("published").notNull(),
   source: varchar("source", { length: 20 }).default("manual").notNull(),
   sourceMessageId: varchar("source_message_id", { length: 255 }).unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -289,6 +304,53 @@ export const pipelineLogs = pgTable("pipeline_logs", {
     onDelete: "set null",
   }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ── Listserv email archive ───────────────────────────────
+
+export const listservEmails = pgTable("listserv_emails", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  messageId: varchar("message_id", { length: 255 }).notNull().unique(),
+  listserv: varchar("listserv", { length: 100 }).notNull(),
+  subject: text("subject").notNull(),
+  authorName: varchar("author_name", { length: 255 }),
+  authorEmail: varchar("author_email", { length: 255 }),
+  date: timestamp("date", { withTimezone: true }),
+  bodyText: text("body_text"),
+  bodyHtml: text("body_html"),
+  isHoagiemail: boolean("is_hoagiemail").default(false).notNull(),
+  hoagiemailSenderName: varchar("hoagiemail_sender_name", { length: 255 }),
+  hoagiemailSenderEmail: varchar("hoagiemail_sender_email", { length: 255 }),
+  links: jsonb("links").default([]),
+  images: jsonb("images").default([]),
+  attachments: jsonb("attachments").default([]),
+  listservUrl: text("listserv_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ── Recommendation / ML tables ────────────────────────────
+
+export const interactions = pgTable("interactions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  itemId: uuid("item_id").notNull(),
+  itemType: itemTypeEnum("item_type").default("event").notNull(),
+  interactionType: interactionTypeEnum("interaction_type").notNull(),
+  interactionValue: doublePrecision("interaction_value").notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userPreferenceVectors = pgTable("user_preference_vectors", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tagWeights: jsonb("tag_weights").default({}).notNull(),
+  latentVector: doublePrecision("latent_vector").array(),
+  interactionCount: doublePrecision("interaction_count").default(0).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // ── Relations ─────────────────────────────────────────────
@@ -433,6 +495,20 @@ export const pipelineLogsRelations = relations(pipelineLogs, ({ one }) => ({
   }),
 }));
 
+export const interactionsRelations = relations(interactions, ({ one }) => ({
+  user: one(users, {
+    fields: [interactions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userPreferenceVectorsRelations = relations(userPreferenceVectors, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferenceVectors.userId],
+    references: [users.id],
+  }),
+}));
+
 // ── Type exports ──────────────────────────────────────────
 
 export type User = typeof users.$inferSelect;
@@ -448,3 +524,8 @@ export type ListservConfig = typeof listservConfigs.$inferSelect;
 export type NewListservConfig = typeof listservConfigs.$inferInsert;
 export type PipelineLog = typeof pipelineLogs.$inferSelect;
 export type NewPipelineLog = typeof pipelineLogs.$inferInsert;
+export type Interaction = typeof interactions.$inferSelect;
+export type NewInteraction = typeof interactions.$inferInsert;
+export type UserPreferenceVector = typeof userPreferenceVectors.$inferSelect;
+export type ListservEmail = typeof listservEmails.$inferSelect;
+export type NewListservEmail = typeof listservEmails.$inferInsert;

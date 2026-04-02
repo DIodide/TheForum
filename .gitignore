@@ -39,6 +39,10 @@ dist/
 # ---- Docker ----
 # (volumes are managed by Docker, not git)
 
+# ---- Scraper data ----
+apps/listserv-scraper/data/
+scripts/data/
+
 # ---- OS ----
 .DS_Store
 Thumbs.db

@@ -80,8 +80,8 @@ export async function getFeedEvents(params?: {
     ...reverseFriendRows.map((f) => f.friendId),
   ];
 
-  // Build base query conditions
-  const conditions = [gt(events.datetime, new Date())];
+  // Build base query conditions — only show published events in the feed
+  const conditions = [gt(events.datetime, new Date()), eq(events.status, "published")];
 
   if (params?.search) {
     const searchCondition = or(
@@ -536,8 +536,10 @@ export async function createEvent(data: {
   orgId?: string;
   tags: string[];
   flyerUrl?: string;
+  coverPreset?: string;
   externalLink?: string;
   isPublic?: boolean;
+  status?: "draft" | "published";
 }): Promise<{ id: string }> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -573,8 +575,10 @@ export async function createEvent(data: {
       orgId: data.orgId ?? null,
       creatorId,
       flyerUrl: data.flyerUrl ?? null,
+      coverPreset: data.coverPreset ?? null,
       externalLink: data.externalLink ?? null,
       isPublic: data.isPublic ?? true,
+      status: data.status ?? "published",
     })
     .returning({ id: events.id });
 
@@ -590,8 +594,8 @@ export async function createEvent(data: {
     );
   }
 
-  // Notify org followers about new event (exclude creator)
-  if (data.orgId) {
+  // Notify org followers about new event (exclude creator) — only for published events
+  if (data.orgId && (data.status ?? "published") === "published") {
     const followers = await db
       .select({ userId: orgFollowers.userId })
       .from(orgFollowers)

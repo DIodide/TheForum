@@ -1,4 +1,5 @@
 import { getFeedEvents, getFriendsEvents, getSavedEvents } from "~/actions/events";
+import { auth } from "~/auth";
 import { ExploreClient } from "./explore-client";
 
 export default async function ExplorePage({
@@ -8,10 +9,11 @@ export default async function ExplorePage({
 }) {
   const { search } = await searchParams;
 
-  const [feedResult, savedEvents, friendsEvents] = await Promise.all([
+  const [feedResult, savedEvents, friendsEvents, session] = await Promise.all([
     getFeedEvents(search ? { search } : undefined),
     getSavedEvents(),
     getFriendsEvents(),
+    auth(),
   ]);
 
   return (
@@ -21,6 +23,8 @@ export default async function ExplorePage({
       savedEvents={savedEvents}
       friendsEvents={friendsEvents}
       initialSearch={search ?? ""}
+      userName={session?.user?.name ?? "there"}
+      userAvatarUrl={session?.user?.image ?? null}
     />
   );
 }

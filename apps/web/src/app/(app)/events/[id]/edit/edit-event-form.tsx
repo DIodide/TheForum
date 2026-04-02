@@ -2,16 +2,18 @@
 
 import { format } from "date-fns";
 import {
+  ArrowUp,
   CalendarIcon,
-  ChevronDown,
-  Clock,
   ExternalLink,
+  Eye,
   Globe,
   ImagePlus,
   Link2,
   Lock,
   MapPin,
-  Sparkles,
+  Pencil,
+  Plus,
+  Search,
   Upload,
   X,
 } from "lucide-react";
@@ -19,33 +21,17 @@ import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState, useTransition } from "react";
 import { type EventDetail, updateEvent } from "~/actions/events";
 import { getPresignedUploadUrl } from "~/actions/upload";
-import { Button } from "~/components/ui/button";
 import { Calendar } from "~/components/ui/calendar";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { Textarea } from "~/components/ui/textarea";
 import { cn } from "~/lib/utils";
 
-const EVENT_TAGS = [
-  { id: "free-food", label: "Free Food", emoji: "🍕" },
-  { id: "workshop", label: "Workshop", emoji: "🔧" },
-  { id: "performance", label: "Performance", emoji: "🎭" },
-  { id: "speaker", label: "Speaker", emoji: "🎤" },
-  { id: "social", label: "Social", emoji: "🎉" },
-  { id: "career", label: "Career", emoji: "💼" },
-  { id: "sports", label: "Sports", emoji: "⚽" },
-  { id: "music", label: "Music", emoji: "🎵" },
-  { id: "art", label: "Art", emoji: "🎨" },
-  { id: "academic", label: "Academic", emoji: "📚" },
-  { id: "cultural", label: "Cultural", emoji: "🌍" },
-  { id: "community-service", label: "Service", emoji: "🤝" },
-  { id: "religious", label: "Religious", emoji: "🕊️" },
-  { id: "political", label: "Political", emoji: "🏛️" },
-  { id: "tech", label: "Tech", emoji: "💻" },
-  { id: "gaming", label: "Gaming", emoji: "🎮" },
-  { id: "outdoor", label: "Outdoor", emoji: "🌲" },
-  { id: "wellness", label: "Wellness", emoji: "🧘" },
+const TIMELINE_SECTIONS = [
+  { id: "cover", label: "Cover & Title", color: "bg-forum-cerulean" },
+  { id: "details", label: "Details & Description", color: "bg-forum-coral" },
+  { id: "when-where", label: "When & Where", color: "bg-forum-coral" },
+  { id: "uploads", label: "Uploads & Links", color: "bg-forum-coral" },
 ];
 
 interface EditEventFormProps {
@@ -61,25 +47,24 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeSection, setActiveSection] = useState("cover");
 
-  // Pre-fill from existing event
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
   const [date, setDate] = useState<Date | undefined>(event.datetime);
-  const [time, setTime] = useState(
+  const [startTime, setStartTime] = useState(
     `${pad(event.datetime.getHours())}:${pad(event.datetime.getMinutes())}`,
   );
-  const [showEndDate, setShowEndDate] = useState(!!event.endDatetime);
-  const [endDate, setEndDate] = useState<Date | undefined>(event.endDatetime ?? undefined);
   const [endTime, setEndTime] = useState(
     event.endDatetime
       ? `${pad(event.endDatetime.getHours())}:${pad(event.endDatetime.getMinutes())}`
-      : "20:00",
+      : "",
   );
   const [locationId, setLocationId] = useState(event.locationId);
   const [locationSearch, setLocationSearch] = useState("");
   const [locationOpen, setLocationOpen] = useState(false);
   const [tags, setTags] = useState<string[]>(event.tags);
+  const [tagSearch, setTagSearch] = useState("");
   const [flyerUrl, setFlyerUrl] = useState<string | null>(event.flyerUrl);
   const [flyerPreview, setFlyerPreview] = useState<string | null>(event.flyerUrl);
   const [isUploading, setIsUploading] = useState(false);
@@ -87,14 +72,16 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
   const [isPublic, setIsPublic] = useState(event.isPublic);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const filteredLocations = locations.filter((loc) =>
-    loc.name.toLowerCase().includes(locationSearch.toLowerCase()),
+  const filteredLocations = locations.filter(
+    (loc) => !locationSearch || loc.name.toLowerCase().includes(locationSearch.toLowerCase()),
   );
   const selectedLocationName = locations.find((l) => l.id === locationId)?.name ?? "";
 
-  const toggleTag = (id: string) => {
-    setTags((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+  const addTag = (tag: string) => {
+    if (tag && !tags.includes(tag)) setTags((prev) => [...prev, tag]);
+    setTagSearch("");
   };
+  const removeTag = (tag: string) => setTags((prev) => prev.filter((t) => t !== tag));
 
   const handleImageUpload = useCallback(
     async (file: File) => {
@@ -104,20 +91,17 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
         const reader = new FileReader();
         reader.onload = (e) => setFlyerPreview(e.target?.result as string);
         reader.readAsDataURL(file);
-
         const { uploadUrl, publicUrl } = await getPresignedUploadUrl({
           filename: file.name,
           contentType: file.type,
           size: file.size,
           folder: "event-flyers",
         });
-
         await fetch(uploadUrl, {
           method: "PUT",
           body: file,
           headers: { "Content-Type": file.type },
         });
-
         setFlyerUrl(publicUrl);
       } catch (err) {
         console.error("Upload failed:", err);
@@ -133,9 +117,7 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
     (e: React.DragEvent) => {
       e.preventDefault();
       const file = e.dataTransfer.files[0];
-      if (file?.type.startsWith("image/")) {
-        handleImageUpload(file);
-      }
+      if (file?.type.startsWith("image/")) handleImageUpload(file);
     },
     [handleImageUpload],
   );
@@ -146,22 +128,20 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
     if (!description.trim()) newErrors.description = "Description is required";
     if (!date) newErrors.date = "Date is required";
     if (!locationId) newErrors.location = "Location is required";
-    if (tags.length === 0) newErrors.tags = "Select at least one tag";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     if (!validate()) return;
-
     startTransition(async () => {
       const datetime = new Date(date as Date);
-      const [hours, minutes] = time.split(":").map(Number);
-      datetime.setHours(hours ?? 0, minutes ?? 0);
+      const [h, m] = startTime.split(":").map(Number);
+      datetime.setHours(h ?? 0, m ?? 0);
 
       let endDatetime: string | undefined;
-      if (showEndDate && endDate) {
-        const end = new Date(endDate);
+      if (endTime) {
+        const end = new Date(date as Date);
         const [eh, em] = endTime.split(":").map(Number);
         end.setHours(eh ?? 0, em ?? 0);
         endDatetime = end.toISOString();
@@ -178,291 +158,83 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
         externalLink: externalLink.trim() || undefined,
         isPublic,
       });
-
       router.push(`/events/${event.id}`);
     });
   };
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-8 space-y-8">
-          {/* Title */}
-          <div>
-            <Label htmlFor="title" className="text-sm font-semibold text-gray-700 mb-2 block">
-              Event Title
-            </Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
-              }}
-              placeholder="What's happening?"
-              maxLength={200}
-              className={cn(
-                "h-12 text-base border-gray-200 bg-gray-50/50 placeholder:text-gray-300 focus:bg-white transition-colors",
-                errors.title && "border-red-300 focus-visible:ring-red-200",
-              )}
-            />
-            <div className="flex justify-between mt-1.5">
-              {errors.title ? <p className="text-xs text-red-400">{errors.title}</p> : <span />}
-              <span className="text-xs text-gray-300">{title.length}/200</span>
-            </div>
-          </div>
+    <div className="px-[40px] py-[20px] max-w-[1100px] mx-auto">
+      {/* Top buttons */}
+      <div className="flex items-center justify-between mb-[30px] pr-[100px]">
+        <div className="flex items-center gap-[10px]">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-[16px] py-[8px] border border-forum-medium-gray rounded-[6px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider hover:border-forum-dark-gray transition-colors"
+          >
+            CANCEL
+          </button>
+          <button
+            type="button"
+            className="flex items-center gap-[5px] px-[16px] py-[8px] border border-forum-medium-gray rounded-[20px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider hover:border-forum-dark-gray transition-colors"
+          >
+            <Eye size={13} />
+            PREVIEW
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isPending}
+          className="px-[24px] py-[10px] bg-forum-cerulean text-white text-[12px] font-bold font-dm-sans rounded-[6px] tracking-wider hover:opacity-90 disabled:opacity-50 transition-all"
+        >
+          {isPending ? "SAVING..." : "SAVE CHANGES"}
+        </button>
+      </div>
 
-          {/* Description */}
-          <div>
-            <Label htmlFor="description" className="text-sm font-semibold text-gray-700 mb-2 block">
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                if (errors.description) setErrors((prev) => ({ ...prev, description: "" }));
-              }}
-              placeholder="Tell people what to expect..."
-              rows={4}
-              className={cn(
-                "text-base border-gray-200 bg-gray-50/50 placeholder:text-gray-300 focus:bg-white transition-colors resize-none",
-                errors.description && "border-red-300 focus-visible:ring-red-200",
-              )}
-            />
-            {errors.description && (
-              <p className="text-xs text-red-400 mt-1.5">{errors.description}</p>
-            )}
-          </div>
-
-          {/* Date & Time */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <Clock size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <span className="text-sm font-semibold text-gray-700">When</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-2 h-11 px-4 rounded-lg border text-sm transition-colors",
-                      date
-                        ? "border-gray-200 bg-white text-gray-700"
-                        : "border-gray-200 bg-gray-50/50 text-gray-300",
-                      errors.date && "border-red-300",
-                    )}
-                  >
-                    <CalendarIcon size={14} className="text-gray-400" />
-                    {date ? format(date, "EEE, MMM d, yyyy") : "Pick a date"}
-                    <ChevronDown size={12} className="text-gray-300 ml-1" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(d) => {
-                      setDate(d);
-                      if (errors.date) setErrors((prev) => ({ ...prev, date: "" }));
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-              <div className="flex items-center gap-2 h-11 px-4 rounded-lg border border-gray-200 bg-white">
-                <input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="text-sm text-gray-700 bg-transparent outline-none"
-                />
-              </div>
-            </div>
-            {errors.date && <p className="text-xs text-red-400 mt-1.5">{errors.date}</p>}
-            <div className="mt-4">
-              {!showEndDate ? (
-                <button
-                  type="button"
-                  onClick={() => setShowEndDate(true)}
-                  className="text-xs text-indigo-500 hover:text-indigo-600 font-medium transition-colors"
-                >
-                  + Add end time
-                </button>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 font-medium w-6">to</span>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className={cn(
-                          "flex items-center gap-2 h-11 px-4 rounded-lg border text-sm transition-colors",
-                          endDate
-                            ? "border-gray-200 bg-white text-gray-700"
-                            : "border-gray-200 bg-gray-50/50 text-gray-300",
-                        )}
-                      >
-                        <CalendarIcon size={14} className="text-gray-400" />
-                        {endDate ? format(endDate, "EEE, MMM d, yyyy") : "End date"}
-                        <ChevronDown size={12} className="text-gray-300 ml-1" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={endDate}
-                        onSelect={setEndDate}
-                        disabled={{ before: date ?? new Date() }}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <div className="flex items-center gap-2 h-11 px-4 rounded-lg border border-gray-200 bg-white">
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="text-sm text-gray-700 bg-transparent outline-none"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowEndDate(false);
-                      setEndDate(undefined);
-                    }}
-                    className="p-1 rounded hover:bg-gray-100 transition-colors"
-                  >
-                    <X size={14} className="text-gray-400" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Location */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <MapPin size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <span className="text-sm font-semibold text-gray-700">Where</span>
-            </div>
-            <Popover open={locationOpen} onOpenChange={setLocationOpen}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
+      <div className="flex gap-[40px]">
+        {/* Timeline sidebar */}
+        <div className="w-[160px] flex-shrink-0">
+          <div className="sticky top-[20px] flex flex-col gap-[12px]">
+            {TIMELINE_SECTIONS.map(({ id, label, color }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setActiveSection(id);
+                  document.getElementById(`edit-${id}`)?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="flex items-center gap-[10px] text-left"
+              >
+                <div
                   className={cn(
-                    "flex items-center justify-between w-full h-11 px-4 rounded-lg border text-sm transition-colors text-left",
-                    locationId
-                      ? "border-gray-200 bg-white text-gray-700"
-                      : "border-gray-200 bg-gray-50/50 text-gray-300",
-                    errors.location && "border-red-300",
+                    "w-[14px] h-[14px] rounded-full transition-colors flex-shrink-0",
+                    activeSection === id ? color : "bg-forum-medium-gray",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[13px] font-dm-sans transition-colors",
+                    activeSection === id ? "text-forum-cerulean font-bold" : "text-forum-dark-gray",
                   )}
                 >
-                  <span className="flex items-center gap-2">
-                    <MapPin size={14} className="text-gray-400" />
-                    {selectedLocationName || "Select a campus location"}
-                  </span>
-                  <ChevronDown size={14} className="text-gray-300" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                <div className="p-2 border-b border-gray-100">
-                  <Input
-                    placeholder="Search locations..."
-                    value={locationSearch}
-                    onChange={(e) => setLocationSearch(e.target.value)}
-                    className="h-9 border-0 shadow-none focus-visible:ring-0 bg-gray-50 text-sm"
-                  />
-                </div>
-                <div className="max-h-52 overflow-y-auto p-1">
-                  {filteredLocations.map((loc) => (
-                    <button
-                      key={loc.id}
-                      type="button"
-                      onClick={() => {
-                        setLocationId(loc.id);
-                        setLocationOpen(false);
-                        setLocationSearch("");
-                        if (errors.location) setErrors((prev) => ({ ...prev, location: "" }));
-                      }}
-                      className={cn(
-                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                        locationId === loc.id
-                          ? "bg-indigo-50 text-indigo-700"
-                          : "text-gray-600 hover:bg-gray-50",
-                      )}
-                    >
-                      <span className="font-medium">{loc.name}</span>
-                      <span className="text-xs text-gray-400 ml-2">{loc.category}</span>
-                    </button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-            {errors.location && <p className="text-xs text-red-400 mt-1.5">{errors.location}</p>}
+                  {label}
+                </span>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Tags */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <Sparkles size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <div>
-                <span className="text-sm font-semibold text-gray-700">Categories</span>
-                <p className="text-xs text-gray-400 mt-0.5">Select all that apply</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-              {EVENT_TAGS.map(({ id, label, emoji }) => {
-                const selected = tags.includes(id);
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      toggleTag(id);
-                      if (errors.tags) setErrors((prev) => ({ ...prev, tags: "" }));
-                    }}
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all text-center",
-                      selected
-                        ? "border-indigo-400 bg-indigo-50 shadow-sm shadow-indigo-100"
-                        : "border-gray-100 hover:border-gray-200 bg-gray-50/30",
-                    )}
-                  >
-                    <span className="text-lg">{emoji}</span>
-                    <span
-                      className={cn(
-                        "text-[10px] font-medium leading-tight",
-                        selected ? "text-indigo-700" : "text-gray-500",
-                      )}
-                    >
-                      {label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            {errors.tags && <p className="text-xs text-red-400 mt-2">{errors.tags}</p>}
-          </div>
-
-          {/* Flyer Upload */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <ImagePlus size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
-              <div>
-                <span className="text-sm font-semibold text-gray-700">Flyer</span>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Optional - JPEG, PNG, or WebP up to 5MB
-                </p>
-              </div>
-            </div>
+        {/* Form body */}
+        <div className="flex-1 min-w-0">
+          {/* Cover Image */}
+          <div id="edit-cover" className="mb-[30px]">
             {flyerPreview ? (
-              <div className="relative rounded-xl overflow-hidden border border-gray-100 inline-block">
+              <div className="relative rounded-[10px] overflow-hidden border border-forum-medium-gray mb-[20px]">
                 <img
                   src={flyerPreview}
-                  alt="Flyer preview"
-                  className="max-h-56 w-auto object-contain"
+                  alt="Cover preview"
+                  className="w-full h-[280px] object-cover"
                 />
                 <button
                   type="button"
@@ -470,16 +242,13 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
                     setFlyerPreview(null);
                     setFlyerUrl(null);
                   }}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                  className="absolute top-3 right-3 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70"
                 >
-                  <X size={12} />
+                  <X size={14} />
                 </button>
                 {isUploading && (
                   <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Upload size={14} className="animate-bounce" />
-                      Uploading...
-                    </div>
+                    <Upload size={18} className="animate-bounce text-forum-dark-gray" />
                   </div>
                 )}
               </div>
@@ -489,17 +258,11 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
-                className="w-full h-36 rounded-xl border-2 border-dashed border-gray-200 hover:border-indigo-300 bg-gray-50/30 hover:bg-indigo-50/30 transition-colors flex flex-col items-center justify-center gap-2 group cursor-pointer"
+                className="w-full h-[280px] rounded-[10px] bg-forum-turquoise/15 border-2 border-dashed border-forum-turquoise/40 flex items-end justify-end p-[20px] cursor-pointer hover:bg-forum-turquoise/20 transition-colors mb-[20px]"
               >
-                <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center transition-colors">
-                  <ImagePlus
-                    size={18}
-                    className="text-gray-400 group-hover:text-indigo-500 transition-colors"
-                  />
-                </div>
-                <p className="text-sm text-gray-500 group-hover:text-indigo-600 font-medium transition-colors">
-                  Drop an image or click to upload
-                </p>
+                <span className="flex items-center gap-[6px] text-[13px] font-bold font-dm-sans text-forum-cerulean">
+                  <Pencil size={13} /> Add Cover Image
+                </span>
               </button>
             )}
             <input
@@ -514,86 +277,276 @@ export function EditEventForm({ event, locations }: EditEventFormProps) {
             />
           </div>
 
-          {/* External Link */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-start gap-3 mb-5">
-              <Link2 size={16} className="text-indigo-400 mt-0.5" strokeWidth={2} />
+          {/* Event Title */}
+          <div className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              Event Title *
+            </span>
+            <div className="flex items-center border-b-2 border-forum-medium-gray pb-[8px]">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (errors.title) setErrors((prev) => ({ ...prev, title: "" }));
+                }}
+                placeholder="Super Interesting Event Title"
+                className={cn(
+                  "flex-1 text-[32px] font-serif font-bold text-black placeholder:text-forum-placeholder/40 outline-none",
+                  errors.title && "placeholder:text-red-300",
+                )}
+              />
+              <Pencil size={16} className="text-forum-cerulean flex-shrink-0 ml-2" />
+            </div>
+            {errors.title && <p className="text-[11px] text-red-400 mt-1">{errors.title}</p>}
+          </div>
+
+          {/* Event Description */}
+          <div id="edit-details" className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              Event Description *
+            </span>
+            <Textarea
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) setErrors((prev) => ({ ...prev, description: "" }));
+              }}
+              placeholder="Tell people what to expect..."
+              rows={8}
+              className={cn(
+                "border border-forum-medium-gray rounded-[8px] text-[14px] font-dm-sans placeholder:text-forum-placeholder resize-none focus:border-forum-cerulean",
+                errors.description && "border-red-400",
+              )}
+            />
+            {errors.description && (
+              <p className="text-[11px] text-red-400 mt-1">{errors.description}</p>
+            )}
+          </div>
+
+          {/* Date / Start / End */}
+          <div id="edit-when-where" className="mb-[30px]">
+            <div className="flex items-end gap-[20px]">
               <div>
-                <span className="text-sm font-semibold text-gray-700">External Link</span>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  Optional - registration page or more info
-                </p>
+                <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+                  Date *
+                </span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex items-center gap-2 h-[40px] px-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans",
+                        date ? "text-black" : "text-forum-placeholder",
+                        errors.date && "border-red-400",
+                      )}
+                    >
+                      <CalendarIcon size={14} />
+                      {date ? format(date, "MM/dd/yyyy") : "mm/dd/yyyy"}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={(d) => {
+                        setDate(d);
+                        if (errors.date) setErrors((prev) => ({ ...prev, date: "" }));
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {errors.date && <p className="text-[11px] text-red-400 mt-1">{errors.date}</p>}
+              </div>
+              <div>
+                <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+                  Start *
+                </span>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="h-[40px] w-[120px] px-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans text-black outline-none focus:border-forum-cerulean"
+                />
+              </div>
+              <span className="text-[14px] text-forum-light-gray mb-[10px]">—</span>
+              <div>
+                <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">End</span>
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="h-[40px] w-[120px] px-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans text-forum-placeholder outline-none focus:border-forum-cerulean"
+                />
               </div>
             </div>
-            <div className="relative">
-              <ExternalLink
-                size={14}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              />
-              <Input
-                value={externalLink}
-                onChange={(e) => setExternalLink(e.target.value)}
-                placeholder="https://"
-                className="h-11 pl-10 border-gray-200 bg-gray-50/50 placeholder:text-gray-300 focus:bg-white transition-colors"
-              />
-            </div>
+          </div>
+
+          {/* Location */}
+          <div className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              Location *
+            </span>
+            <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+              <PopoverTrigger asChild>
+                <div className="relative">
+                  <Search
+                    size={14}
+                    className="absolute left-[12px] top-1/2 -translate-y-1/2 text-forum-placeholder"
+                  />
+                  <input
+                    type="text"
+                    value={locationSearch || selectedLocationName}
+                    onChange={(e) => {
+                      setLocationSearch(e.target.value);
+                      setLocationOpen(true);
+                    }}
+                    onFocus={() => setLocationOpen(true)}
+                    placeholder="Search by keyword or address"
+                    className={cn(
+                      "w-full h-[40px] pl-[34px] pr-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans outline-none focus:border-forum-cerulean",
+                      errors.location && "border-red-400",
+                    )}
+                  />
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                <div className="max-h-52 overflow-y-auto p-1">
+                  {filteredLocations.map((loc) => (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      onClick={() => {
+                        setLocationId(loc.id);
+                        setLocationSearch("");
+                        setLocationOpen(false);
+                        if (errors.location) setErrors((prev) => ({ ...prev, location: "" }));
+                      }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                        locationId === loc.id
+                          ? "bg-forum-turquoise/20 text-black"
+                          : "text-forum-dark-gray hover:bg-gray-50",
+                      )}
+                    >
+                      {loc.name}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            {errors.location && <p className="text-[11px] text-red-400 mt-1">{errors.location}</p>}
           </div>
 
           {/* Visibility */}
-          <div className="border-t border-gray-100 pt-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {isPublic ? (
-                  <Globe size={16} className="text-indigo-400" strokeWidth={2} />
-                ) : (
-                  <Lock size={16} className="text-amber-500" strokeWidth={2} />
-                )}
-                <div>
-                  <span className="text-sm font-semibold text-gray-700">
-                    {isPublic ? "Public Event" : "Private Event"}
-                  </span>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {isPublic
-                      ? "Anyone on campus can discover this event"
-                      : "Only people with the link can see this event"}
-                  </p>
-                </div>
+          <div className="flex items-center justify-between mb-[30px]">
+            <div className="flex items-center gap-[10px]">
+              {isPublic ? (
+                <Globe size={16} className="text-forum-cerulean" />
+              ) : (
+                <Lock size={16} className="text-forum-orange" />
+              )}
+              <div>
+                <p className="text-[13px] font-bold font-dm-sans text-black">
+                  {isPublic ? "Public Event" : "Private Event"}
+                </p>
+                <p className="text-[11px] font-dm-sans text-forum-light-gray">
+                  {isPublic ? "Anyone on campus can discover this" : "Only people with the link"}
+                </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsPublic(!isPublic)}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPublic(!isPublic)}
+              className={cn(
+                "relative w-11 h-6 rounded-full transition-colors",
+                isPublic ? "bg-forum-cerulean" : "bg-forum-medium-gray",
+              )}
+            >
+              <div
                 className={cn(
-                  "relative w-11 h-6 rounded-full transition-colors",
-                  isPublic ? "bg-indigo-500" : "bg-gray-300",
+                  "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform",
+                  isPublic ? "translate-x-5.5" : "translate-x-0.5",
                 )}
-              >
-                <div
-                  className={cn(
-                    "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform",
-                    isPublic ? "translate-x-5.5" : "translate-x-0.5",
-                  )}
+              />
+            </button>
+          </div>
+
+          {/* Tags */}
+          <div className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">Tags</span>
+            <div className="flex items-center gap-[10px] mb-[10px]">
+              <div className="relative flex-1">
+                <Search
+                  size={14}
+                  className="absolute left-[12px] top-1/2 -translate-y-1/2 text-forum-placeholder"
                 />
-              </button>
+                <input
+                  type="text"
+                  value={tagSearch}
+                  onChange={(e) => setTagSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && tagSearch.trim())
+                      addTag(tagSearch.trim().toLowerCase());
+                  }}
+                  placeholder="Free food, tech talk, volunteering"
+                  className="w-full h-[40px] pl-[34px] pr-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans outline-none focus:border-forum-cerulean"
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-[6px]">
+              {tags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="flex items-center gap-[4px] h-[28px] px-[12px] rounded-[14px] bg-forum-cerulean text-white text-[11px] font-bold font-dm-sans"
+                >
+                  {tag} <X size={11} />
+                </button>
+              ))}
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="flex items-center justify-end gap-3 pb-8">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          disabled={isPending}
-          className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-8 h-11 font-semibold shadow-sm shadow-indigo-200 transition-all"
-        >
-          {isPending ? "Saving..." : "Save Changes"}
-        </Button>
+          {/* External Link */}
+          <div id="edit-uploads" className="mb-[30px]">
+            <span className="text-[13px] font-bold text-forum-coral block mb-[6px]">
+              External Link
+            </span>
+            <div className="relative">
+              <Link2
+                size={14}
+                className="absolute left-[12px] top-1/2 -translate-y-1/2 text-forum-placeholder"
+              />
+              <input
+                type="text"
+                value={externalLink}
+                onChange={(e) => setExternalLink(e.target.value)}
+                placeholder="www.registerforsomething.com"
+                className="w-full h-[40px] pl-[34px] pr-[14px] border border-forum-medium-gray rounded-[8px] text-[13px] font-dm-sans outline-none focus:border-forum-cerulean"
+              />
+            </div>
+          </div>
+
+          {/* Bottom actions */}
+          <div className="flex items-center justify-between pt-[20px] border-t border-forum-medium-gray mb-[40px]">
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="flex items-center gap-[4px] text-[11px] font-bold font-dm-sans text-forum-dark-gray tracking-wider"
+            >
+              <ArrowUp size={12} /> BACK TO TOP
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isPending}
+              className="px-[24px] py-[10px] bg-forum-cerulean text-white text-[12px] font-bold font-dm-sans rounded-[6px] tracking-wider hover:opacity-90 disabled:opacity-50 transition-all"
+            >
+              {isPending ? "SAVING..." : "SAVE CHANGES"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

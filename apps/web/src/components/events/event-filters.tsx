@@ -1,17 +1,32 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
-import { CATEGORY_COLORS } from "~/components/events/event-card";
+import { Pencil } from "lucide-react";
+import { useState } from "react";
 import { cn } from "~/lib/utils";
 
-const FILTER_CATEGORIES = [
-  { id: "art", label: "Art" },
-  { id: "tech", label: "STEM" },
-  { id: "music", label: "Music" },
-  { id: "sports", label: "Sports" },
-  { id: "social", label: "Social" },
-  { id: "career", label: "Career" },
-  { id: "free-food", label: "Free Food" },
+const QUICK_FILTERS = [
+  { id: "free-food", label: "free food" },
+  { id: "tech", label: "tech talk" },
+  { id: "career", label: "career" },
+  { id: "social", label: "social" },
+  { id: "music", label: "music" },
+  { id: "art", label: "art" },
+  { id: "sports", label: "sports" },
+] as const;
+
+const ALL_FILTERS = [
+  ...QUICK_FILTERS,
+  { id: "academic", label: "academic" },
+  { id: "cultural", label: "cultural" },
+  { id: "performance", label: "performance" },
+  { id: "workshop", label: "workshop" },
+  { id: "speaker", label: "speaker" },
+  { id: "wellness", label: "wellness" },
+  { id: "outdoor", label: "outdoor" },
+  { id: "gaming", label: "gaming" },
+  { id: "community-service", label: "service" },
+  { id: "religious", label: "religious" },
+  { id: "political", label: "political" },
 ] as const;
 
 interface EventFiltersProps {
@@ -20,45 +35,36 @@ interface EventFiltersProps {
 }
 
 export function EventFilters({ activeFilters, onFilterToggle }: EventFiltersProps) {
+  const [expanded, setExpanded] = useState(false);
+  const filters = expanded ? ALL_FILTERS : QUICK_FILTERS;
+
   return (
-    <div className="flex items-center gap-4 px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
-      {FILTER_CATEGORIES.map(({ id, label }) => {
-        const color = CATEGORY_COLORS[id]?.accent ?? "#9ca3af";
+    <div className="flex items-center gap-[8px] flex-wrap">
+      {filters.map(({ id, label }) => {
         const isActive = activeFilters.includes(id);
         return (
           <button
             key={id}
             type="button"
             onClick={() => onFilterToggle(id)}
-            className="flex flex-col items-center gap-1 group"
+            className={cn(
+              "px-[10px] py-[3px] rounded-[12px] text-[13px] font-dm-sans transition-colors border",
+              isActive
+                ? "bg-forum-coral-light border-forum-coral text-forum-coral"
+                : "border-forum-medium-gray text-forum-light-gray hover:border-forum-dark-gray hover:text-forum-dark-gray",
+            )}
           >
-            <div
-              className={cn(
-                "rounded-full transition-all",
-                isActive && "ring-2 ring-offset-1 ring-gray-400",
-              )}
-              style={{
-                width: 40,
-                height: 40,
-                background: color,
-              }}
-            />
-            <span
-              className={cn(
-                "text-xs transition-colors",
-                isActive ? "text-gray-800 font-medium" : "text-gray-500",
-              )}
-            >
-              {label}
-            </span>
+            {label}
           </button>
         );
       })}
-      <button type="button" className="flex flex-col items-center gap-1 group ml-2">
-        <div className="rounded-full bg-gray-100 group-hover:bg-gray-200 transition-colors flex items-center justify-center w-10 h-10">
-          <MoreHorizontal size={20} className="text-gray-400" />
-        </div>
-        <span className="text-xs text-gray-400">More</span>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-[4px] text-[11px] text-forum-light-gray hover:text-forum-dark-gray transition-colors ml-1"
+      >
+        <Pencil size={11} />
+        {expanded ? "Less" : "Edit Filters"}
       </button>
     </div>
   );

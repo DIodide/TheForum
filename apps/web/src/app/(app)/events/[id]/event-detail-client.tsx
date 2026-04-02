@@ -25,6 +25,7 @@ import {
   toggleSave,
 } from "~/actions/events";
 import { getCategoryColor } from "~/components/events/event-card";
+import { EventCoverArt } from "~/components/events/event-cover-art";
 import { AvatarStack } from "~/components/social/avatar-stack";
 import { Button } from "~/components/ui/button";
 import {
@@ -86,10 +87,7 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
     });
 
   const formatTime = (d: Date) =>
-    d.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
+    d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
   const handleRsvp = () => {
     const prev = isRsvped;
@@ -128,38 +126,26 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-6">
+    <div className="max-w-5xl mx-auto px-[40px] py-[20px]">
       {/* Back link */}
       <button
         type="button"
         onClick={() => router.back()}
-        className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors mb-6 group"
+        className="flex items-center gap-[6px] text-[14px] font-dm-sans text-forum-light-gray hover:text-forum-dark-gray transition-colors mb-[24px] group"
       >
-        <ChevronLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+        <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
         Back
       </button>
 
-      {/* ── Main content ─────────────────────────────────── */}
-      <div className="flex gap-10">
+      {/* Main content */}
+      <div className="flex gap-[40px]">
         {/* Left: Flyer */}
-        <div className="flex-shrink-0" style={{ width: 340 }}>
-          <div className="rounded-2xl overflow-hidden shadow-xl" style={{ height: 440 }}>
+        <div className="flex-shrink-0 w-[340px]">
+          <div className="rounded-[20px] overflow-hidden shadow-xl h-[440px]">
             {event.flyerUrl ? (
               <img src={event.flyerUrl} alt={event.title} className="w-full h-full object-cover" />
             ) : (
-              <div
-                className="w-full h-full flex items-center justify-center p-8"
-                style={{
-                  background: `linear-gradient(135deg, ${color.bg} 0%, ${color.accent}40 100%)`,
-                }}
-              >
-                <p
-                  className="text-3xl font-black leading-tight text-center"
-                  style={{ color: color.text }}
-                >
-                  {event.title}
-                </p>
-              </div>
+              <EventCoverArt title={event.title} tags={event.tags} className="w-full h-full" />
             )}
           </div>
         </div>
@@ -167,37 +153,33 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
         {/* Right: Event info */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Action buttons */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mb-[16px]">
+            <div className="flex items-center gap-[8px]">
               {event.isOwner && (
                 <>
                   <Link href={`/events/${event.id}/edit`}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full text-xs gap-1.5 border-gray-200 text-gray-500 hover:text-gray-700"
+                    <button
+                      type="button"
+                      className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-[10px] border border-forum-medium-gray text-[12px] font-bold font-dm-sans text-forum-light-gray hover:border-forum-dark-gray transition-colors"
                     >
-                      <Edit3 size={12} />
-                      Edit
-                    </Button>
+                      <Edit3 size={12} /> Edit
+                    </button>
                   </Link>
                   <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                     <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full text-xs gap-1.5 border-red-200 text-red-400 hover:text-red-600 hover:bg-red-50"
+                      <button
+                        type="button"
+                        className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-[10px] border border-forum-coral/30 text-[12px] font-bold font-dm-sans text-forum-coral hover:bg-forum-coral/5 transition-colors"
                       >
-                        <Trash2 size={12} />
-                        Delete
-                      </Button>
+                        <Trash2 size={12} /> Delete
+                      </button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>Delete Event</DialogTitle>
                         <DialogDescription>
-                          This will permanently delete &ldquo;{event.title}&rdquo; and remove all
-                          RSVPs. This action cannot be undone.
+                          This will permanently delete &ldquo;{event.title}&rdquo;. This cannot be
+                          undone.
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
@@ -213,19 +195,19 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
                 </>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-[8px]">
               <a
                 href={buildGCalUrl(event)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-[10px] border border-forum-medium-gray text-[12px] font-bold font-dm-sans text-forum-light-gray hover:border-forum-dark-gray transition-colors"
               >
-                <Calendar size={13} /> Add to Calendar
+                <Calendar size={13} /> Calendar
               </a>
               <button
                 type="button"
                 onClick={handleShare}
-                className="flex items-center gap-1.5 text-xs text-gray-500 border border-gray-200 rounded-full px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-[10px] border border-forum-medium-gray text-[12px] font-bold font-dm-sans text-forum-light-gray hover:border-forum-dark-gray transition-colors"
               >
                 <Share2 size={13} /> Share
               </button>
@@ -233,10 +215,10 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
                 type="button"
                 onClick={handleSave}
                 className={cn(
-                  "flex items-center gap-1.5 text-xs border rounded-full px-3 py-1.5 transition-colors",
+                  "flex items-center gap-[6px] px-[12px] py-[6px] rounded-[10px] border text-[12px] font-bold font-dm-sans transition-colors",
                   isSaved
-                    ? "text-indigo-600 border-indigo-200 bg-indigo-50"
-                    : "text-gray-500 border-gray-200 hover:bg-gray-50",
+                    ? "text-forum-cerulean border-forum-cerulean bg-forum-turquoise/10"
+                    : "text-forum-light-gray border-forum-medium-gray hover:border-forum-dark-gray",
                 )}
               >
                 {isSaved ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
@@ -246,28 +228,34 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-black text-gray-900 leading-tight mb-2">{event.title}</h1>
+          <h1 className="font-serif text-[36px] font-bold text-black leading-tight mb-[8px]">
+            {event.title}
+          </h1>
 
-          {/* Org name */}
+          {/* Org */}
           {event.orgName && (
-            <p className="text-sm text-indigo-500 font-semibold mb-3">{event.orgName}</p>
+            <p className="text-[16px] font-dm-sans font-bold text-forum-cerulean mb-[12px]">
+              {event.orgName}
+            </p>
           )}
 
           {/* Tags */}
           {event.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-5">
+            <div className="flex flex-wrap gap-[8px] mb-[20px]">
               {event.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-2.5 py-1 rounded-full font-medium bg-indigo-50 text-indigo-600"
+                  className="px-[10px] py-[2px] rounded-[15px] text-[14px] font-dm-sans text-black bg-forum-yellow-50"
                 >
                   {tag}
                 </span>
               ))}
               <span
                 className={cn(
-                  "text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full",
-                  event.isPublic ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600",
+                  "px-[10px] py-[2px] rounded-[15px] text-[12px] font-bold font-dm-sans",
+                  event.isPublic
+                    ? "bg-forum-turquoise/20 text-forum-cerulean"
+                    : "bg-forum-orange/10 text-forum-orange",
                 )}
               >
                 {event.isPublic ? "Public" : "Private"}
@@ -275,42 +263,37 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
             </div>
           )}
 
-          {/* Details grid */}
-          <div className="space-y-3 mb-6">
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <Calendar size={15} className="text-gray-400" />
-              <span>{formatDate(event.datetime)}</span>
+          {/* Details */}
+          <div className="space-y-[10px] mb-[20px]">
+            <div className="flex items-center gap-[10px] text-[14px] font-dm-sans text-forum-dark-gray">
+              <Calendar size={16} className="text-forum-light-gray" />
+              {formatDate(event.datetime)}
             </div>
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <Clock size={15} className="text-gray-400" />
-              <span>
-                {formatTime(event.datetime)}
-                {event.endDatetime && ` - ${formatTime(event.endDatetime)}`}
-              </span>
+            <div className="flex items-center gap-[10px] text-[14px] font-dm-sans text-forum-dark-gray">
+              <Clock size={16} className="text-forum-light-gray" />
+              {formatTime(event.datetime)}
+              {event.endDatetime && ` - ${formatTime(event.endDatetime)}`}
             </div>
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <MapPin size={15} className="text-gray-400" />
-              <span>{event.locationName}</span>
+            <div className="flex items-center gap-[10px] text-[14px] font-dm-sans text-forum-dark-gray">
+              <MapPin size={16} className="text-forum-light-gray" />
+              {event.locationName}
             </div>
             {event.externalLink && (
               <a
                 href={event.externalLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 text-sm text-indigo-500 hover:text-indigo-600 transition-colors"
+                className="flex items-center gap-[10px] text-[14px] font-dm-sans text-forum-cerulean hover:underline"
               >
-                <ExternalLink size={15} />
-                <span className="underline underline-offset-2">Register</span>
+                <ExternalLink size={16} /> Register
               </a>
             )}
           </div>
 
           {/* Description */}
-          <div className="mb-6">
-            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-              {event.description}
-            </p>
-          </div>
+          <p className="text-[14px] font-dm-sans text-forum-dark-gray leading-relaxed whitespace-pre-wrap mb-[24px]">
+            {event.description}
+          </p>
 
           {/* RSVP button */}
           <button
@@ -318,30 +301,29 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
             onClick={handleRsvp}
             disabled={isPending}
             className={cn(
-              "py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg max-w-sm",
+              "w-full max-w-[300px] py-[12px] rounded-[10px] font-bold font-dm-sans text-[15px] transition-all",
               isRsvped
-                ? "bg-white border-2 border-indigo-500 text-indigo-600 shadow-indigo-100"
-                : "text-white shadow-indigo-200",
+                ? "bg-forum-dark-gray text-white"
+                : "bg-forum-coral text-white hover:opacity-90",
             )}
-            style={
-              !isRsvped ? { background: "linear-gradient(90deg, #3b82f6, #6366f1)" } : undefined
-            }
           >
-            {isRsvped ? "Cancel RSVP" : "RSVP"}
+            {isRsvped ? "CANCEL RSVP" : "RSVP NOW"}
           </button>
 
           {/* Attendees */}
-          <div className="flex items-center gap-3 mt-5">
+          <div className="flex items-center gap-[12px] mt-[16px]">
             {event.attendees.length > 0 && (
               <AvatarStack users={event.attendees} size={30} max={6} />
             )}
             <div>
-              <div className="flex items-center gap-1.5">
-                <Users size={13} className="text-gray-400" />
-                <span className="text-sm font-semibold text-gray-700">{rsvpCount} attending</span>
+              <div className="flex items-center gap-[6px]">
+                <Users size={14} className="text-forum-light-gray" />
+                <span className="text-[14px] font-bold font-dm-sans text-black">
+                  {rsvpCount} attending
+                </span>
               </div>
               {event.friendsAttending.length > 0 && (
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-[12px] font-dm-sans text-forum-light-gray mt-[2px]">
                   {event.friendsAttending.map((f) => f.displayName).join(", ")}{" "}
                   {event.friendsAttending.length === 1 ? "is" : "are"} going
                 </p>
@@ -349,39 +331,27 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
             </div>
           </div>
 
-          {/* Creator */}
-          <p className="text-xs text-gray-400 mt-6">Posted by {event.creatorName}</p>
+          <p className="text-[12px] font-dm-sans text-forum-light-gray mt-[20px]">
+            Posted by {event.creatorName}
+          </p>
         </div>
       </div>
 
-      {/* ── Similar Events ──────────────────────────────── */}
+      {/* Similar Events */}
       {similarEvents.length > 0 && (
-        <div className="mt-12 pt-8 border-t border-gray-100">
-          <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">
-            Similar Events
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {similarEvents.map((se) => {
-              const seColor = getCategoryColor(se.tags);
-              return (
-                <Link key={se.id} href={`/events/${se.id}`} className="group">
-                  <div
-                    className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow h-32 p-5 flex flex-col justify-between"
-                    style={{ background: seColor.bg }}
-                  >
-                    <p
-                      className="text-sm font-bold leading-tight line-clamp-2"
-                      style={{ color: seColor.text }}
-                    >
-                      {se.title}
-                    </p>
-                    <p className="text-xs opacity-60" style={{ color: seColor.text }}>
-                      {se.datetime}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+        <div className="mt-[48px] pt-[24px] border-t border-forum-medium-gray">
+          <h2 className="font-serif text-[25px] text-black mb-[20px]">Similar Events</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+            {similarEvents.map((se) => (
+              <Link key={se.id} href={`/events/${se.id}`} className="group">
+                <div className="rounded-[14px] overflow-hidden bg-forum-coral-bg hover:shadow-md transition-shadow h-[120px] p-[16px] flex flex-col justify-between">
+                  <p className="font-serif text-[16px] text-black leading-tight line-clamp-2">
+                    {se.title}
+                  </p>
+                  <p className="text-[12px] font-dm-sans text-forum-light-gray">{se.datetime}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       )}

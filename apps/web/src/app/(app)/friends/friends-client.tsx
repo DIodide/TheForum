@@ -11,49 +11,25 @@ import {
   searchUsers,
   sendFriendRequest,
 } from "~/actions/friends";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
-
-function colorFromString(str: string) {
-  const colors = [
-    "#6366f1",
-    "#ec4899",
-    "#14b8a6",
-    "#f97316",
-    "#8b5cf6",
-    "#22c55e",
-    "#ef4444",
-    "#3b82f6",
-    "#06b6d4",
-    "#eab308",
-  ];
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return colors[Math.abs(hash) % colors.length] ?? "#6366f1";
-}
 
 function Avatar({
   name,
   avatarUrl,
-  size = 40,
+  size = 56,
 }: {
   name: string;
   avatarUrl?: string | null;
   size?: number;
 }) {
   const initial = name[0]?.toUpperCase() ?? "?";
-  const bg = colorFromString(name);
 
   if (avatarUrl) {
     return (
       <img
         src={avatarUrl}
         alt={name}
-        className="rounded-full object-cover"
+        className="rounded-[5px] border-[3px] border-forum-medium-gray object-cover"
         style={{ width: size, height: size }}
       />
     );
@@ -61,13 +37,8 @@ function Avatar({
 
   return (
     <div
-      className="rounded-full flex items-center justify-center text-white font-bold"
-      style={{
-        width: size,
-        height: size,
-        background: bg,
-        fontSize: size * 0.4,
-      }}
+      className="rounded-[5px] border-[3px] border-forum-medium-gray flex items-center justify-center bg-forum-turquoise/30 text-black font-bold"
+      style={{ width: size, height: size, fontSize: size * 0.35 }}
     >
       {initial}
     </div>
@@ -92,21 +63,19 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
   const [sentIds, setSentIds] = useState<Set<string>>(
     new Set(initialPending.outgoing.map((r) => r.id)),
   );
+  const [activeTab, setActiveTab] = useState<"friends" | "find" | "requests">("friends");
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
   const friendIds = new Set(friends.map((f) => f.id));
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-
     if (!query.trim()) {
       setSearchResults([]);
       setIsSearching(false);
       return;
     }
-
     setIsSearching(true);
     searchTimeout.current = setTimeout(async () => {
       const results = await searchUsers(query);
@@ -123,12 +92,8 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
   };
 
   const handleAccept = (fromUserId: string) => {
-    // Optimistic: move from incoming to friends
     const accepted = pending.incoming.find((r) => r.id === fromUserId);
-    setPending((prev) => ({
-      ...prev,
-      incoming: prev.incoming.filter((r) => r.id !== fromUserId),
-    }));
+    setPending((prev) => ({ ...prev, incoming: prev.incoming.filter((r) => r.id !== fromUserId) }));
     if (accepted) {
       setFriends((prev) => [
         ...prev,
@@ -148,10 +113,7 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
   };
 
   const handleDecline = (fromUserId: string) => {
-    setPending((prev) => ({
-      ...prev,
-      incoming: prev.incoming.filter((r) => r.id !== fromUserId),
-    }));
+    setPending((prev) => ({ ...prev, incoming: prev.incoming.filter((r) => r.id !== fromUserId) }));
     startTransition(async () => {
       await declineFriendRequest(fromUserId);
     });
@@ -164,187 +126,143 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
     });
   };
 
-  const totalPending = pending.incoming.length + pending.outgoing.length;
+  const tabs = [
+    { id: "friends" as const, label: "Your Friends", count: friends.length },
+    { id: "find" as const, label: "Find New Friends", count: 0 },
+    { id: "requests" as const, label: "Requests", count: pending.incoming.length },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* ── Search ──────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6">
-          <div className="relative">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Search by name or NetID..."
-              className="h-12 pl-11 text-base border-gray-200 bg-gray-50/50 placeholder:text-gray-300 focus:bg-white transition-colors rounded-xl"
-            />
-          </div>
+    <div className="space-y-[24px]">
+      {/* Tab bar */}
+      <div className="bg-white rounded-[10px] shadow-[0px_2px_8px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="flex">
+          {tabs.map(({ id, label, count }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveTab(id)}
+              className={cn(
+                "flex-1 py-[16px] text-[16px] font-dm-sans font-semibold transition-colors relative",
+                activeTab === id
+                  ? "text-black"
+                  : "text-forum-light-gray hover:text-forum-dark-gray",
+              )}
+            >
+              {label}
+              {count > 0 && (
+                <span className="ml-2 text-[12px] px-[8px] py-[2px] rounded-full bg-forum-coral/10 text-forum-coral font-bold">
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
-
-        {/* Search results */}
-        {searchQuery.trim() && (
-          <div className="border-t border-gray-100">
-            {isSearching ? (
-              <div className="p-6 text-center">
-                <p className="text-sm text-gray-400">Searching...</p>
-              </div>
-            ) : searchResults.length > 0 ? (
-              <div className="divide-y divide-gray-50">
-                {searchResults.map((user) => {
-                  const isFriend = friendIds.has(user.id);
-                  const isPendingSent = sentIds.has(user.id);
-                  return (
-                    <div
-                      key={user.id}
-                      className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors"
-                    >
-                      <Avatar name={user.displayName} avatarUrl={user.avatarUrl} size={42} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">
-                          {user.displayName}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          @{user.netId}
-                          {user.classYear && ` · '${user.classYear.slice(-2)}`}
-                          {user.major && ` · ${user.major}`}
-                        </p>
-                      </div>
-                      {isFriend ? (
-                        <span className="text-xs text-emerald-500 font-medium flex items-center gap-1">
-                          <Check size={12} />
-                          Friends
-                        </span>
-                      ) : isPendingSent ? (
-                        <span className="text-xs text-gray-400 font-medium flex items-center gap-1">
-                          <Clock size={12} />
-                          Pending
-                        </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => handleSendRequest(user.id)}
-                          disabled={isPending}
-                          className="rounded-full bg-indigo-500 hover:bg-indigo-600 text-white text-xs gap-1.5 h-8 px-4"
-                        >
-                          <UserPlus size={12} />
-                          Add
-                        </Button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="p-6 text-center">
-                <p className="text-sm text-gray-400">
-                  No users found for &ldquo;{searchQuery}&rdquo;
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="h-[2px] bg-forum-medium-gray relative">
+          <div
+            className="absolute h-[2px] bg-forum-cerulean transition-all duration-300"
+            style={{
+              width: `${100 / tabs.length}%`,
+              left: `${(tabs.findIndex((t) => t.id === activeTab) * 100) / tabs.length}%`,
+            }}
+          />
+        </div>
       </div>
 
-      {/* ── Pending Requests ────────────────────────────── */}
-      {totalPending > 0 && (
-        <div>
-          <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-            Pending
-            <span className="bg-amber-100 text-amber-600 text-xs px-2 py-0.5 rounded-full font-semibold">
-              {totalPending}
-            </span>
-          </h2>
+      {/* Search bar */}
+      <div className="relative">
+        <Search
+          size={16}
+          className="absolute left-[17px] top-1/2 -translate-y-1/2 text-forum-placeholder"
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.target.value)}
+          placeholder="SEARCH USERS BY NAME OR NETID"
+          className="w-full h-[42px] bg-forum-bg border border-forum-bg rounded-[10px] shadow-[5px_5px_10px_5px_rgba(0,0,0,0.05)] pl-[42px] pr-[17px] text-[14px] font-dm-sans tracking-wider text-black placeholder:text-[#a6a8ae] outline-none"
+        />
+      </div>
 
-          <div className="space-y-3">
-            {/* Incoming */}
-            {pending.incoming.map((req) => (
-              <div
-                key={req.id}
-                className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4"
-              >
-                <Avatar name={req.displayName} avatarUrl={req.avatarUrl} size={42} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">{req.displayName}</p>
-                  <p className="text-xs text-gray-400">@{req.netId} wants to be friends</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => handleAccept(req.id)}
-                    disabled={isPending}
-                    className="rounded-full bg-indigo-500 hover:bg-indigo-600 text-white text-xs gap-1 h-8 px-4"
+      {/* Search results overlay */}
+      {searchQuery.trim() && (
+        <div className="bg-white rounded-[10px] shadow-[0px_2px_8px_rgba(0,0,0,0.06)] overflow-hidden">
+          {isSearching ? (
+            <div className="p-[20px] text-center text-[14px] text-forum-light-gray">
+              Searching...
+            </div>
+          ) : searchResults.length > 0 ? (
+            <div>
+              {searchResults.map((user) => {
+                const isFriend = friendIds.has(user.id);
+                const isPendingSent = sentIds.has(user.id);
+                return (
+                  <div
+                    key={user.id}
+                    className="flex items-center gap-[15px] px-[20px] py-[12px] hover:bg-forum-turquoise/5 transition-colors"
                   >
-                    <Check size={12} />
-                    Accept
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDecline(req.id)}
-                    disabled={isPending}
-                    className="rounded-full text-xs gap-1 h-8 px-3 border-gray-200 text-gray-500 hover:text-gray-700"
-                  >
-                    <X size={12} />
-                  </Button>
-                </div>
-              </div>
-            ))}
-
-            {/* Outgoing */}
-            {pending.outgoing.map((req) => (
-              <div
-                key={req.id}
-                className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 opacity-70"
-              >
-                <Avatar name={req.displayName} avatarUrl={req.avatarUrl} size={42} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">{req.displayName}</p>
-                  <p className="text-xs text-gray-400">@{req.netId}</p>
-                </div>
-                <span className="text-xs text-gray-400 font-medium flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded-full">
-                  <Clock size={11} />
-                  Sent
-                </span>
-              </div>
-            ))}
-          </div>
+                    <Avatar name={user.displayName} avatarUrl={user.avatarUrl} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[15px] font-bold font-dm-sans text-black truncate">
+                        {user.displayName}
+                      </p>
+                      <p className="text-[12px] font-dm-sans text-forum-light-gray">
+                        @{user.netId}
+                        {user.classYear && ` · '${user.classYear.slice(-2)}`}
+                      </p>
+                    </div>
+                    {isFriend ? (
+                      <span className="text-[12px] font-bold text-forum-cerulean">Friends</span>
+                    ) : isPendingSent ? (
+                      <span className="text-[12px] font-bold text-forum-light-gray flex items-center gap-1">
+                        <Clock size={12} /> Sent
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSendRequest(user.id)}
+                        disabled={isPending}
+                        className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-[10px] bg-forum-cerulean text-white text-[12px] font-bold hover:opacity-90 disabled:opacity-50"
+                      >
+                        <UserPlus size={12} /> Add
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-[20px] text-center text-[14px] text-forum-light-gray">
+              No users found
+            </div>
+          )}
         </div>
       )}
 
-      {/* ── Friends List ─────────────────────────────────── */}
-      <div>
-        <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-          Your Friends
-          {friends.length > 0 && (
-            <span className="bg-indigo-100 text-indigo-600 text-xs px-2 py-0.5 rounded-full font-semibold">
-              {friends.length}
-            </span>
-          )}
-        </h2>
-
-        {friends.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {/* Tab content: Your Friends */}
+      {activeTab === "friends" &&
+        !searchQuery.trim() &&
+        (friends.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-[12px]">
             {friends.map((friend) => (
               <div
                 key={friend.id}
-                className="group flex items-center gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 hover:border-gray-200 transition-colors"
+                className="group flex items-center gap-[15px] bg-white rounded-[10px] shadow-[0px_2px_8px_rgba(0,0,0,0.06)] px-[20px] py-[14px] hover:bg-forum-turquoise/5 transition-colors"
               >
-                <Avatar name={friend.displayName} avatarUrl={friend.avatarUrl} size={44} />
+                <Avatar name={friend.displayName} avatarUrl={friend.avatarUrl} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">
+                  <p className="text-[15px] font-bold font-dm-sans text-black truncate">
                     {friend.displayName}
                   </p>
-                  <p className="text-xs text-gray-400 truncate">
+                  <p className="text-[12px] font-dm-sans text-forum-light-gray">
                     @{friend.netId}
                     {friend.classYear && ` · '${friend.classYear.slice(-2)}`}
-                    {friend.major && ` · ${friend.major}`}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleRemove(friend.id)}
-                  className="p-2 rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+                  className="p-2 rounded-full text-forum-medium-gray hover:text-forum-coral opacity-0 group-hover:opacity-100 transition-all"
                   title="Remove friend"
                 >
                   <UserMinus size={14} />
@@ -353,18 +271,71 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-              <Users size={22} className="text-gray-400" />
-            </div>
-            <h3 className="text-base font-semibold text-gray-700 mb-1">No friends yet</h3>
-            <p className="text-sm text-gray-400 text-center max-w-xs">
-              Search for classmates above to start connecting. See who&apos;s attending events
-              you&apos;re interested in.
+          <div className="flex flex-col items-center justify-center py-[60px] bg-white rounded-[10px] shadow-[0px_2px_8px_rgba(0,0,0,0.06)]">
+            <Users size={32} className="text-forum-medium-gray mb-4" />
+            <p className="font-serif text-[20px] text-forum-dark-gray mb-1">No friends yet</p>
+            <p className="text-[14px] text-forum-light-gray">
+              Search for classmates to start connecting.
             </p>
           </div>
-        )}
-      </div>
+        ))}
+
+      {/* Tab content: Find New Friends */}
+      {activeTab === "find" && !searchQuery.trim() && (
+        <div className="flex flex-col items-center justify-center py-[60px] bg-white rounded-[10px] shadow-[0px_2px_8px_rgba(0,0,0,0.06)]">
+          <Search size={32} className="text-forum-medium-gray mb-4" />
+          <p className="font-serif text-[20px] text-forum-dark-gray mb-1">Find your classmates</p>
+          <p className="text-[14px] text-forum-light-gray">
+            Use the search bar above to find people by name or NetID.
+          </p>
+        </div>
+      )}
+
+      {/* Tab content: Requests */}
+      {activeTab === "requests" &&
+        !searchQuery.trim() &&
+        (pending.incoming.length > 0 ? (
+          <div className="space-y-[12px]">
+            {pending.incoming.map((req) => (
+              <div
+                key={req.id}
+                className="flex items-center gap-[15px] bg-white rounded-[10px] shadow-[0px_2px_8px_rgba(0,0,0,0.06)] px-[20px] py-[14px]"
+              >
+                <Avatar name={req.displayName} avatarUrl={req.avatarUrl} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[15px] font-dm-sans text-black">
+                    <span className="font-bold">{req.displayName}</span> ({req.netId}) sent you a
+                    friend request.
+                  </p>
+                </div>
+                <div className="flex items-center gap-[8px]">
+                  <button
+                    type="button"
+                    onClick={() => handleAccept(req.id)}
+                    disabled={isPending}
+                    className="px-[12px] py-[6px] rounded-[10px] bg-forum-cerulean text-white text-[12px] font-bold hover:opacity-90 disabled:opacity-50"
+                  >
+                    ACCEPT
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDecline(req.id)}
+                    disabled={isPending}
+                    className="px-[12px] py-[6px] rounded-[10px] border border-forum-medium-gray text-[12px] font-bold text-forum-light-gray hover:border-forum-dark-gray disabled:opacity-50"
+                  >
+                    DECLINE
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-[60px] bg-white rounded-[10px] shadow-[0px_2px_8px_rgba(0,0,0,0.06)]">
+            <Check size={32} className="text-forum-medium-gray mb-4" />
+            <p className="font-serif text-[20px] text-forum-dark-gray mb-1">All caught up</p>
+            <p className="text-[14px] text-forum-light-gray">No pending friend requests.</p>
+          </div>
+        ))}
     </div>
   );
 }
