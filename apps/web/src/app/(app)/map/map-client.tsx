@@ -32,10 +32,6 @@ const MapFilterPills = dynamic(
   () => import("./_components/map-filter-pills").then((m) => ({ default: m.MapFilterPills })),
   { ssr: false },
 );
-const MapLegend = dynamic(
-  () => import("./_components/map-legend").then((m) => ({ default: m.MapLegend })),
-  { ssr: false },
-);
 const TimelineScrubber = dynamic(
   () => import("./_components/timeline-scrubber").then((m) => ({ default: m.TimelineScrubber })),
   { ssr: false },
@@ -180,51 +176,47 @@ export function MapClient({ initialEvents }: MapClientProps) {
 
   return (
     <div className="relative flex h-full w-full overflow-hidden bg-gray-100">
-      {/* Map area */}
-      <div className="flex-1 relative">
-        {/* Map */}
-        <div className="absolute inset-0">
-          <MapView
-            ref={mapRef}
-            locationGroups={locationGroups}
-            selectedLocation={selectedLocation}
-            onSelectLocation={setSelectedLocation}
-            onExpandEvent={handleExpandEvent}
-          />
-        </div>
-
-        {/* Search bar + filter pills overlay */}
-        <div className="absolute top-4 left-4 right-4 z-10 pointer-events-none">
-          <div className="pointer-events-auto flex flex-col gap-2 max-w-2xl mx-auto">
-            <MapSearchBar value={searchQuery} onChange={setSearchQuery} />
-            <MapFilterPills activeFilters={activeFilters} onToggle={toggleFilter} />
+      {/* Main content area (map + timeline stacked vertically) */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Map area — fills remaining space */}
+        <div className="flex-1 relative">
+          {/* Map */}
+          <div className="absolute inset-0">
+            <MapView
+              ref={mapRef}
+              locationGroups={locationGroups}
+              selectedLocation={selectedLocation}
+              onSelectLocation={setSelectedLocation}
+              onExpandEvent={handleExpandEvent}
+            />
           </div>
-        </div>
 
-        {/* Legend (bottom-left) */}
-        <div className="absolute bottom-20 left-4 z-10">
-          <MapLegend />
-        </div>
-
-        {/* Timeline scrubber (bottom) */}
-        <div className="absolute bottom-0 left-0 right-0 z-10">
-          <TimelineScrubber
-            days={14}
-            eventCountByDate={eventCountByDate}
-            selectedDate={selectedDate}
-            onSelectDate={handleSelectDate}
-          />
-        </div>
-
-        {/* Loading overlay */}
-        {isPending && (
-          <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px] flex items-center justify-center z-20 pointer-events-none">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/92 backdrop-blur-md shadow-lg border border-gray-200/60">
-              <div className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-              <span className="text-xs font-medium text-gray-600">Loading events</span>
+          {/* Search bar + filter pills overlay */}
+          <div className="absolute top-4 left-4 right-4 z-10 pointer-events-none">
+            <div className="pointer-events-auto flex flex-col gap-2 max-w-2xl mx-auto">
+              <MapSearchBar value={searchQuery} onChange={setSearchQuery} />
+              <MapFilterPills activeFilters={activeFilters} onToggle={toggleFilter} />
             </div>
           </div>
-        )}
+
+          {/* Loading overlay */}
+          {isPending && (
+            <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px] flex items-center justify-center z-20 pointer-events-none">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/92 backdrop-blur-md shadow-lg border border-gray-200/60">
+                <div className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
+                <span className="text-xs font-medium text-gray-600">Loading events</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Timeline scrubber (below map, includes legend) */}
+        <TimelineScrubber
+          days={14}
+          eventCountByDate={eventCountByDate}
+          selectedDate={selectedDate}
+          onSelectDate={handleSelectDate}
+        />
       </div>
 
       {/* Right-side event list panel */}
