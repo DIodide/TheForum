@@ -7,7 +7,16 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules", ".next", "dist", ".turbo", "drizzle", "__pycache__", ".venv"]
+    "ignore": [
+      "node_modules",
+      ".next",
+      "dist",
+      ".turbo",
+      "drizzle",
+      "__pycache__",
+      ".venv",
+      "_assets"
+    ]
   },
   "formatter": {
     "enabled": true,

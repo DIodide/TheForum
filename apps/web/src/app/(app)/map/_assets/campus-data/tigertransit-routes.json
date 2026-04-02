@@ -1,0 +1,1014 @@
+[
+  {
+    "id": "0248b247-7744-4914-9d1a-e904b4c49a63",
+    "code": "W5",
+    "color": "#ED6E9C",
+    "displayName": "Route W5",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route W5: Grad College to Friend Center to Meadows",
+    "available": false,
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 752000000
+    }
+  },
+  {
+    "color": "#1D9DD9",
+    "name": "Route 1: Grad College to Stadium Drive Garage",
+    "id": "12dd22e3-3f77-44cb-9b13-3ae6881e5dcf",
+    "enabled": true,
+    "code": "1",
+    "displayName": "Route 1",
+    "serviceIds": [],
+    "servicesData": [],
+    "available": false,
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 849000000
+    }
+  },
+  {
+    "code": "G",
+    "color": "#753265",
+    "id": "1fe94a0b-1644-499b-a168-a2e50451cfbc",
+    "available": false,
+    "displayName": "Route G",
+    "enabled": false,
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route G - Hyatt Regency",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 130000000
+    }
+  },
+  {
+    "code": "Route 5: Circulator",
+    "available": false,
+    "id": "27650473-f943-413f-8e2b-1e02cfe774d8",
+    "color": "#ED5087",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route 5: Campus Overnight Circulator PM B",
+    "displayName": "x Route 5: Campus Overnight Circulator PM B",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 74000000
+    }
+  },
+  {
+    "id": "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+    "name": "Route 1: Grad College to Meadows",
+    "code": "1",
+    "displayName": "Route 1",
+    "available": true,
+    "color": "#1D9DD9",
+    "serviceIds": [
+      "1b053792-953b-44e1-9c58-307c5c89db72",
+      "24fe2d62-e487-49f6-af4b-dd036767fb70"
+    ],
+    "servicesData": [
+      {
+        "fromId": "c2812049-bae7-4b22-9906-4c7ce417684b",
+        "toId": "8b4affee-4037-4bcd-b22b-611f146452d1",
+        "fromName": "Graduate College",
+        "toName": "Meadows Drive Garage",
+        "serviceId": "1b053792-953b-44e1-9c58-307c5c89db72",
+        "stopIds": [
+          "c2812049-bae7-4b22-9906-4c7ce417684b",
+          "04ddc9c7-c8b9-4742-9a1b-b453aae8a4e4",
+          "02bd34d7-e535-42bc-af96-d287701ae6cc",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "636f7a82-34a1-458f-bf0d-f25dfc01abea",
+          "bc1a2650-0a87-4400-a960-2fab0d432677",
+          "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+          "bf8647e2-f33b-4f12-b992-78d6f96583fe",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "8b4affee-4037-4bcd-b22b-611f146452d1"
+        ]
+      },
+      {
+        "fromId": "8b4affee-4037-4bcd-b22b-611f146452d1",
+        "toId": "c2812049-bae7-4b22-9906-4c7ce417684b",
+        "fromName": "Meadows Drive Garage",
+        "toName": "Graduate College",
+        "serviceId": "24fe2d62-e487-49f6-af4b-dd036767fb70",
+        "stopIds": [
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3",
+          "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+          "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+          "2e63b7eb-a0f9-4257-970f-6caf823334ff",
+          "6568b368-20a2-430a-9da6-b4a2d6680e91",
+          "c2812049-bae7-4b22-9906-4c7ce417684b"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 564000000
+    }
+  },
+  {
+    "available": false,
+    "id": "2a5f718a-9ed5-4c26-b538-d4984e228eb4",
+    "color": "#985D0B",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route D - Meadows/EQuad Bridge Detour",
+    "displayName": "x Route D - Meadows/EQuad Bridge Detour",
+    "code": "",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 303000000
+    }
+  },
+  {
+    "code": "Route E - Holiday Inn Express/Crown Plaza",
+    "available": false,
+    "id": "382d6e09-e856-4d6b-bbb0-2042ba5a3224",
+    "color": "#C020D5",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route E - Homewood Suites / Courtyard Marriot",
+    "displayName": "x Route E - Homewood Suites / Courtyard Marriot",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 260000000
+    }
+  },
+  {
+    "code": "Route D - Marriot / Westin",
+    "available": false,
+    "id": "398c61dc-0ca6-48a6-a26a-cc0b11e83d57",
+    "color": "#4E85F4",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route D - Crown Plaza / Holiday Inn Express",
+    "displayName": "x Route D - Crown Plaza / Holiday Inn Express",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 220000000
+    }
+  },
+  {
+    "code": "TEST RUNS - NOT IN SERVICE",
+    "color": "#5BF047",
+    "available": false,
+    "id": "3d4fa02c-2868-4e1e-90eb-c5e229272feb",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x TEST RUNS - NOT IN SERVICE",
+    "displayName": "x TEST RUNS - NOT IN SERVICE",
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 466000000
+    }
+  },
+  {
+    "id": "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21",
+    "available": true,
+    "code": "WS",
+    "displayName": "Weekend Shopper",
+    "name": "WS: Weekend Shopper",
+    "color": "#6A4394",
+    "enabled": true,
+    "serviceIds": [
+      "016e74ee-9dc3-4d04-9ae2-0972868868f3"
+    ],
+    "servicesData": [
+      {
+        "fromId": "c2812049-bae7-4b22-9906-4c7ce417684b",
+        "toId": "c2812049-bae7-4b22-9906-4c7ce417684b",
+        "fromName": "Graduate College",
+        "toName": "Graduate College",
+        "serviceId": "016e74ee-9dc3-4d04-9ae2-0972868868f3",
+        "stopIds": [
+          "c2812049-bae7-4b22-9906-4c7ce417684b",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "ff0151c5-bb5a-4746-a49e-d3fc68172827",
+          "7bff935c-bc48-464f-9714-99d3f0aaa621",
+          "684d8839-c62b-4cfb-ae0f-d3bc05f25da7",
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "c2812049-bae7-4b22-9906-4c7ce417684b"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 283000000
+    }
+  },
+  {
+    "color": "#E80DF8",
+    "available": false,
+    "id": "45ef18ef-29bb-4fc5-9564-f8b1edf4c8c1",
+    "code": "XService Recognition Luncheon",
+    "name": "XService Recognition Luncheon",
+    "serviceIds": [],
+    "servicesData": [],
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 25000000
+    }
+  },
+  {
+    "code": "2",
+    "color": "#F7A71C",
+    "name": "Route 2: Lawrence/Lakeside to EQuad",
+    "id": "4894d1d9-889e-4687-8a93-13bb19426ed6",
+    "available": true,
+    "displayName": "Route 2",
+    "enabled": true,
+    "serviceIds": [
+      "0c67c6bb-2c8d-4fa6-91b1-6c3cf4fc34b6",
+      "1914870e-8a7f-40d0-a2e5-d72461a73985"
+    ],
+    "servicesData": [
+      {
+        "fromId": "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+        "toId": "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+        "fromName": "Friend Center",
+        "toName": "Lawrence Apartments",
+        "serviceId": "0c67c6bb-2c8d-4fa6-91b1-6c3cf4fc34b6",
+        "stopIds": [
+          "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+          "bf8647e2-f33b-4f12-b992-78d6f96583fe",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "d36399a2-91a3-4bfe-bd53-9cdc94c39478",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd"
+        ]
+      },
+      {
+        "fromId": "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+        "toId": "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+        "fromName": "Lawrence Apartments",
+        "toName": "Friend Center",
+        "serviceId": "1914870e-8a7f-40d0-a2e5-d72461a73985",
+        "stopIds": [
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "40f54b01-e8f7-4961-b5ac-c08eb5af4fa4",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3",
+          "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+          "bc1a2650-0a87-4400-a960-2fab0d432677",
+          "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 761000000
+    }
+  },
+  {
+    "id": "4fbcac90-9976-45c4-ae62-00b5a325f7de",
+    "code": "N5",
+    "color": "#ED6E9C",
+    "displayName": "Route N5",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route N5: Evening Grad College to Meadows via Princeton Station",
+    "available": false,
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 846000000
+    }
+  },
+  {
+    "id": "5086cedc-ff82-4c2b-b7e9-3352de673de5",
+    "code": "W6",
+    "color": "#A3711E",
+    "displayName": "Route W6",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route W6: Lawrence/Lakeside to Friend Center",
+    "available": false,
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 710000000
+    }
+  },
+  {
+    "code": "H",
+    "id": "60caeac8-6de4-4a8d-afda-87461584786b",
+    "available": false,
+    "displayName": "Route H",
+    "color": "#852015",
+    "enabled": false,
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route H - Hyatt Place / Residence Inn",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 440000000
+    }
+  },
+  {
+    "serviceIds": [
+      "eee30331-7c1e-40bd-be5b-75d0640c3f29"
+    ],
+    "code": "X",
+    "color": "#FF9924",
+    "displayName": "xCommencement 2021",
+    "name": "xCommencement 2021",
+    "id": "65da66e0-8724-4745-968a-1b62e721416a",
+    "enabled": false,
+    "servicesData": [
+      {
+        "toId": "73287c89-ab95-481d-b515-d24ca9bd49a3",
+        "toName": "Goheen Walk at Washington (NB)",
+        "fromName": "Harrison Lot",
+        "stopIds": [
+          "37e0b040-67d1-4854-b396-425e32a26914",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3"
+        ],
+        "serviceId": "eee30331-7c1e-40bd-be5b-75d0640c3f29",
+        "fromId": "37e0b040-67d1-4854-b396-425e32a26914"
+      }
+    ],
+    "available": false,
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 416000000
+    }
+  },
+  {
+    "code": "K",
+    "id": "6b121720-9312-49d7-b23b-06b3eaae73e6",
+    "available": false,
+    "displayName": "Route K",
+    "color": "#965874",
+    "enabled": false,
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route J - Rider University",
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 936000000
+    }
+  },
+  {
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "PRINCETON EARTH DAY SHUTTLE",
+    "color": "#68E877",
+    "available": false,
+    "name": "PRINCETON EARTH DAY SHUTTLE",
+    "id": "6b5bf966-575c-4ccf-a919-c1161d2e8aa4",
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 67000000
+    }
+  },
+  {
+    "id": "6d89d99d-6fbb-4269-bb16-fb8bab76e57a",
+    "code": "N6",
+    "color": "#A3711E",
+    "displayName": "Route N6",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route N6: Evening Lawrence/Lakeside to EQUAD via Princeton Station",
+    "available": false,
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 800000000
+    }
+  },
+  {
+    "code": "Route C - Sonesta/Hampton Inn",
+    "available": false,
+    "id": "6edb81f7-b06a-4958-87d3-5e8aacfa263d",
+    "color": "#33E147",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route C - Marriot / Westin Forrestal",
+    "displayName": "x Route C - Marriot / Westin Forrestal",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 354000000
+    }
+  },
+  {
+    "id": "70629116-e51d-4c6d-991d-5f100441a2d7",
+    "name": "Route 5: Princeton Station to SDG",
+    "code": "5",
+    "displayName": "Route 5",
+    "available": true,
+    "color": "#ED6E9C",
+    "serviceIds": [
+      "81706ef0-6bf5-448f-b70b-358a0b9dc382"
+    ],
+    "servicesData": [
+      {
+        "fromId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "toId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "fromName": "Princeton Station",
+        "toName": "Princeton Station",
+        "serviceId": "81706ef0-6bf5-448f-b70b-358a0b9dc382",
+        "stopIds": [
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "02bd34d7-e535-42bc-af96-d287701ae6cc",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "636f7a82-34a1-458f-bf0d-f25dfc01abea",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "d9a6023e-2d8e-4a0f-bb3f-ae691fe49eb6",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3",
+          "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+          "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+          "2e63b7eb-a0f9-4257-970f-6caf823334ff",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 890000000
+    }
+  },
+  {
+    "code": "5",
+    "color": "#852461",
+    "id": "73a4c60f-8b0a-4207-9196-adb0ae351e81",
+    "displayName": "Route 5 (Evening Circulator)",
+    "enabled": true,
+    "available": false,
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Campus Circulator",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 978000000
+    }
+  },
+  {
+    "color": "#3238E2",
+    "available": false,
+    "id": "7817921a-ee55-48a9-8983-fd6d43ae4d32",
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "X Route 5B MoveIn Stadium Garage to Princeton Station8/23/25",
+    "name": "X Route 5B MoveIn Stadium Garage to Princeton Station8/23/25",
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 325000000
+    }
+  },
+  {
+    "color": "#000000",
+    "available": false,
+    "id": "7b0fda37-c1e1-4169-9b0e-32d7fca1981d",
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "XTigerTransit @ Dawn",
+    "name": "XTigerTransit @ Dawn",
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 152000000
+    }
+  },
+  {
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "Circulator",
+    "color": "#000000",
+    "available": false,
+    "id": "7c5bdf5c-c50d-4128-b31c-20989e6ca5e3",
+    "name": "x Circulator",
+    "displayName": "x Circulator",
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 516000000
+    }
+  },
+  {
+    "id": "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+    "name": "Route 6A: Campus Circulator via EQUAD",
+    "code": "6A",
+    "displayName": "Route 6A",
+    "available": true,
+    "color": "#A3711E",
+    "serviceIds": [
+      "258acda8-5138-453b-96ff-24e958cf9e77",
+      "673393dd-2acc-446c-b607-1a705f59b585",
+      "9806dbb6-2fed-4e67-b029-d7728130e943"
+    ],
+    "servicesData": [
+      {
+        "fromId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "toId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "fromName": "Princeton Station",
+        "toName": "Princeton Station",
+        "serviceId": "258acda8-5138-453b-96ff-24e958cf9e77",
+        "stopIds": [
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "c2812049-bae7-4b22-9906-4c7ce417684b",
+          "04ddc9c7-c8b9-4742-9a1b-b453aae8a4e4",
+          "02bd34d7-e535-42bc-af96-d287701ae6cc",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "bc1a2650-0a87-4400-a960-2fab0d432677",
+          "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+          "bf8647e2-f33b-4f12-b992-78d6f96583fe",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183"
+        ]
+      },
+      {
+        "fromId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "toId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "fromName": "Princeton Station",
+        "toName": "Princeton Station",
+        "serviceId": "673393dd-2acc-446c-b607-1a705f59b585",
+        "stopIds": [
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "c2812049-bae7-4b22-9906-4c7ce417684b",
+          "04ddc9c7-c8b9-4742-9a1b-b453aae8a4e4",
+          "02bd34d7-e535-42bc-af96-d287701ae6cc",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "bc1a2650-0a87-4400-a960-2fab0d432677",
+          "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+          "bf8647e2-f33b-4f12-b992-78d6f96583fe",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183"
+        ]
+      },
+      {
+        "fromId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "toId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "fromName": "Princeton Station",
+        "toName": "Princeton Station",
+        "serviceId": "9806dbb6-2fed-4e67-b029-d7728130e943",
+        "stopIds": [
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "c2812049-bae7-4b22-9906-4c7ce417684b",
+          "04ddc9c7-c8b9-4742-9a1b-b453aae8a4e4",
+          "02bd34d7-e535-42bc-af96-d287701ae6cc",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "bc1a2650-0a87-4400-a960-2fab0d432677",
+          "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+          "bf8647e2-f33b-4f12-b992-78d6f96583fe",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 664000000
+    }
+  },
+  {
+    "id": "8213b9c6-a8f2-43b2-af72-041ad35719b7",
+    "name": "Route 6B: Campus Circulator via Washington Road",
+    "code": "6B",
+    "displayName": "Route 6B",
+    "available": true,
+    "color": "#A3711E",
+    "serviceIds": [
+      "3e3d436a-e892-4ca4-b86e-d0b4bfca041f",
+      "c3da64ae-aebf-4496-90d0-f2a52a698f7a"
+    ],
+    "servicesData": [
+      {
+        "fromId": "8b4affee-4037-4bcd-b22b-611f146452d1",
+        "toId": "8b4affee-4037-4bcd-b22b-611f146452d1",
+        "fromName": "Meadows Drive Garage",
+        "toName": "Meadows Drive Garage",
+        "serviceId": "3e3d436a-e892-4ca4-b86e-d0b4bfca041f",
+        "stopIds": [
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3",
+          "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+          "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+          "2e63b7eb-a0f9-4257-970f-6caf823334ff",
+          "6568b368-20a2-430a-9da6-b4a2d6680e91",
+          "c2812049-bae7-4b22-9906-4c7ce417684b",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "8b4affee-4037-4bcd-b22b-611f146452d1"
+        ]
+      },
+      {
+        "fromId": "8b4affee-4037-4bcd-b22b-611f146452d1",
+        "toId": "8b4affee-4037-4bcd-b22b-611f146452d1",
+        "fromName": "Meadows Drive Garage",
+        "toName": "Meadows Drive Garage",
+        "serviceId": "c3da64ae-aebf-4496-90d0-f2a52a698f7a",
+        "stopIds": [
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3",
+          "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+          "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+          "2e63b7eb-a0f9-4257-970f-6caf823334ff",
+          "6568b368-20a2-430a-9da6-b4a2d6680e91",
+          "c2812049-bae7-4b22-9906-4c7ce417684b",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+          "dee24b25-05e4-49f8-832a-51d602c3d000",
+          "8b4affee-4037-4bcd-b22b-611f146452d1"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 571000000
+    }
+  },
+  {
+    "code": "3",
+    "name": "Route 3: Merwick to Forrestal/PPPL",
+    "id": "886dd8f1-6a83-4be3-9909-3e3170a5fb65",
+    "available": true,
+    "displayName": "Route 3",
+    "color": "#E51F26",
+    "enabled": true,
+    "serviceIds": [
+      "e78898de-af56-49e1-bb50-a0efff8dbdec",
+      "f7647f2d-fdcd-4877-aa8c-3bd1a8eea479"
+    ],
+    "servicesData": [
+      {
+        "fromId": "7c718d75-9d96-4d24-bdaf-b56945be8137",
+        "toId": "10bc5bfa-8faa-4edc-9446-3afb98e1d958",
+        "fromName": "Princeton Medical Center",
+        "toName": "Merwick Stanworth Apartments",
+        "serviceId": "e78898de-af56-49e1-bb50-a0efff8dbdec",
+        "stopIds": [
+          "7c718d75-9d96-4d24-bdaf-b56945be8137",
+          "43015778-cbaf-4f30-81f8-abca4ffd69bb",
+          "e0cbe47b-f1bd-48df-9aa8-e6b7f70f8c8f",
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3",
+          "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+          "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+          "10bc5bfa-8faa-4edc-9446-3afb98e1d958"
+        ]
+      },
+      {
+        "fromId": "10bc5bfa-8faa-4edc-9446-3afb98e1d958",
+        "toId": "e0cbe47b-f1bd-48df-9aa8-e6b7f70f8c8f",
+        "fromName": "Merwick Stanworth Apartments",
+        "toName": "PPPL",
+        "serviceId": "f7647f2d-fdcd-4877-aa8c-3bd1a8eea479",
+        "stopIds": [
+          "10bc5bfa-8faa-4edc-9446-3afb98e1d958",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "636f7a82-34a1-458f-bf0d-f25dfc01abea",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "8b4affee-4037-4bcd-b22b-611f146452d1",
+          "7c718d75-9d96-4d24-bdaf-b56945be8137",
+          "43015778-cbaf-4f30-81f8-abca4ffd69bb",
+          "e0cbe47b-f1bd-48df-9aa8-e6b7f70f8c8f"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 658000000
+    }
+  },
+  {
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "Temporary Meadows Connection",
+    "color": "#FB6A6A",
+    "available": false,
+    "id": "891b8cbe-94cd-4097-822c-34ac58164574",
+    "name": "x Temporary Meadows Connection",
+    "displayName": "x Temporary Meadows Connection",
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 608000000
+    }
+  },
+  {
+    "code": "Route B - Doubletree Princeton",
+    "available": false,
+    "id": "913d1fb0-3cc8-430e-9809-5f6757e2fca0",
+    "color": "#D39E0D",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route B - Sonesta ES Suites / Hampton Inn",
+    "displayName": "x Route B - Sonesta ES Suites / Hampton Inn",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 397000000
+    }
+  },
+  {
+    "color": "#365478",
+    "id": "97201a01-4d41-4737-a44a-a203dcbf9ca1",
+    "available": false,
+    "code": "I",
+    "displayName": "Route I",
+    "enabled": false,
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x ROUTE I - Marriot Residence Inn",
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 982000000
+    }
+  },
+  {
+    "code": "J",
+    "id": "9a1d740a-9011-4ebe-8fb5-3a9c104325ed",
+    "available": false,
+    "displayName": "Route J",
+    "color": "#124584",
+    "enabled": false,
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route K - Hyatt Place Princeton",
+    "lastUpdated": {
+      "_seconds": 1775151513,
+      "_nanoseconds": 891000000
+    }
+  },
+  {
+    "code": "Reunion Campus Circulator",
+    "color": "#F5A65B",
+    "available": false,
+    "id": "9af7a297-d722-40d4-ac01-b3551e8ad8a1",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Reunion Circulator",
+    "displayName": "x Reunion Circulator",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 616000000
+    }
+  },
+  {
+    "code": "Route F - Homewood Suites/Courtyard",
+    "available": false,
+    "id": "9b4f4755-9dba-457f-8ae9-b5e861018b9e",
+    "color": "#807D82",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route F - Rider Univ. / Hilton Garden Inn",
+    "displayName": "x Route F - Rider Univ. / Hilton Garden Inn",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 176000000
+    }
+  },
+  {
+    "code": "Route A - Holiday Inn Princeton",
+    "color": "#CA1616",
+    "available": false,
+    "id": "ac2ed079-e5c4-43f8-a566-a683d2167d98",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x Route A - Holiday Inn / Double Tree",
+    "displayName": "x Route A - Holiday Inn / Double Tree",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 483000000
+    }
+  },
+  {
+    "code": "First Family Weekend",
+    "color": "#451299",
+    "available": false,
+    "id": "b84ceb75-a84d-421a-a7f4-aaf67e54ee87",
+    "name": "x First-Year Families Saturday",
+    "serviceIds": [],
+    "servicesData": [],
+    "displayName": "x First-Year Families Saturday",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 527000000
+    }
+  },
+  {
+    "code": "6",
+    "id": "bb733fc7-4b53-481f-9616-28d61cca131c",
+    "available": false,
+    "displayName": "Route 6",
+    "color": "#FF6726",
+    "enabled": false,
+    "serviceIds": [
+      "a9b55db7-7db3-46c5-9fd3-aa19a029f1f5"
+    ],
+    "servicesData": [
+      {
+        "stopIds": [
+          "838f77c0-8279-4f42-8da4-998a1a08cd61",
+          "b4fb36a8-85e4-4bb8-bea3-91bf2cdb66de",
+          "65b8bea2-35f8-44c2-9a87-6496950772c9",
+          "ef912b5c-6c70-4cf6-a573-f3917026a9f3",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "59973c04-90a9-4e3f-b735-57f7fc97746e",
+          "b08299e5-423d-4214-affc-b63dcfe632ac",
+          "cbb2a18d-36f0-4799-a4eb-939fb3c396aa",
+          "76f56204-03d8-4989-ac28-af3465ea36be",
+          "b7d89418-643b-410b-8d86-43c832352dd7",
+          "bc3152fc-36dc-4376-a775-fca0e2d77472",
+          "0446792b-a772-4206-8ce7-1c185a76c362",
+          "0cb862e5-9c4b-472a-904a-2d46cbf83b8f",
+          "2f4a7e80-0567-486e-8ca8-9c6ab552a832",
+          "1f288560-d66b-4b5f-ac5c-ac23c6bc8810",
+          "51e767bd-214c-47e6-b9c7-5cc055c4b5ea",
+          "9ffb2a31-e135-4bab-bf9a-acb470541258",
+          "40e80a29-20d0-43de-af2c-952042d4aaef",
+          "bc3152fc-36dc-4376-a775-fca0e2d77472",
+          "b7d89418-643b-410b-8d86-43c832352dd7",
+          "3242b28c-be15-4b64-aae4-b41a4437dede",
+          "a2b8231b-23d7-4920-a708-6124fb315248",
+          "90aa8ade-72f3-4cb3-90fc-653ab03e1930",
+          "838f77c0-8279-4f42-8da4-998a1a08cd61"
+        ],
+        "fromName": "Elm Court",
+        "serviceId": "a9b55db7-7db3-46c5-9fd3-aa19a029f1f5",
+        "fromId": "838f77c0-8279-4f42-8da4-998a1a08cd61",
+        "toName": "Elm Court",
+        "toId": "838f77c0-8279-4f42-8da4-998a1a08cd61"
+      }
+    ],
+    "name": "The Princeton Loop - LOCAL",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 29000000
+    }
+  },
+  {
+    "color": "#0FEB97",
+    "available": false,
+    "id": "d03ad4f8-19b1-482a-a028-1bd79bffd7ef",
+    "serviceIds": [
+      "6a32674b-fc51-4d89-8ca7-0b39165ed2d8",
+      "b233ce76-4f42-4407-911d-29a62e80b559"
+    ],
+    "servicesData": [
+      {
+        "toName": "Princeton Station",
+        "fromName": "Princeton Shopping Center",
+        "serviceId": "6a32674b-fc51-4d89-8ca7-0b39165ed2d8",
+        "stopIds": [
+          "bc3152fc-36dc-4376-a775-fca0e2d77472",
+          "a610ed4b-11b0-403f-9cba-ce6c24368c6e",
+          "b08299e5-423d-4214-affc-b63dcfe632ac",
+          "74c501f4-3fdc-4d1c-b362-25e041a486af",
+          "59973c04-90a9-4e3f-b735-57f7fc97746e",
+          "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183"
+        ],
+        "toId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "fromId": "bc3152fc-36dc-4376-a775-fca0e2d77472"
+      },
+      {
+        "toName": "Princeton Shopping Center",
+        "toId": "bc3152fc-36dc-4376-a775-fca0e2d77472",
+        "fromId": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+        "stopIds": [
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "ef912b5c-6c70-4cf6-a573-f3917026a9f3",
+          "59973c04-90a9-4e3f-b735-57f7fc97746e",
+          "27e9fadd-20b1-40da-94f8-efcde570d196",
+          "b08299e5-423d-4214-affc-b63dcfe632ac",
+          "1baf8528-f9cc-4cd1-9107-53fe056eb235",
+          "bc3152fc-36dc-4376-a775-fca0e2d77472"
+        ],
+        "serviceId": "b233ce76-4f42-4407-911d-29a62e80b559",
+        "fromName": "Princeton Station"
+      }
+    ],
+    "code": "The Princeton Loop - EXPRESS",
+    "name": "The Princeton Loop - EXPRESS",
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 109000000
+    }
+  },
+  {
+    "code": "4",
+    "color": "#58B146",
+    "id": "d092e3be-9034-438f-9914-6ae8d74aa39e",
+    "available": true,
+    "displayName": "Route 4",
+    "enabled": true,
+    "name": "Route 4: Princeton Junction to Stadium Drive Garage",
+    "serviceIds": [
+      "502a4690-a41e-408b-bbc5-ef94f02062a2",
+      "daaf9fea-8534-4e19-a17e-95e8992b5411"
+    ],
+    "servicesData": [
+      {
+        "fromId": "36a6da54-a430-4750-902e-79c3332bd84d",
+        "toId": "d9a6023e-2d8e-4a0f-bb3f-ae691fe49eb6",
+        "fromName": "Princeton Junction",
+        "toName": "Stadium Garage",
+        "serviceId": "502a4690-a41e-408b-bbc5-ef94f02062a2",
+        "stopIds": [
+          "36a6da54-a430-4750-902e-79c3332bd84d",
+          "8e2471b3-2926-4ad8-9d83-ae4aecf6493b",
+          "0fd50afb-1ade-4508-9fe4-ef8d5a7c6a0a",
+          "40f54b01-e8f7-4961-b5ac-c08eb5af4fa4",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "02bd34d7-e535-42bc-af96-d287701ae6cc",
+          "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+          "636f7a82-34a1-458f-bf0d-f25dfc01abea",
+          "e22768b9-3c65-4412-b343-1a24538b8aa4",
+          "d9a6023e-2d8e-4a0f-bb3f-ae691fe49eb6"
+        ]
+      },
+      {
+        "fromId": "d9a6023e-2d8e-4a0f-bb3f-ae691fe49eb6",
+        "toId": "36a6da54-a430-4750-902e-79c3332bd84d",
+        "fromName": "Stadium Garage",
+        "toName": "Princeton Junction",
+        "serviceId": "daaf9fea-8534-4e19-a17e-95e8992b5411",
+        "stopIds": [
+          "d9a6023e-2d8e-4a0f-bb3f-ae691fe49eb6",
+          "73287c89-ab95-481d-b515-d24ca9bd49a3",
+          "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+          "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+          "2e63b7eb-a0f9-4257-970f-6caf823334ff",
+          "81eef37e-2ff1-4410-90b0-7f64a066d183",
+          "c8b5f046-607a-4119-b524-dbe3ea04efe2",
+          "72bc9bb5-aac6-4acd-aae5-de42c89bf63f",
+          "36a6da54-a430-4750-902e-79c3332bd84d"
+        ]
+      }
+    ],
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 195000000
+    }
+  },
+  {
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "Campus Circulator Mid-day",
+    "color": "#000000",
+    "available": false,
+    "id": "d393ab94-2d33-4330-bb8f-6600403eab20",
+    "name": "x Campus Circulator Mid-day",
+    "displayName": "x Campus Circulator Mid-day",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 712000000
+    }
+  },
+  {
+    "color": "#000000",
+    "available": false,
+    "id": "d7b066d8-51c8-45b1-82c2-1e3ff4934157",
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "zRoute 1 Grade College to Meadows SPRING BREAK 26",
+    "name": "zRoute 1 Grade College to Meadows SPRING BREAK 26",
+    "lastUpdated": {
+      "_seconds": 1775151515,
+      "_nanoseconds": 239000000
+    }
+  },
+  {
+    "code": "MS: MEadows Shopper",
+    "color": "#9A6942",
+    "available": false,
+    "id": "e9b29d27-6551-46fe-aee0-1f0ef10e8be9",
+    "serviceIds": [],
+    "servicesData": [],
+    "name": "x MS: Meadows Shopper",
+    "displayName": "x MS: Meadows Shopper",
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 936000000
+    }
+  },
+  {
+    "name": "Route 1: Grad College to Stadium Drive Garage",
+    "id": "f3a4be0c-7585-4e41-b3d8-1cb2c8ddd807",
+    "color": "#1D9DD9",
+    "enabled": true,
+    "serviceIds": [],
+    "servicesData": [],
+    "code": "1",
+    "displayName": "Route 1 (Friend Center)",
+    "available": false,
+    "lastUpdated": {
+      "_seconds": 1775151514,
+      "_nanoseconds": 804000000
+    }
+  }
+]

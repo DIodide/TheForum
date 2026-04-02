@@ -1,0 +1,1778 @@
+[
+  {
+    "id": "013b0d59-8808-4ac7-ac34-2d452cef5886",
+    "name": "Wegmans",
+    "latitude": 40.3036243379996,
+    "longitude": -74.675607360217,
+    "numberIdentifier": 2219756166140037,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [
+      2269
+    ]
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "018c87d2-2ec4-49d4-b7a1-aab958cbb1b7",
+    "name": "Training 06",
+    "latitude": 40.313468402497,
+    "longitude": -74.651201533693,
+    "numberIdentifier": 3493232935303427
+  },
+  {
+    "id": "02bd34d7-e535-42bc-af96-d287701ae6cc",
+    "name": "Admissions Information Center (NB)",
+    "latitude": 40.346985,
+    "longitude": -74.66175,
+    "numberIdentifier": 2428409183792511,
+    "stopsCodes": [
+      "1",
+      "4",
+      "5",
+      "6A"
+    ],
+    "servesRoutes": [
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "70629116-e51d-4c6d-991d-5f100441a2d7"
+    ],
+    "linkedToPois": [
+      2304
+    ]
+  },
+  {
+    "servesRoutes": [],
+    "numberIdentifier": 6733238161002759,
+    "latitude": 40.3367296388722,
+    "stopsCodes": [],
+    "name": "Helm Building",
+    "linkedToPois": [],
+    "id": "03b6998c-c54c-4cfc-96da-bbbb5ab1be1c",
+    "longitude": -74.6559359183472
+  },
+  {
+    "id": "0446792b-a772-4206-8ce7-1c185a76c362",
+    "name": "Thanet Circle",
+    "latitude": 40.3690611885102,
+    "longitude": -74.6526652495339,
+    "numberIdentifier": 6005302531943687,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "04ddc9c7-c8b9-4742-9a1b-b453aae8a4e4",
+    "name": "College Rd at McCarter Theater EB",
+    "latitude": 40.3447506394873,
+    "longitude": -74.660697882769,
+    "numberIdentifier": 6110139937492625,
+    "stopsCodes": [
+      "1",
+      "6A"
+    ],
+    "servesRoutes": [
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795"
+    ],
+    "linkedToPois": [
+      5918
+    ]
+  },
+  {
+    "id": "07667170-8904-4efe-80bc-5790192d9564",
+    "name": "University Place and College Road SB",
+    "latitude": 40.3451361122974,
+    "longitude": -74.6605284834671,
+    "numberIdentifier": 1444655392752563,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "0b605b57-c131-4707-b2c0-778a5d5cea07",
+    "name": "Parnell Learning Center",
+    "latitude": 40.3557398,
+    "longitude": -74.6623665,
+    "numberIdentifier": 5773140557614895,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "0cb862e5-9c4b-472a-904a-2d46cbf83b8f",
+    "name": "Thanet Senior Living",
+    "latitude": 40.3691167230337,
+    "longitude": -74.6537103880244,
+    "numberIdentifier": 8496561451019791,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "0de7d898-6857-432c-99b8-9cddcb840be5",
+    "name": "Princeton Marriot at Forrestal",
+    "latitude": 40.3550057,
+    "longitude": -74.5991407,
+    "numberIdentifier": 6947512858908355,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "0fd50afb-1ade-4508-9fe4-ef8d5a7c6a0a",
+    "name": "693 Alexander Road",
+    "latitude": 40.3235953395247,
+    "longitude": -74.6398851264588,
+    "numberIdentifier": 2021165495101563,
+    "stopsCodes": [
+      "4"
+    ],
+    "servesRoutes": [
+      "d092e3be-9034-438f-9914-6ae8d74aa39e"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "10bc5bfa-8faa-4edc-9446-3afb98e1d958",
+    "name": "Merwick Stanworth Apartments",
+    "latitude": 40.3531049482655,
+    "longitude": -74.6659138124576,
+    "numberIdentifier": 3466838136795777,
+    "stopsCodes": [
+      "3"
+    ],
+    "servesRoutes": [
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2279
+    ]
+  },
+  {
+    "id": "1380d995-748f-48b5-9323-51aa494e583d",
+    "name": "Training 1",
+    "latitude": 40.3488018814098,
+    "longitude": -74.6405564417229,
+    "numberIdentifier": 6043551495320135,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "17988a97-8157-40ab-880e-082c3ffabf0a",
+    "name": "Sonesta ES Suites Monmouth Junction",
+    "latitude": 40.3527256,
+    "longitude": -74.6124697,
+    "numberIdentifier": 6729586108928301,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "1b799806-e1a9-402b-88b2-9efe5bf84688",
+    "name": "Training 000",
+    "latitude": 40.3232288661703,
+    "longitude": -74.6440421289357,
+    "numberIdentifier": 3562943070957009
+  },
+  {
+    "id": "1baf8528-f9cc-4cd1-9107-53fe056eb235",
+    "name": "Harrison St N at Franklin Ave NB",
+    "latitude": 40.3593763962366,
+    "longitude": -74.6496310373955,
+    "numberIdentifier": 8736742936159277,
+    "stopsCodes": [
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "1be6b118-ffdb-484f-b713-960ac70bc321",
+    "name": "WIlliam Street at Washington Road SB",
+    "latitude": 40.3493637164541,
+    "longitude": -74.6562991074663,
+    "numberIdentifier": 5046908462124099,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "1e657e12-ede3-4ef6-97de-942124f5ef38",
+    "name": "Hyatt Place Princeton",
+    "latitude": 40.316971,
+    "longitude": -74.658941,
+    "numberIdentifier": 3385083939860339,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "1f0c6ca0-a3d3-4867-8258-e1f786b76552",
+    "name": "BUS YARD: 755 Alexander Road",
+    "latitude": 40.3215409,
+    "longitude": -74.6348608,
+    "numberIdentifier": 6657800950206119,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "1f288560-d66b-4b5f-ac5c-ac23c6bc8810",
+    "name": "Center for Modern Aging Princeton",
+    "latitude": 40.3822001152386,
+    "longitude": -74.6520501534424,
+    "numberIdentifier": 435204545359071,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2291
+    ]
+  },
+  {
+    "id": "201a3bba-f3ee-4bdb-8169-f5673844d228",
+    "name": "Denunzio Cicle",
+    "latitude": 40.3444721261938,
+    "longitude": -74.6478573365791,
+    "numberIdentifier": 3180652975381783,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "24469a11-739d-4775-9054-0b2ffcb540cf",
+    "name": "Faculty Rd at Harrison",
+    "latitude": 40.3459851363156,
+    "longitude": -74.6397200687288,
+    "numberIdentifier": 3841929024525377,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "2522afdc-d94a-4353-8d52-681ae2d98d72",
+    "name": "Training 08",
+    "latitude": 40.3129738247035,
+    "longitude": -74.6600015996045,
+    "numberIdentifier": 8787564083643873,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "26798879-0fa7-4804-8da2-d641a3beceb5",
+    "name": "Training 08",
+    "latitude": 40.3099661790531,
+    "longitude": -74.6558294568018,
+    "numberIdentifier": 6207309154288887,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "27e9fadd-20b1-40da-94f8-efcde570d196",
+    "name": "Harrison St N at Nassau St NB",
+    "latitude": 40.3546101655297,
+    "longitude": -74.6459425858965,
+    "numberIdentifier": 7454898863149829,
+    "stopsCodes": [
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "28c33b37-22c7-4b9f-a614-da2ebc75bab8",
+    "name": "Nassau Street (EB)",
+    "latitude": 40.3493913482611,
+    "longitude": -74.660476216645,
+    "numberIdentifier": 3151254256055101,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "2cf80aca-8edd-48a0-b9eb-86835f5b99e3",
+    "name": "Element Ewing Princeton",
+    "latitude": 40.286279,
+    "longitude": -74.8078082,
+    "numberIdentifier": 2546392434980345,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "2d598865-872e-44c8-98ec-1d8fffa29a6d",
+    "name": "Hampton Inn Princeton",
+    "latitude": 40.3635969,
+    "longitude": -74.6001827,
+    "numberIdentifier": 6628840368114965,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "2e63b7eb-a0f9-4257-970f-6caf823334ff",
+    "name": "Admissions Information Center (SB)",
+    "latitude": 40.3471781778094,
+    "longitude": -74.6619994454384,
+    "numberIdentifier": 2720689687293797,
+    "stopsCodes": [
+      "1",
+      "4",
+      "5",
+      "6B"
+    ],
+    "servesRoutes": [
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7",
+      "70629116-e51d-4c6d-991d-5f100441a2d7",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e"
+    ],
+    "linkedToPois": [
+      2295
+    ]
+  },
+  {
+    "id": "2f4a7e80-0567-486e-8ca8-9c6ab552a832",
+    "name": "Princeton Community Village",
+    "latitude": 40.377157,
+    "longitude": -74.648375,
+    "numberIdentifier": 5661641265333375,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2287
+    ]
+  },
+  {
+    "id": "3242b28c-be15-4b64-aae4-b41a4437dede",
+    "name": "Pannell Learning Center (Clay St)",
+    "latitude": 40.3556544098746,
+    "longitude": -74.6623332656067,
+    "numberIdentifier": 8549583505397573,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "3489c404-d5fd-4508-bd18-28cb9134e270",
+    "name": "Yeh College (EB)",
+    "latitude": 40.3413376026535,
+    "longitude": -74.65316278158,
+    "numberIdentifier": 6764361504107041,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [
+      5922
+    ]
+  },
+  {
+    "id": "359bfc42-d650-414c-9d95-1be927d74b34",
+    "name": "Courtyard by Marriot Ewing",
+    "latitude": 40.2860884,
+    "longitude": -74.8100902,
+    "numberIdentifier": 1225960902480787,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "35a1d413-b148-4659-bbe5-476cd6f0924f",
+    "name": "Training 01",
+    "latitude": 40.3216224338273,
+    "longitude": -74.6458155587323,
+    "numberIdentifier": 5998260357819757
+  },
+  {
+    "id": "36a6da54-a430-4750-902e-79c3332bd84d",
+    "name": "Princeton Junction",
+    "latitude": 40.3161455270637,
+    "longitude": -74.6248671243003,
+    "numberIdentifier": 111459642961375,
+    "stopsCodes": [
+      "4"
+    ],
+    "servesRoutes": [
+      "d092e3be-9034-438f-9914-6ae8d74aa39e"
+    ],
+    "linkedToPois": [
+      2276
+    ]
+  },
+  {
+    "id": "37e0b040-67d1-4854-b396-425e32a26914",
+    "name": "Harrison Lot",
+    "latitude": 40.34743,
+    "longitude": -74.638412,
+    "numberIdentifier": 5407881068304409,
+    "stopsCodes": [
+      "X"
+    ],
+    "servesRoutes": [
+      "65da66e0-8724-4745-968a-1b62e721416a"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "39e48f63-c02d-4681-bf87-b23e7d8d8644",
+    "name": "NewMuni 1",
+    "latitude": 40.352264,
+    "longitude": -74.612324,
+    "numberIdentifier": 5332480052032623,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "3c0e7c1d-b6a8-419b-b1d7-130f2e0822f1",
+    "name": "Extended Stay Monmouth Junction",
+    "latitude": 40.3784653,
+    "longitude": -74.579601,
+    "numberIdentifier": 6061690963459651,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "40e80a29-20d0-43de-af2c-952042d4aaef",
+    "name": "Redding Circle",
+    "latitude": 40.3729693835168,
+    "longitude": -74.6608350370483,
+    "numberIdentifier": 4051837019465599,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2299
+    ]
+  },
+  {
+    "id": "40f54b01-e8f7-4961-b5ac-c08eb5af4fa4",
+    "name": "Helm Building (NB)",
+    "latitude": 40.3366149386928,
+    "longitude": -74.655916514966,
+    "numberIdentifier": 6638737810508205,
+    "stopsCodes": [
+      "2",
+      "4"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e"
+    ],
+    "linkedToPois": [
+      2274
+    ]
+  },
+  {
+    "id": "41842b72-4753-4ed9-a84b-8e6016a1c111",
+    "name": "Westin Hotel - Forrestal Village",
+    "latitude": 40.3557374,
+    "longitude": -74.6114033,
+    "numberIdentifier": 7468676587494625,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "4287729c-b3fa-41eb-969b-2b0ddf8acc4c",
+    "name": "Training 04",
+    "latitude": 40.3176688029047,
+    "longitude": -74.6510190736469,
+    "numberIdentifier": 5949065038858543
+  },
+  {
+    "id": "43015778-cbaf-4f30-81f8-abca4ffd69bb",
+    "name": "Forrestal (SB)",
+    "latitude": 40.3455527042914,
+    "longitude": -74.6154406197029,
+    "numberIdentifier": 6987413232332921,
+    "stopsCodes": [
+      "3"
+    ],
+    "servesRoutes": [
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2278
+    ]
+  },
+  {
+    "id": "45b893f0-dee2-4c61-8ec9-d641f387d066",
+    "name": "Alexander Road at Roszel Road",
+    "latitude": 40.321116887656,
+    "longitude": -74.6366259213768,
+    "numberIdentifier": 2539998943072031,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [
+      2305
+    ]
+  },
+  {
+    "id": "49df7c26-68e5-4774-a389-15b302c00c5a",
+    "name": "xFaculty Rd at Harrison",
+    "latitude": 40.3459701584136,
+    "longitude": -74.6397005660432,
+    "numberIdentifier": 2596118514393799,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "4b04341a-ba0d-4d0d-b4e2-d6e2bcbd844d",
+    "name": "Training 09",
+    "latitude": 40.3367586579791,
+    "longitude": -74.6314487522401,
+    "numberIdentifier": 4068497371363659,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "4f20571d-7feb-4f86-9a8e-e524c25c8874",
+    "name": "Training 02",
+    "latitude": 40.3200078275503,
+    "longitude": -74.6463210303066,
+    "numberIdentifier": 2466913158174781
+  },
+  {
+    "id": "51e767bd-214c-47e6-b9c7-5cc055c4b5ea",
+    "name": "Grigg's Farm",
+    "latitude": 40.3872331,
+    "longitude": -74.6620342,
+    "numberIdentifier": 1096580468862465,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2290
+    ]
+  },
+  {
+    "id": "58b7cd26-0938-4f8f-b5cf-9666ba69712c",
+    "name": "Nassau Street at Palmer Sq. (WB)",
+    "latitude": 40.3494508249344,
+    "longitude": -74.6606812777399,
+    "numberIdentifier": 8713680766647541,
+    "stopsCodes": [
+      "1",
+      "3",
+      "4",
+      "5",
+      "6B",
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7",
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef",
+      "70629116-e51d-4c6d-991d-5f100441a2d7",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2264
+    ]
+  },
+  {
+    "id": "591140b5-da89-45cc-b7f3-774bab2d6dbe",
+    "name": "D'Angelo's Italian Market",
+    "latitude": 40.3511513508317,
+    "longitude": -74.6591536823778,
+    "numberIdentifier": 4487832362283017,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "59973c04-90a9-4e3f-b735-57f7fc97746e",
+    "name": "US Post Office",
+    "latitude": 40.352534,
+    "longitude": -74.6502091,
+    "numberIdentifier": 5942311803443091,
+    "stopsCodes": [
+      "6",
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef",
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2293
+    ]
+  },
+  {
+    "id": "5c6e0ba8-faf7-4d76-8d03-cd84e42285df",
+    "name": "Whole Foods",
+    "latitude": 40.3088861936957,
+    "longitude": -74.6658142793998,
+    "numberIdentifier": 5099885269805213,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [
+      2268
+    ]
+  },
+  {
+    "id": "5d5d250c-339b-4e4c-ab5c-2b00198307d6",
+    "name": "Trader Joe's",
+    "latitude": 40.3106778361913,
+    "longitude": -74.6623049577624,
+    "numberIdentifier": 6097105061361009,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [
+      2270
+    ]
+  },
+  {
+    "id": "5db92e22-934d-4e8d-9b06-1c4d0f74798f",
+    "name": "Canal/Bridge",
+    "latitude": 40.3320617,
+    "longitude": -74.6529509,
+    "numberIdentifier": 3735624408709885,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "60fe827a-ec92-4981-a092-d2179ab29952",
+    "name": "Faculty Rd. and Broadmead St.",
+    "latitude": 40.345153188933,
+    "longitude": -74.6421170294478,
+    "numberIdentifier": 5704322584255671,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "636f7a82-34a1-458f-bf0d-f25dfc01abea",
+    "name": "McCosh Walk on Washington Road (SB)",
+    "latitude": 40.3482948515107,
+    "longitude": -74.6554832165202,
+    "numberIdentifier": 4863924038820273,
+    "stopsCodes": [
+      "1",
+      "3",
+      "4",
+      "5"
+    ],
+    "servesRoutes": [
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "70629116-e51d-4c6d-991d-5f100441a2d7",
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2289
+    ]
+  },
+  {
+    "id": "6568b368-20a2-430a-9da6-b4a2d6680e91",
+    "name": "College Rd at McCarter Theater WB",
+    "latitude": 40.3448662171453,
+    "longitude": -74.6604832281571,
+    "numberIdentifier": 753415904626309,
+    "stopsCodes": [
+      "1",
+      "6B"
+    ],
+    "servesRoutes": [
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7"
+    ],
+    "linkedToPois": [
+      5919
+    ]
+  },
+  {
+    "id": "65b8bea2-35f8-44c2-9a87-6496950772c9",
+    "name": "Princeton Senior Resource Ctr.",
+    "latitude": 40.348520754985,
+    "longitude": -74.6662197086497,
+    "numberIdentifier": 2365201833479353,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2301
+    ]
+  },
+  {
+    "id": "66862a51-8893-4d36-975c-b914c7efc424",
+    "name": "University Place and College Road NB",
+    "latitude": 40.344940255074,
+    "longitude": -74.6602824024498,
+    "numberIdentifier": 6528775424048455,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "684d8839-c62b-4cfb-ae0f-d3bc05f25da7",
+    "name": "NEW TRADER JOES STOP",
+    "latitude": 40.3111250362973,
+    "longitude": -74.6621846927986,
+    "numberIdentifier": 6178714539432045,
+    "stopsCodes": [
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "6a6d75cb-4a39-4395-84da-c97b5fe32d7f",
+    "name": "701 Carnegie",
+    "latitude": 40.323924156402,
+    "longitude": -74.6496129137288,
+    "numberIdentifier": 4807038658097369,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "6b010fb8-2eb0-477c-946f-2b1362fd6470",
+    "name": "Joline Hall",
+    "latitude": 40.3479048768351,
+    "longitude": -74.6624782965196,
+    "numberIdentifier": 1598908034738903,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "6cf11ad5-e7c7-4991-ae10-ad0d8e3e6308",
+    "name": "Frist Campus Center",
+    "latitude": 40.3465377569634,
+    "longitude": -74.6541538111945,
+    "numberIdentifier": 6485202400777017,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "6f9eed34-0d9a-44d9-9427-0cb326f7fd02",
+    "name": "Holiday Inn Princeton",
+    "latitude": 40.3646871,
+    "longitude": -74.5956173,
+    "numberIdentifier": 2569556376226399,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "715ce6cb-4357-4b5f-87d2-93e878427f4e",
+    "name": "Hilton Garden Inn - Lawrenceville",
+    "latitude": 40.289898,
+    "longitude": -74.7052657,
+    "numberIdentifier": 3651876032076343,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "72bc9bb5-aac6-4acd-aae5-de42c89bf63f",
+    "name": "Alexander Road at Roszel Road (SB)",
+    "latitude": 40.3209259741081,
+    "longitude": -74.6366625724165,
+    "numberIdentifier": 4288773245008335,
+    "stopsCodes": [
+      "4"
+    ],
+    "servesRoutes": [
+      "d092e3be-9034-438f-9914-6ae8d74aa39e"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "73287c89-ab95-481d-b515-d24ca9bd49a3",
+    "name": "Goheen Walk at Washington (NB)",
+    "latitude": 40.3453491851444,
+    "longitude": -74.6529444781407,
+    "numberIdentifier": 1206329865260091,
+    "stopsCodes": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6B",
+      "X"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7",
+      "70629116-e51d-4c6d-991d-5f100441a2d7",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65",
+      "65da66e0-8724-4745-968a-1b62e721416a"
+    ],
+    "linkedToPois": [
+      2280
+    ]
+  },
+  {
+    "id": "74c501f4-3fdc-4d1c-b362-25e041a486af",
+    "name": "Harrison St N at Nassau St SB",
+    "latitude": 40.3545752523066,
+    "longitude": -74.6461220374517,
+    "numberIdentifier": 3292249224899775,
+    "stopsCodes": [
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "75340cc5-7c43-4139-a6ab-02565468a566",
+    "name": "Fisher Hall",
+    "latitude": 40.3481258698128,
+    "longitude": -74.6538863924208,
+    "numberIdentifier": 7222438155213369,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "76f56204-03d8-4989-ac28-af3465ea36be",
+    "name": "Avalon Princeton",
+    "latitude": 40.3559551,
+    "longitude": -74.6624519,
+    "numberIdentifier": 4831593501922495,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "7bff935c-bc48-464f-9714-99d3f0aaa621",
+    "name": "NEW WEGMANS STOP",
+    "latitude": 40.3035006425314,
+    "longitude": -74.6758895212532,
+    "numberIdentifier": 2520436074986205,
+    "stopsCodes": [
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "7c718d75-9d96-4d24-bdaf-b56945be8137",
+    "name": "Princeton Medical Center",
+    "latitude": 40.3393040153361,
+    "longitude": -74.6208633850919,
+    "numberIdentifier": 4673193164431217,
+    "stopsCodes": [
+      "3"
+    ],
+    "servesRoutes": [
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2288
+    ]
+  },
+  {
+    "id": "7cee8264-987a-4dad-8c2c-0e5de0d690f7",
+    "name": "Princeton Hospital (NB)",
+    "latitude": 40.339456400506,
+    "longitude": -74.621043364418,
+    "numberIdentifier": 1301809853577903,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "81629401-774c-4613-96d4-2196fe7e630f",
+    "name": "BUS YARD: Lot 20",
+    "latitude": 40.338866,
+    "longitude": -74.656435,
+    "numberIdentifier": 6217526797536983,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "81eef37e-2ff1-4410-90b0-7f64a066d183",
+    "name": "Princeton Station",
+    "latitude": 40.3419562901687,
+    "longitude": -74.6592765392694,
+    "numberIdentifier": 300812650764725,
+    "stopsCodes": [
+      "4",
+      "5",
+      "6A",
+      "6B",
+      "The Princeton Loop - EXPRESS",
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef",
+      "70629116-e51d-4c6d-991d-5f100441a2d7"
+    ],
+    "linkedToPois": [
+      2277
+    ]
+  },
+  {
+    "id": "838f77c0-8279-4f42-8da4-998a1a08cd61",
+    "name": "Elm Court",
+    "latitude": 40.3522035796336,
+    "longitude": -74.6798267533384,
+    "numberIdentifier": 1667007365177993,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2285
+    ]
+  },
+  {
+    "id": "8405767e-5af2-4e1b-bdf8-935ff60449f9",
+    "name": "Courtyard by Marriot Princeton",
+    "latitude": 40.3402501,
+    "longitude": -74.6277291,
+    "numberIdentifier": 7761285057797381,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "8b4affee-4037-4bcd-b22b-611f146452d1",
+    "name": "Meadows Drive Garage",
+    "latitude": 40.3371856731843,
+    "longitude": -74.6431192174772,
+    "numberIdentifier": 4866034174437623,
+    "stopsCodes": [
+      "1",
+      "3",
+      "6A",
+      "6B",
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7",
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "8e2471b3-2926-4ad8-9d83-ae4aecf6493b",
+    "name": "Alexander Road at Roszel Road (NB)",
+    "latitude": 40.3211686103825,
+    "longitude": -74.636604558552,
+    "numberIdentifier": 2151163814086949,
+    "stopsCodes": [
+      "4"
+    ],
+    "servesRoutes": [
+      "d092e3be-9034-438f-9914-6ae8d74aa39e"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "90aa8ade-72f3-4cb3-90fc-653ab03e1930",
+    "name": "YMCA Princeton",
+    "latitude": 40.3513038212107,
+    "longitude": -74.665085177829,
+    "numberIdentifier": 2031697297409567,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "935773e3-4fcb-41fd-b271-8184c8a102a0",
+    "name": "Doubletree Hotel - Princeton",
+    "latitude": 40.3663113,
+    "longitude": -74.5974841,
+    "numberIdentifier": 1585805179208693,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "96f24c9f-8da6-4a6a-9a7d-ff00be74514d",
+    "name": "Residence Inn Princeton",
+    "latitude": 40.3173983,
+    "longitude": -74.659517,
+    "numberIdentifier": 2507965973841643,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "9ecaef68-4934-4af0-bb9f-f105cdb16ce7",
+    "name": "Training 03",
+    "latitude": 40.31482176636,
+    "longitude": -74.6487226421042,
+    "numberIdentifier": 873546524285409
+  },
+  {
+    "id": "9ffb2a31-e135-4bab-bf9a-acb470541258",
+    "name": "Residences at Herrontown Rd.",
+    "latitude": 40.387085,
+    "longitude": -74.654462,
+    "numberIdentifier": 8195477827622705,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "a2b8231b-23d7-4920-a708-6124fb315248",
+    "name": "Witherspoon and Green St (West)",
+    "latitude": 40.3521498864611,
+    "longitude": -74.6608840159733,
+    "numberIdentifier": 6264993757096603,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2303
+    ]
+  },
+  {
+    "id": "a42d0fcd-6ce3-4f9e-9e33-2dd4d1bf2115",
+    "name": "Training 2",
+    "latitude": 40.3485047249146,
+    "longitude": -74.6371569964637,
+    "numberIdentifier": 36094216840499,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "a610ed4b-11b0-403f-9cba-ce6c24368c6e",
+    "name": "Harrison St N at Franklin Ave SB",
+    "latitude": 40.3591879667375,
+    "longitude": -74.6497624282417,
+    "numberIdentifier": 4656120590707671,
+    "stopsCodes": [
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "a8913b8f-bd5b-4e4c-8e86-53b70742154f",
+    "name": "Home Depot",
+    "latitude": 40.3004575,
+    "longitude": -74.6779162,
+    "numberIdentifier": 4810359134823953,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "a9870ae4-6b78-4e23-862e-c3beff5053e7",
+    "name": "McCosh Walk on Washington Road (NB)",
+    "latitude": 40.3482855710648,
+    "longitude": -74.655290684209,
+    "numberIdentifier": 7020280590975083,
+    "stopsCodes": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6B"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7",
+      "70629116-e51d-4c6d-991d-5f100441a2d7",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2296
+    ]
+  },
+  {
+    "id": "aa3c40fa-242d-4039-a4b1-55121e1a3137",
+    "name": "Yeh College (WB)",
+    "latitude": 40.3414246216637,
+    "longitude": -74.6532575865653,
+    "numberIdentifier": 448757795417639,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [
+      5923
+    ]
+  },
+  {
+    "id": "ab3afdc6-f248-4927-8d19-9104740ee00a",
+    "name": "Lot 23 - Visitor Parking",
+    "latitude": 40.3404480466071,
+    "longitude": -74.6567205037789,
+    "numberIdentifier": 3985310597823599,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "ad9171c8-fbac-44c3-b536-57e1cb4b7873",
+    "name": "Rider University",
+    "latitude": 40.2793334,
+    "longitude": -74.737255,
+    "numberIdentifier": 7007491182032661,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "aed268c3-4392-4cb4-a0ce-1d7158ad2949",
+    "name": "University Place/Visitor Center",
+    "latitude": 40.346987,
+    "longitude": -74.661751,
+    "numberIdentifier": 3082820024810159,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "b08299e5-423d-4214-affc-b63dcfe632ac",
+    "name": "North Harrison St at Spruce Circle",
+    "latitude": 40.3560641,
+    "longitude": -74.6472469,
+    "numberIdentifier": 8642752376213899,
+    "stopsCodes": [
+      "6",
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef",
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2292
+    ]
+  },
+  {
+    "id": "b4fb36a8-85e4-4bb8-bea3-91bf2cdb66de",
+    "name": "Harriet Bryan House",
+    "latitude": 40.3519149108966,
+    "longitude": -74.6813620570748,
+    "numberIdentifier": 1771968820521921,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2294
+    ]
+  },
+  {
+    "id": "b65217c8-8578-4db3-81ec-8eba44e0b8ca",
+    "name": "Firestone Library on Nassau St.",
+    "latitude": 40.3499421612729,
+    "longitude": -74.6583816274868,
+    "numberIdentifier": 2395851422449093,
+    "stopsCodes": [
+      "1",
+      "3",
+      "4",
+      "5",
+      "6",
+      "6A"
+    ],
+    "servesRoutes": [
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "70629116-e51d-4c6d-991d-5f100441a2d7",
+      "bb733fc7-4b53-481f-9616-28d61cca131c",
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2266
+    ]
+  },
+  {
+    "id": "b7d89418-643b-410b-8d86-43c832352dd7",
+    "name": "Princeton Municipal Bldg",
+    "latitude": 40.3606446720881,
+    "longitude": -74.6644550428528,
+    "numberIdentifier": 5952479864440745,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2300
+    ]
+  },
+  {
+    "id": "b9a4b098-abaf-401c-9b94-354428ec91c8",
+    "name": "100 Overlook",
+    "latitude": 40.3251322785308,
+    "longitude": -74.6479995631599,
+    "numberIdentifier": 7735031245608215,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "bc1a2650-0a87-4400-a960-2fab0d432677",
+    "name": "Nassau Street at Charlton",
+    "latitude": 40.3512750081839,
+    "longitude": -74.6541657424654,
+    "numberIdentifier": 3489344248976685,
+    "stopsCodes": [
+      "1",
+      "2",
+      "6A"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795"
+    ],
+    "linkedToPois": [
+      2273
+    ]
+  },
+  {
+    "id": "bc3152fc-36dc-4376-a775-fca0e2d77472",
+    "name": "Princeton Shopping Center",
+    "latitude": 40.3640359702675,
+    "longitude": -74.652202021379,
+    "numberIdentifier": 4795835848941585,
+    "stopsCodes": [
+      "6",
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef",
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2286
+    ]
+  },
+  {
+    "id": "bf8647e2-f33b-4f12-b992-78d6f96583fe",
+    "name": "Prospect at Washington",
+    "latitude": 40.3480591394241,
+    "longitude": -74.6544497300247,
+    "numberIdentifier": 4540847103892031,
+    "stopsCodes": [
+      "1",
+      "2",
+      "6A"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795"
+    ],
+    "linkedToPois": [
+      5920
+    ]
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "c183dcd4-3b0d-4f43-aab4-f3cf6b343dc5",
+    "name": "Training 05",
+    "latitude": 40.3158075727087,
+    "longitude": -74.6535856152945,
+    "numberIdentifier": 3100498994475107
+  },
+  {
+    "id": "c2812049-bae7-4b22-9906-4c7ce417684b",
+    "name": "Graduate College",
+    "latitude": 40.3407202496211,
+    "longitude": -74.6645384736495,
+    "numberIdentifier": 1822551364034831,
+    "stopsCodes": [
+      "1",
+      "6A",
+      "6B",
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7"
+    ],
+    "linkedToPois": [
+      2267
+    ]
+  },
+  {
+    "id": "c2d1c817-1e18-4d82-9c83-56491f0a0985",
+    "name": "Goheen Walk at Washington",
+    "latitude": 40.3453605394756,
+    "longitude": -74.6531536636761,
+    "numberIdentifier": 5007769986265579,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": [],
+    "id": "c3b57dda-9bc7-4f09-9fbb-9c1ba7ebf5b7",
+    "name": "Training 00",
+    "latitude": 40.3231733754405,
+    "longitude": -74.647171723746,
+    "numberIdentifier": 4861513636085591
+  },
+  {
+    "id": "c3df2831-03ba-4a94-b6a4-14b8534fe6ed",
+    "name": "Holiday Inn East Windsor",
+    "latitude": 40.2706848,
+    "longitude": -74.5069646,
+    "numberIdentifier": 3702598782209105,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "c43debe8-08dd-4482-96aa-7d9ea40e4566",
+    "name": "Princeton Hospital (SB)",
+    "latitude": 40.33930251363,
+    "longitude": -74.6208665935575,
+    "numberIdentifier": 1317458409915901,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "c8b5f046-607a-4119-b524-dbe3ea04efe2",
+    "name": "Helm Building (SB)",
+    "latitude": 40.33543964,
+    "longitude": -74.65520652,
+    "numberIdentifier": 3690381009635217,
+    "stopsCodes": [
+      "4"
+    ],
+    "servesRoutes": [
+      "d092e3be-9034-438f-9914-6ae8d74aa39e"
+    ],
+    "linkedToPois": [
+      2272
+    ]
+  },
+  {
+    "id": "cbb2a18d-36f0-4799-a4eb-939fb3c396aa",
+    "name": "Witherspoon St at Green St.",
+    "latitude": 40.3525507,
+    "longitude": -74.6610015,
+    "numberIdentifier": 2070794286038011,
+    "stopsCodes": [
+      "6"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c"
+    ],
+    "linkedToPois": [
+      2298
+    ]
+  },
+  {
+    "id": "cf7b8c9a-564c-4d91-8f7f-7f30c356e595",
+    "name": "600/619 Canal Point Blvd.",
+    "latitude": 40.3279273406512,
+    "longitude": -74.6477376225371,
+    "numberIdentifier": 7555170152009517,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "d006ac2a-5ef0-48a5-8e26-3e033131d4ba",
+    "name": "Hampton Inn East Windsor",
+    "latitude": 40.269919,
+    "longitude": -74.5078614,
+    "numberIdentifier": 3735713725227577,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "d120b09e-61c6-478e-878e-7a1c60e7a327",
+    "name": "Nassau Street (WB)",
+    "latitude": 40.3496791044412,
+    "longitude": -74.6611233313522,
+    "numberIdentifier": 4218877435182959,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "d36399a2-91a3-4bfe-bd53-9cdc94c39478",
+    "name": "Alexander St. at Lawrence Drive",
+    "latitude": 40.3355220654279,
+    "longitude": -74.65520083114,
+    "numberIdentifier": 8753050894244329,
+    "stopsCodes": [
+      "2"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6"
+    ],
+    "linkedToPois": [
+      2281
+    ]
+  },
+  {
+    "id": "d3d0ce4b-201f-4c77-b2db-e748821ab241",
+    "name": "Best Western/MHO Inn Monmouth Junction",
+    "latitude": 40.3828617,
+    "longitude": -74.576733,
+    "numberIdentifier": 7117442926591837,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "d3e65ae7-a58a-4f87-a02a-08faf172ba06",
+    "name": "Holiday Inn Express",
+    "latitude": 40.3389762335417,
+    "longitude": -74.602554661125,
+    "numberIdentifier": 6063624757351489,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "d9a6023e-2d8e-4a0f-bb3f-ae691fe49eb6",
+    "name": "Stadium Garage",
+    "latitude": 40.3450446212642,
+    "longitude": -74.6456724752927,
+    "numberIdentifier": 4511187652503381,
+    "stopsCodes": [
+      "4",
+      "5"
+    ],
+    "servesRoutes": [
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "70629116-e51d-4c6d-991d-5f100441a2d7"
+    ],
+    "linkedToPois": [
+      2271
+    ]
+  },
+  {
+    "id": "dd54fbc6-1ea3-4b5e-94e5-ada1e7a114bd",
+    "name": "Lawrence Apartments",
+    "latitude": 40.3332878746778,
+    "longitude": -74.6568424586706,
+    "numberIdentifier": 524963260040359,
+    "stopsCodes": [
+      "2",
+      "6A",
+      "6B",
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21",
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7"
+    ],
+    "linkedToPois": [
+      2282
+    ]
+  },
+  {
+    "id": "de65c632-cbb8-4986-91de-5a0be46a5883",
+    "name": "Crown Plaza Princeton",
+    "latitude": 40.3384595,
+    "longitude": -74.6011343,
+    "numberIdentifier": 2962210871247187,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "dee24b25-05e4-49f8-832a-51d602c3d000",
+    "name": "Lakeside Apartments",
+    "latitude": 40.3375422742543,
+    "longitude": -74.6545390822285,
+    "numberIdentifier": 2909265926634021,
+    "stopsCodes": [
+      "2",
+      "6A",
+      "6B",
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21",
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "8213b9c6-a8f2-43b2-af72-041ad35719b7"
+    ],
+    "linkedToPois": [
+      2284
+    ]
+  },
+  {
+    "id": "e0067a2e-0722-4d7f-9894-21779ccc262d",
+    "name": "Hyatt Regency Princeton",
+    "latitude": 40.3238705,
+    "longitude": -74.6443059,
+    "numberIdentifier": 4311528136591615,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "e0cbe47b-f1bd-48df-9aa8-e6b7f70f8c8f",
+    "name": "PPPL",
+    "latitude": 40.3503517139711,
+    "longitude": -74.60343240089,
+    "numberIdentifier": 3765227385101975,
+    "stopsCodes": [
+      "3"
+    ],
+    "servesRoutes": [
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2275
+    ]
+  },
+  {
+    "id": "e22768b9-3c65-4412-b343-1a24538b8aa4",
+    "name": "Goheen Walk at Washington (SB)",
+    "latitude": 40.3450630090439,
+    "longitude": -74.6531461154626,
+    "numberIdentifier": 2890318926774407,
+    "stopsCodes": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6A"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795",
+      "d092e3be-9034-438f-9914-6ae8d74aa39e",
+      "70629116-e51d-4c6d-991d-5f100441a2d7",
+      "886dd8f1-6a83-4be3-9909-3e3170a5fb65"
+    ],
+    "linkedToPois": [
+      2265
+    ]
+  },
+  {
+    "id": "e9c89e30-6fc0-4467-bf72-01d5dcb5ebf9",
+    "name": "Nassau Street",
+    "latitude": 40.3499458,
+    "longitude": -74.6588438,
+    "numberIdentifier": 8086502000875725,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "ea4f6cbe-3a40-4b97-8059-2903a96f1d30",
+    "name": "Training 11",
+    "latitude": 40.3378775487676,
+    "longitude": -74.6569634319895,
+    "numberIdentifier": 513605851815905,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "ef912b5c-6c70-4cf6-a573-f3917026a9f3",
+    "name": "Nassau St at Palmer Square (EB)",
+    "latitude": 40.3493354109529,
+    "longitude": -74.6608179963646,
+    "numberIdentifier": 3103491507508737,
+    "stopsCodes": [
+      "6",
+      "The Princeton Loop - EXPRESS"
+    ],
+    "servesRoutes": [
+      "bb733fc7-4b53-481f-9616-28d61cca131c",
+      "d03ad4f8-19b1-482a-a028-1bd79bffd7ef"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "efd443ee-a787-4765-bf23-988b3f0d6a02",
+    "name": "Springhill Suites EWING",
+    "latitude": 40.2882154,
+    "longitude": -74.7975003,
+    "numberIdentifier": 2711552556747351,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "f1b6d6c5-5b51-4bf3-a664-fcaccc7b40ca",
+    "name": "Friend Center",
+    "latitude": 40.3505803392747,
+    "longitude": -74.6519469979616,
+    "numberIdentifier": 465273908308087,
+    "stopsCodes": [
+      "1",
+      "2",
+      "6A"
+    ],
+    "servesRoutes": [
+      "4894d1d9-889e-4687-8a93-13bb19426ed6",
+      "28ea7117-5d28-4c7e-a919-5e4e94e79b42",
+      "7f065734-5848-4c9e-8a5a-f5ae5c80e795"
+    ],
+    "linkedToPois": [
+      2283
+    ]
+  },
+  {
+    "id": "f3b5207a-300a-4287-a36c-977c536e5b80",
+    "name": "Sonesta ES Suites Princeton",
+    "latitude": 40.3645113,
+    "longitude": -74.5996211,
+    "numberIdentifier": 509994408982945,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "f8192d80-bc25-47f1-8c91-52f169e81402",
+    "name": "Boathouse Parking Lot",
+    "latitude": 40.3405342079534,
+    "longitude": -74.6500088310042,
+    "numberIdentifier": 5694574161427133,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "fb41075d-fbe0-4d9e-ac5a-45bbcbca6caa",
+    "name": "Training 10",
+    "latitude": 40.346202163803,
+    "longitude": -74.6396347166748,
+    "numberIdentifier": 5542761672771725,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  },
+  {
+    "id": "ff0151c5-bb5a-4746-a49e-d3fc68172827",
+    "name": "NEW WHOLE FOODS STOP",
+    "latitude": 40.308792237196,
+    "longitude": -74.6656745908143,
+    "numberIdentifier": 2037996365772979,
+    "stopsCodes": [
+      "WS"
+    ],
+    "servesRoutes": [
+      "3f0911c5-6c8d-474a-9bc6-bb7c2ed7bf21"
+    ],
+    "linkedToPois": []
+  },
+  {
+    "id": "ff1d949f-145e-41e3-a398-25b3371b6fc3",
+    "name": "Homewood Suites Princeton",
+    "latitude": 40.3431291,
+    "longitude": -74.6260899,
+    "numberIdentifier": 5695038611653125,
+    "stopsCodes": [],
+    "servesRoutes": [],
+    "linkedToPois": []
+  }
+]
