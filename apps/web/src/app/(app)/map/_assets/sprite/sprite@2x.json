@@ -1,0 +1,503 @@
+{
+  "landmark_the_princeton_line": {
+    "x": 0,
+    "y": 0,
+    "width": 908,
+    "height": 647,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_rhumba": {
+    "x": 908,
+    "y": 0,
+    "width": 109,
+    "height": 564,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_double_sights": {
+    "x": 1017,
+    "y": 0,
+    "width": 193,
+    "height": 562,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_mather_sun_dial": {
+    "x": 1210,
+    "y": 0,
+    "width": 331,
+    "height": 535,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_fountain_of_freedom": {
+    "x": 0,
+    "y": 647,
+    "width": 297,
+    "height": 525,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_john_witherspoon": {
+    "x": 297,
+    "y": 647,
+    "width": 172,
+    "height": 522,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_moses": {
+    "x": 469,
+    "y": 647,
+    "width": 435,
+    "height": 522,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_song_of_the_vowels": {
+    "x": 904,
+    "y": 647,
+    "width": 237,
+    "height": 522,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_floating_figure": {
+    "x": 1141,
+    "y": 647,
+    "width": 357,
+    "height": 510,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_human_condition": {
+    "x": 1498,
+    "y": 647,
+    "width": 225,
+    "height": 488,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_the_bridge": {
+    "x": 1541,
+    "y": 0,
+    "width": 109,
+    "height": 483,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_centaur": {
+    "x": 0,
+    "y": 1172,
+    "width": 229,
+    "height": 475,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_head_of_a_woman": {
+    "x": 229,
+    "y": 1172,
+    "width": 351,
+    "height": 463,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_five_disks_one_empty": {
+    "x": 580,
+    "y": 1172,
+    "width": 380,
+    "height": 462,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_dick_kazmaier": {
+    "x": 960,
+    "y": 1172,
+    "width": 287,
+    "height": 459,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_two_planes_vertical_horizontal_ii": {
+    "x": 1247,
+    "y": 1172,
+    "width": 284,
+    "height": 454,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_thetis_circle": {
+    "x": 0,
+    "y": 1647,
+    "width": 406,
+    "height": 445,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_stone_riddle": {
+    "x": 406,
+    "y": 1647,
+    "width": 249,
+    "height": 444,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_uroda": {
+    "x": 655,
+    "y": 1647,
+    "width": 242,
+    "height": 444,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_atmosphere_and_environment_x": {
+    "x": 897,
+    "y": 1647,
+    "width": 279,
+    "height": 442,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_bill_bradley": {
+    "x": 1176,
+    "y": 1647,
+    "width": 276,
+    "height": 433,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_construction_3_4_dimention": {
+    "x": 1452,
+    "y": 1647,
+    "width": 179,
+    "height": 427,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_thermopylae": {
+    "x": 1531,
+    "y": 1172,
+    "width": 280,
+    "height": 425,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_abraham_and_isaac": {
+    "x": 0,
+    "y": 2092,
+    "width": 501,
+    "height": 414,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_oval_with_points": {
+    "x": 501,
+    "y": 2092,
+    "width": 334,
+    "height": 385,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_upstart_ii": {
+    "x": 835,
+    "y": 2092,
+    "width": 343,
+    "height": 381,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_andrew_fleming": {
+    "x": 1178,
+    "y": 2092,
+    "width": 293,
+    "height": 378,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_northwood_ii": {
+    "x": 1471,
+    "y": 2092,
+    "width": 444,
+    "height": 355,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_the_hedgehog": {
+    "x": 1915,
+    "y": 2092,
+    "width": 405,
+    "height": 350,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_circle_of_animals": {
+    "x": 2320,
+    "y": 2092,
+    "width": 900,
+    "height": 339,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_spheric_theme": {
+    "x": 3220,
+    "y": 2092,
+    "width": 302,
+    "height": 333,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_any_body": {
+    "x": 1631,
+    "y": 1647,
+    "width": 460,
+    "height": 292,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "bus_stop": {
+    "x": 2091,
+    "y": 1647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "cafe": { "x": 2291, "y": 1647, "width": 200, "height": 200, "pixelRatio": 2, "visible": true },
+  "cycle_route": {
+    "x": 2491,
+    "y": 1647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "entrance": {
+    "x": 2691,
+    "y": 1647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "entrance_accessible": {
+    "x": 2891,
+    "y": 1647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "hospital": {
+    "x": 3091,
+    "y": 1647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "information": {
+    "x": 3291,
+    "y": 1647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "information.restaurant.cafe": {
+    "x": 1811,
+    "y": 1172,
+    "width": 679,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "information.shopping_bag": {
+    "x": 2490,
+    "y": 1172,
+    "width": 440,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_stone_mancala_table": {
+    "x": 2930,
+    "y": 1172,
+    "width": 250,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "museum": { "x": 3180, "y": 1172, "width": 200, "height": 200, "pixelRatio": 2, "visible": true },
+  "museum.theatre": {
+    "x": 1723,
+    "y": 647,
+    "width": 440,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "parking": {
+    "x": 3380,
+    "y": 1172,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "rail_station": {
+    "x": 2163,
+    "y": 647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "ramp": { "x": 2363, "y": 647, "width": 200, "height": 200, "pixelRatio": 2, "visible": true },
+  "restaurant": {
+    "x": 2563,
+    "y": 647,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "restaurant.cafe": {
+    "x": 2763,
+    "y": 647,
+    "width": 440,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_butler_college": {
+    "x": 3203,
+    "y": 647,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_forbes_college": {
+    "x": 3371,
+    "y": 647,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_graduate_college": {
+    "x": 1650,
+    "y": 0,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_mathey_college": {
+    "x": 1818,
+    "y": 0,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_new_college_west": {
+    "x": 1986,
+    "y": 0,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_rockefeller_college": {
+    "x": 2154,
+    "y": 0,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_whitman_college": {
+    "x": 2322,
+    "y": 0,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "school_yeh_college": {
+    "x": 2490,
+    "y": 0,
+    "width": 168,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "shopping_bag": {
+    "x": 2658,
+    "y": 0,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "steps": { "x": 2858, "y": 0, "width": 200, "height": 200, "pixelRatio": 2, "visible": true },
+  "theatre": { "x": 3058, "y": 0, "width": 200, "height": 200, "pixelRatio": 2, "visible": true },
+  "walking_route": {
+    "x": 3258,
+    "y": 0,
+    "width": 200,
+    "height": 200,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_topiarytigers": {
+    "x": 0,
+    "y": 2506,
+    "width": 460,
+    "height": 196,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_public_table": {
+    "x": 460,
+    "y": 2506,
+    "width": 488,
+    "height": 144,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "landmark_einsteins_table": {
+    "x": 948,
+    "y": 2506,
+    "width": 356,
+    "height": 125,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "construction_pattern": {
+    "x": 1304,
+    "y": 2506,
+    "width": 50,
+    "height": 30,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "construction_pattern_small": {
+    "x": 1354,
+    "y": 2506,
+    "width": 20,
+    "height": 12,
+    "pixelRatio": 2,
+    "visible": true
+  },
+  "construction_pattern_small_small": {
+    "x": 1374,
+    "y": 2506,
+    "width": 10,
+    "height": 6,
+    "pixelRatio": 2,
+    "visible": true
+  }
+}
