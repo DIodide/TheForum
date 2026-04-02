@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { auth } from "~/auth";
 
 export const runtime = "nodejs";
@@ -8,6 +9,12 @@ export default auth((req) => {
   const isAuthenticated = !!session?.user;
   const pathname = nextUrl.pathname;
 
+  // Forward pathname header so server layouts can read the current route
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+
+  const next = () => NextResponse.next({ request: { headers: requestHeaders } });
+
   // Public routes — always accessible
   const publicRoutes = ["/", "/api/auth"];
   const isPublicRoute = publicRoutes.some(
@@ -15,11 +22,10 @@ export default auth((req) => {
   );
 
   if (isPublicRoute) {
-    // If authenticated and on landing page, redirect to explore
     if (isAuthenticated && pathname === "/") {
       return Response.redirect(new URL("/explore", nextUrl));
     }
-    return;
+    return next();
   }
 
   // Protected routes — require auth
@@ -38,17 +44,12 @@ export default auth((req) => {
   if (isOnboarded && isOnboardingRoute) {
     return Response.redirect(new URL("/explore", nextUrl));
   }
+
+  return next();
 });
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     * - public assets
-     */
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)",
   ],
 };

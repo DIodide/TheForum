@@ -62,7 +62,7 @@ export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
       minZoom={MIN_ZOOM}
       maxZoom={MAX_ZOOM}
       maxBounds={CAMPUS_BOUNDS}
-      mapStyle="mapbox://styles/mapbox/streets-v12"
+      mapStyle="mapbox://styles/tigerapps/cmnhnf4yv002m01qw5rv86myh"
       style={{ width: "100%", height: "100%" }}
       reuseMaps
       onClick={handleMapClick}
