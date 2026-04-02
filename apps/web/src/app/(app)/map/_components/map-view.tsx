@@ -51,7 +51,7 @@ export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
   return (
     <MapGL
       ref={ref}
-      mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+      mapboxAccessToken={env.NEXT_PUBLIC_CAMPUS_MAP_TOKEN}
       initialViewState={{
         longitude: PRINCETON_CENTER.lng,
         latitude: PRINCETON_CENTER.lat,
@@ -62,7 +62,7 @@ export const MapView = forwardRef<MapRef, MapViewProps>(function MapView(
       minZoom={MIN_ZOOM}
       maxZoom={MAX_ZOOM}
       maxBounds={CAMPUS_BOUNDS}
-      mapStyle="mapbox://styles/tigerapps/cmnhnf4yv002m01qw5rv86myh"
+      mapStyle={env.NEXT_PUBLIC_CAMPUS_MAP_STYLE}
       style={{ width: "100%", height: "100%" }}
       reuseMaps
       onClick={handleMapClick}

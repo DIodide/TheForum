@@ -24,6 +24,8 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_API_URL: z.string().url().optional(),
     NEXT_PUBLIC_MAPBOX_TOKEN: z.string().startsWith("pk."),
+    NEXT_PUBLIC_CAMPUS_MAP_TOKEN: z.string().startsWith("pk."),
+    NEXT_PUBLIC_CAMPUS_MAP_STYLE: z.string().startsWith("mapbox://"),
   },
 
   /**
@@ -35,6 +37,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_MAPBOX_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+    NEXT_PUBLIC_CAMPUS_MAP_TOKEN: process.env.NEXT_PUBLIC_CAMPUS_MAP_TOKEN,
+    NEXT_PUBLIC_CAMPUS_MAP_STYLE: process.env.NEXT_PUBLIC_CAMPUS_MAP_STYLE,
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_AZURE_AD_CLIENT_ID: process.env.AUTH_AZURE_AD_CLIENT_ID,
     AUTH_AZURE_AD_CLIENT_SECRET: process.env.AUTH_AZURE_AD_CLIENT_SECRET,

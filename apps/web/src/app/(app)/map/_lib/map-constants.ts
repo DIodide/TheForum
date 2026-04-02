@@ -11,6 +11,13 @@ export const DEFAULT_ZOOM = 16;
 export const MIN_ZOOM = 15;
 export const MAX_ZOOM = 18;
 
+/**
+ * Princeton campus map style from campusmap.princeton.edu.
+ * Uses the applied-information-group account's public token + custom tilesets.
+ * Token and style are loaded from env vars (NEXT_PUBLIC_CAMPUS_MAP_TOKEN,
+ * NEXT_PUBLIC_CAMPUS_MAP_STYLE) to avoid GitHub push protection flags.
+ */
+
 /** Pin colors matching Figma design */
 export const NOW_COLOR = "#FF7151";
 export const FUTURE_COLOR = "#0A9CD5";
