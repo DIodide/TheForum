@@ -1,0 +1,1132 @@
+{
+  "version": 8,
+  "name": "Princeton-University",
+  "metadata": {
+    "mapbox:autocomposite": true,
+    "mapbox:type": "template",
+    "mapbox:sdk-support": { "android": "10.9.0", "ios": "10.9.0", "js": "2.11.1" },
+    "mapbox:groups": {
+      "e9a6d2c761db090fca4816fc17a75180": { "name": "Buildings", "collapsed": true }
+    },
+    "mapbox:trackposition": true,
+    "mapbox:print": {
+      "width": "11",
+      "height": 11,
+      "units": "in",
+      "format": "png",
+      "resolution": 300
+    }
+  },
+  "center": [-74.66869128180272, 40.345997271014056],
+  "zoom": 17.569279901359973,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {
+    "composite": {
+      "url": "mapbox://applied-information-group.road_polygon,applied-information-group.road_line,applied-information-group.water,applied-information-group.landuse,applied-information-group.buildings,applied-information-group.poi_label,applied-information-group.road_label,applied-information-group.place_label,applied-information-group.detail_line,applied-information-group.detail_polygon,applied-information-group.waterway_label",
+      "type": "vector"
+    }
+  },
+  "sprite": "mapbox://sprites/applied-information-group/cld1kdenc001001m89xs12zvl/4az7qkvh7faepfpzd68zxl7f4",
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+  "projection": { "name": "globe" },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "layout": {},
+      "paint": { "background-color": "hsl(99, 18%, 71%)" }
+    },
+    {
+      "id": "landuse copy",
+      "type": "fill",
+      "paint": {
+        "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+        "fill-color": [
+          "case",
+          ["match", ["get", "surface"], ["gravel"], true, false],
+          "#d88a83",
+          ["match", ["get", "type"], ["tennis"], true, false],
+          [
+            "match",
+            ["get", "surface"],
+            ["acrylic.blue"],
+            "#3779a6",
+            ["acrylic.green"],
+            "#4da880",
+            "rgba(0, 0, 0, 0)"
+          ],
+          ["match", ["get", "surface"], ["dirt"], true, false],
+          "#c9c6a9",
+          ["match", ["get", "class"], ["sand"], true, false],
+          "#c9c6a9",
+          ["match", ["get", "surface"], ["artificial_turf"], true, false],
+          "#4da880",
+          ["match", ["get", "class"], ["pitch"], true, false],
+          ["match", ["get", "type"], ["golf"], "#83b66d", "#73a165"],
+          ["match", ["get", "type"], ["parking"], true, false],
+          "#c1d2c2",
+          ["match", ["get", "class"], ["grass"], true, false],
+          "#79af62",
+          "#b1c2a8"
+        ]
+      },
+      "source": "composite",
+      "source-layer": "landuse",
+      "filter": ["match", ["get", "type"], ["construction"], false, true],
+      "layout": {
+        "fill-sort-key": [
+          "case",
+          ["match", ["get", "surface"], ["acrylic.blue"], true, false],
+          3,
+          ["match", ["get", "surface"], ["acrylic.green"], true, false],
+          2,
+          ["match", ["get", "type"], ["parking"], true, false],
+          5,
+          ["match", ["get", "surface"], ["artificial_turf"], true, false],
+          2,
+          ["match", ["get", "class"], ["pitch"], true, false],
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "paint": { "fill-color": "#5da4c2", "fill-outline-color": "hsla(0, 0%, 0%, 0)" },
+      "source": "composite",
+      "source-layer": "water"
+    },
+    {
+      "id": "water-shade",
+      "type": "line",
+      "paint": { "line-color": "#6dabc6", "line-width": 6, "line-offset": 3 },
+      "layout": { "visibility": "none" },
+      "source": "composite",
+      "source-layer": "water"
+    },
+    {
+      "filter": [">=", ["get", "incline"], 5],
+      "type": "line",
+      "source": "composite",
+      "id": "Inclines",
+      "paint": {
+        "line-color": "hsl(359, 44%, 52%)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 0, 0, 14.5, 0, 15, 1, 22, 5],
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0, 14, 1]
+      },
+      "source-layer": "road_polygon"
+    },
+    {
+      "id": "road-polygon",
+      "type": "fill",
+      "paint": {
+        "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+        "fill-color": [
+          "case",
+          ["match", ["get", "type"], ["bridge"], true, false],
+          "#95bf73",
+          ["match", ["get", "type"], ["path"], true, false],
+          ["match", ["get", "ownership"], ["PU"], "#95bf73", "#c9d5c3"],
+          ["match", ["get", "class"], ["road"], true, false],
+          ["match", ["get", "type"], ["primary"], "#ccd8cc", "#c1d2c2"],
+          ["match", ["get", "class"], ["pedestrian"], true, false],
+          ["match", ["get", "ownership"], ["PU"], "#95bf73", "#c9d5c3"],
+          ["match", ["get", "type"], ["sidewalk"], true, false],
+          "#b0c2ad",
+          ["match", ["get", "type"], ["footway"], true, false],
+          "#aacc8f",
+          ["match", ["get", "type"], ["steps"], true, false],
+          "#95bf73",
+          "#c9d5c3"
+        ]
+      },
+      "layout": { "fill-sort-key": ["match", ["get", "structure"], ["bridge"], 1, 0] },
+      "source": "composite",
+      "source-layer": "road_polygon",
+      "minzoom": 2
+    },
+    {
+      "id": "road-line",
+      "type": "line",
+      "paint": {
+        "line-color": ["case", ["==", ["get", "has_polygon"], true], "rgba(0, 0, 0, 0)", "#ccd8cc"],
+        "line-width": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          13,
+          [
+            "case",
+            ["match", ["get", "type"], ["service"], true, false],
+            1,
+            [
+              "match",
+              ["get", "type"],
+              ["secondary", "trunk_link", "tertiary", "primary"],
+              true,
+              false
+            ],
+            2,
+            ["match", ["get", "type"], ["trunk", "tertiary"], true, false],
+            3,
+            1.5
+          ],
+          16,
+          [
+            "match",
+            ["get", "type"],
+            ["secondary", "trunk_link", "tertiary", "primary"],
+            10,
+            ["trunk"],
+            18,
+            6
+          ],
+          19,
+          [
+            "match",
+            ["get", "type"],
+            ["secondary", "trunk_link", "tertiary", "primary"],
+            80,
+            ["trunk"],
+            160,
+            ["service"],
+            5,
+            20
+          ]
+        ]
+      },
+      "source": "composite",
+      "source-layer": "road_line",
+      "filter": [
+        "match",
+        ["get", "type"],
+        [
+          "residential",
+          "service",
+          "tertiary",
+          "tertiary_link",
+          "secondary",
+          "primary",
+          "trunk_link",
+          "trunk",
+          "unclassified",
+          "track"
+        ],
+        true,
+        false
+      ]
+    },
+    {
+      "layout": {},
+      "filter": ["match", ["get", "CLASS"], ["major_rail"], true, false],
+      "type": "line",
+      "source": "composite",
+      "id": "railroad back",
+      "paint": {
+        "line-color": "#b2c3a9",
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 0, 0, 20, 30]
+      },
+      "source-layer": "road_line"
+    },
+    {
+      "layout": {},
+      "filter": ["match", ["get", "CLASS"], ["major_rail"], true, false],
+      "type": "line",
+      "source": "composite",
+      "id": "railroad",
+      "paint": {
+        "line-color": "#7f8f81",
+        "line-gap-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 0, 20, 8],
+        "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 0, 0, 16, 0.8, 22, 3]
+      },
+      "source-layer": "road_line"
+    },
+    {
+      "layout": {},
+      "filter": ["match", ["get", "CLASS"], ["major_rail"], true, false],
+      "type": "line",
+      "source": "composite",
+      "id": "railroad sleepers",
+      "paint": {
+        "line-color": "#7f8f81",
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 17, 6, 22, 50],
+        "line-dasharray": [0.1, 0.3],
+        "line-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 17.5, 0, 18, 1]
+      },
+      "source-layer": "road_line"
+    },
+    {
+      "id": "detail-line",
+      "type": "line",
+      "paint": {
+        "line-color": [
+          "case",
+          ["match", ["get", "surface"], ["grass"], true, false],
+          "#578558",
+          ["match", ["get", "surface"], ["artificial_turf"], true, false],
+          "#3e9071",
+          ["match", ["get", "surface"], ["gravel"], true, false],
+          "#e8c2bf",
+          ["match", ["get", "surface"], ["acrylic.blue"], true, false],
+          "#30688c",
+          ["match", ["get", "type"], ["parking"], true, false],
+          "#a4bba2",
+          ["match", ["get", "type"], ["steps"], true, false],
+          "#538b8a",
+          ["match", ["get", "type"], ["wall"], true, false],
+          "#286e6d",
+          "rgba(0, 0, 0, 0)"
+        ],
+        "line-width": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          0,
+          0.1,
+          16,
+          ["match", ["get", "type"], ["steps"], 0.1, 0.8],
+          22,
+          3
+        ],
+        "line-opacity": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          0,
+          0,
+          14.5,
+          0,
+          15,
+          ["match", ["get", "type"], ["steps"], 0, 1],
+          16.5,
+          ["match", ["get", "type"], ["steps"], 0, 1],
+          17,
+          1
+        ]
+      },
+      "source": "composite",
+      "source-layer": "detail_line",
+      "layout": { "line-sort-key": ["match", ["get", "type"], ["wall"], 2, 0] }
+    },
+    {
+      "id": "detail-polygon",
+      "type": "fill",
+      "paint": {
+        "fill-color": [
+          "match",
+          ["get", "type"],
+          ["crossing"],
+          "#b0c2ad",
+          ["pier"],
+          "#518da2",
+          ["bridge"],
+          "#538182",
+          ["solar_panel"],
+          "#48999d",
+          ["pitch"],
+          ["match", ["get", "surface"], ["grass"], "#578558", "#3e9071"],
+          ["parking_canopy"],
+          "#b3c5b6",
+          "rgba(183, 0, 250, 0)"
+        ],
+        "fill-outline-color": "rgba(0, 0, 0, 0)",
+        "fill-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          18.5,
+          1,
+          19,
+          ["match", ["get", "type"], ["parking_canopy"], 0, 0.75],
+          22,
+          ["match", ["get", "type"], ["parking_canopy"], 0.75, 1]
+        ]
+      },
+      "layout": {},
+      "source": "composite",
+      "source-layer": "detail_polygon"
+    },
+    {
+      "layout": {},
+      "filter": ["match", ["get", "type"], ["parking_canopy"], true, false],
+      "type": "line",
+      "source": "composite",
+      "id": "detail-polygon_as-line",
+      "paint": {
+        "line-color": "#a2aea6",
+        "line-opacity": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          14.5,
+          0,
+          15,
+          1,
+          18.5,
+          1,
+          19,
+          0.75
+        ],
+        "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 0, 0.1, 16, 0.8, 22, 3]
+      },
+      "source-layer": "detail_polygon"
+    },
+    {
+      "layout": {},
+      "type": "fill",
+      "source": "composite",
+      "id": "buildings-shadow",
+      "paint": {
+        "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+        "fill-color": "hsla(179, 47%, 29%, 0.15)",
+        "fill-opacity": ["step", ["zoom"], 0, 12, 1],
+        "fill-translate": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          16,
+          ["literal", [-1.5, -1.5]],
+          22,
+          ["literal", [7.5, -25]]
+        ],
+        "fill-translate-anchor": "viewport"
+      },
+      "source-layer": "buildings",
+      "metadata": { "mapbox:group": "e9a6d2c761db090fca4816fc17a75180" }
+    },
+    {
+      "layout": {},
+      "metadata": { "mapbox:group": "e9a6d2c761db090fca4816fc17a75180" },
+      "type": "fill",
+      "source": "composite",
+      "id": "buildings",
+      "paint": {
+        "fill-color": [
+          "match",
+          ["get", "style_rank"],
+          [2],
+          "hsl(183, 37%, 45%)",
+          [1],
+          "#7accc8",
+          [3],
+          "#97af9b",
+          "rgba(22, 29, 29, 0)"
+        ],
+        "fill-outline-color": "hsla(0, 0%, 0%, 0)"
+      },
+      "source-layer": "buildings",
+      "filter": ["match", ["get", "part"], ["passage"], false, true]
+    },
+    {
+      "layout": {},
+      "metadata": { "mapbox:group": "e9a6d2c761db090fca4816fc17a75180" },
+      "filter": ["match", ["get", "part"], ["passage"], true, false],
+      "type": "fill",
+      "source": "composite",
+      "id": "underpass",
+      "paint": { "fill-color": "#6eaf88", "fill-outline-color": "rgba(0, 0, 0, 0)" },
+      "source-layer": "buildings"
+    },
+    {
+      "metadata": { "mapbox:group": "e9a6d2c761db090fca4816fc17a75180" },
+      "type": "line",
+      "source": "composite",
+      "id": "buildings-outline",
+      "paint": {
+        "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 0, 0, 16, 0.8, 22, 3],
+        "line-color": [
+          "match",
+          ["get", "style_rank"],
+          [1, 2],
+          "hsl(179, 47%, 29%)",
+          [3],
+          "#72867a",
+          "#276d6c"
+        ],
+        "line-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 14.5, 0, 15, 1]
+      },
+      "source-layer": "buildings",
+      "filter": ["match", ["get", "part"], ["passage"], false, true]
+    },
+    {
+      "layout": {},
+      "metadata": { "mapbox:group": "e9a6d2c761db090fca4816fc17a75180" },
+      "type": "line",
+      "source": "composite",
+      "id": "underpass-outline",
+      "paint": {
+        "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 0, 0, 16, 0.8, 22, 3],
+        "line-color": "#276d6c",
+        "line-dasharray": [4, 2],
+        "line-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 14.5, 0, 15, 1]
+      },
+      "source-layer": "buildings",
+      "filter": ["match", ["get", "part"], ["passage"], true, false]
+    },
+    {
+      "layout": {
+        "text-size": ["interpolate", ["exponential", 1.25], ["zoom"], 18, 12, 22, 44],
+        "text-allow-overlap": true,
+        "icon-offset": [0, 0],
+        "icon-image": "landmark_the_princeton_line",
+        "icon-rotation-alignment": "map",
+        "text-font": ["Open Sans SemiBold", "Arial Unicode MS Regular"],
+        "icon-rotate": -16,
+        "icon-allow-overlap": true,
+        "text-justify": "left",
+        "icon-size": ["interpolate", ["exponential", 1.75], ["zoom"], 16, 0.1, 22, 5],
+        "text-field": ["concat", ["get", "name"], "\n", ["get", "subtitle"]],
+        "icon-padding": 0,
+        "text-max-width": 9,
+        "icon-ignore-placement": true
+      },
+      "filter": ["match", ["get", "landmark_icon"], ["landmark_the_princeton_line"], true, false],
+      "type": "symbol",
+      "source": "composite",
+      "id": "princeton_line",
+      "paint": {
+        "text-opacity": ["step", ["zoom"], 0, 18, 1],
+        "icon-translate": [0, 0],
+        "icon-opacity": ["step", ["zoom"], 0, 16, 1]
+      },
+      "source-layer": "poi_label"
+    },
+    {
+      "id": "road-label",
+      "type": "symbol",
+      "layout": {
+        "text-size": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          14,
+          8,
+          22,
+          ["match", ["get", "type"], ["residential", "path"], 45, 60]
+        ],
+        "text-transform": "uppercase",
+        "symbol-spacing": 400,
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
+        "icon-rotate": 180,
+        "symbol-placement": "line",
+        "text-padding": 0,
+        "icon-size": 0.4,
+        "text-pitch-alignment": "viewport",
+        "text-field": ["to-string", ["get", "name"]],
+        "text-letter-spacing": 0.08
+      },
+      "source": "composite",
+      "source-layer": "road_label",
+      "paint": {
+        "text-color": ["match", ["get", "class"], ["path"], "#002e2c", "#7b888a"],
+        "text-halo-color": [
+          "case",
+          ["match", ["get", "class"], ["path"], false, true],
+          "#ccd8cc",
+          "rgba(0, 0, 0, 0)"
+        ],
+        "text-halo-width": 2,
+        "text-opacity": ["step", ["zoom"], 0, 15, 1]
+      },
+      "filter": ["match", ["get", "status"], ["construction"], false, true]
+    },
+    {
+      "id": "waterway-label",
+      "type": "symbol",
+      "paint": {
+        "text-color": "#3c839a",
+        "text-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 0, 0, 13.5, 0, 14, 1]
+      },
+      "layout": {
+        "text-field": ["to-string", ["get", "name"]],
+        "symbol-placement": "line",
+        "symbol-spacing": 750,
+        "text-font": ["Open Sans SemiBold", "Arial Unicode MS Regular"],
+        "text-size": ["interpolate", ["exponential", 1.5], ["zoom"], 14, 12, 20, 50]
+      },
+      "source": "composite",
+      "source-layer": "waterway_label"
+    },
+    {
+      "layout": {
+        "icon-image": ["get", "icon"],
+        "icon-size": ["interpolate", ["exponential", 1.5], ["zoom"], 17, 0.1, 22, 0.8],
+        "text-field": [
+          "match",
+          ["get", "category_name"],
+          ["Steps"],
+          ["concat", ["to-string", ["get", "name"]], " Steps"],
+          ["to-string", ["get", "name"]]
+        ],
+        "text-offset": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          18,
+          ["literal", [-0.7, 1.4]],
+          22,
+          ["literal", [-1.4, 2.2]]
+        ],
+        "text-anchor": "left",
+        "text-size": ["interpolate", ["exponential", 1.5], ["zoom"], 18.5, 14, 22, 30],
+        "symbol-sort-key": ["match", ["get", "type"], ["ramp"], 2, 1]
+      },
+      "filter": [
+        "all",
+        ["match", ["get", "class"], ["circulation"], true, false],
+        ["match", ["get", "category_name"], ["Entrance"], false, true],
+        [
+          "match",
+          ["get", "status"],
+          ["temporarily_closed", "permanently_closed", "construction"],
+          false,
+          true
+        ]
+      ],
+      "type": "symbol",
+      "source": "composite",
+      "id": "Accessible",
+      "paint": {
+        "icon-opacity": ["step", ["zoom"], 0, 18, 1],
+        "text-opacity": ["step", ["zoom"], 0, 19, 1]
+      },
+      "source-layer": "poi_label"
+    },
+    {
+      "minzoom": 5,
+      "layout": {
+        "icon-size": ["interpolate", ["exponential", 1.5], ["zoom"], 17, 0.1, 22, 0.8],
+        "icon-rotate": ["get", "rotation"],
+        "icon-rotation-alignment": "map",
+        "icon-image": ["match", ["get", "rank"], [4], ["get", "icon"], ""],
+        "icon-padding": 0,
+        "icon-ignore-placement": true,
+        "icon-allow-overlap": true
+      },
+      "filter": [
+        "all",
+        ["match", ["get", "category_name"], ["Entrance"], true, false],
+        [
+          "match",
+          ["get", "status"],
+          ["temporarily_closed", "permanently_closed", "construction"],
+          false,
+          true
+        ]
+      ],
+      "type": "symbol",
+      "source": "composite",
+      "id": "entrance",
+      "paint": { "icon-opacity": ["step", ["zoom"], 0, 17, 1] },
+      "source-layer": "poi_label"
+    },
+    {
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
+        "text-size": ["interpolate", ["exponential", 1.5], ["zoom"], 14, 6, 20, 50],
+        "text-line-height": 1,
+        "text-max-width": 6,
+        "text-transform": "uppercase",
+        "text-letter-spacing": 0.03
+      },
+      "filter": ["match", ["get", "type"], ["park", "pitch"], true, false],
+      "type": "symbol",
+      "source": "composite",
+      "id": "greenspace_label",
+      "paint": {
+        "text-color": "#3e7443",
+        "text-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 0, 0, 13.5, 0, 14, 1]
+      },
+      "source-layer": "poi_label"
+    },
+    {
+      "layout": {},
+      "filter": ["match", ["get", "type"], ["construction"], true, false],
+      "type": "fill",
+      "source": "composite",
+      "id": "Constuction Fill",
+      "paint": {
+        "fill-color": "#6da762",
+        "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+        "fill-pattern": [
+          "step",
+          ["zoom"],
+          "construction_pattern_small_small",
+          16,
+          "construction_pattern_small"
+        ]
+      },
+      "source-layer": "landuse"
+    },
+    {
+      "layout": {},
+      "filter": ["match", ["get", "type"], ["construction"], true, false],
+      "type": "line",
+      "source": "composite",
+      "id": "Constuction Stroke",
+      "paint": {
+        "line-color": "#006063",
+        "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 0, 0, 16, 0.8, 22, 2],
+        "line-opacity": ["interpolate", ["exponential", 1.5], ["zoom"], 14.5, 0, 15, 1]
+      },
+      "source-layer": "landuse"
+    },
+    {
+      "layout": {
+        "text-size": ["interpolate", ["exponential", 1.25], ["zoom"], 18, 12, 22, 44],
+        "text-allow-overlap": true,
+        "icon-offset": [
+          "match",
+          ["get", "name"],
+          [
+            "Mather Sun Dial",
+            "Fountain of Freedom",
+            "Double Sights",
+            "Song of the Vowels",
+            "Two Planes Vertical Horizontal II",
+            "Floating Figure",
+            "Dick Kazmaier",
+            "Bill Bradley",
+            "Rhumba",
+            "Atmosphere and Environment X"
+          ],
+          ["literal", [0, -120]],
+          ["Thetis Circle"],
+          ["literal", [-100, -40]],
+          ["Centaur", "Stone Riddle"],
+          ["literal", [14, -100]],
+          ["Spheric Theme"],
+          ["literal", [0, 60]],
+          ["literal", [0, -40]]
+        ],
+        "icon-image": ["get", "landmark_icon"],
+        "text-font": ["Open Sans SemiBold"],
+        "icon-allow-overlap": true,
+        "text-justify": ["match", ["get", "name"], ["Dick Kazmaier"], "right", "left"],
+        "text-offset": [
+          "match",
+          ["get", "name"],
+          ["Mather Sun Dial"],
+          ["literal", [2.3, -1.8]],
+          ["Song of the Vowels"],
+          ["literal", [2, -2.2]],
+          ["John Witherspoon"],
+          ["literal", [1.5, -0.1]],
+          ["Two Planes Vertical Horizontal II"],
+          ["literal", [1.2, -3.5]],
+          ["Moses"],
+          ["literal", [2.7, 0]],
+          ["Centaur"],
+          ["literal", [2, -1.7]],
+          ["Northwood II"],
+          ["literal", [-2.6, 1.3]],
+          ["Floating Figure"],
+          ["literal", [-1.3, 0.4]],
+          ["Andrew Fleming West"],
+          ["literal", [2.1, -3.4]],
+          ["Dick Kazmaier"],
+          ["literal", [-9.8, -2.3]],
+          ["Bill Bradley"],
+          ["literal", [1.4, -2.4]],
+          ["Construction in the Third and Fourth Dimension"],
+          ["literal", [1.5, -2.9]],
+          ["Five Disks: One Empty"],
+          ["literal", [-2.3, 2.1]],
+          ["The Hedgehog and the Fox"],
+          ["literal", [2.9, -2.1]],
+          ["Double Sights"],
+          ["literal", [-1.2, 0.7]],
+          ["Fountain of Freedom"],
+          ["literal", [2.2, -2.1]],
+          ["Rhumba"],
+          ["literal", [0.9, -1.7]],
+          ["URODA"],
+          ["literal", [1.5, -1.7]],
+          ["Spheric Theme"],
+          ["literal", [-1.7, 3.5]],
+          ["Stone Riddle"],
+          ["literal", [1.6, -1.9]],
+          ["Thermopylae"],
+          ["literal", [1.6, -0.6]],
+          ["Upstart II"],
+          ["literal", [2.1, -0.8]],
+          ["Stone Mancala Table"],
+          ["literal", [2, -1.9]],
+          ["Atmosphere and Environment X"],
+          ["literal", [2, -3.6]],
+          ["Oval with Points"],
+          ["literal", [2.3, -0.9]],
+          ["Human Condition"],
+          ["literal", [1.1, 0.6]],
+          ["Thetis Circle"],
+          ["literal", [0.7, -0.4]],
+          ["Head of a Woman"],
+          ["literal", [2.5, -0.4]],
+          ["Circle of Animals"],
+          ["literal", [-5.3, 1.3]],
+          ["Einstein’s Table"],
+          ["literal", [2.3, -2.4]],
+          ["The Bride"],
+          ["literal", [1, -0.4]],
+          ["Public Table"],
+          ["literal", [3.2, -2.2]],
+          ["(Any) Body Oddly Propped"],
+          ["literal", [3.2, -2.8]],
+          ["Pair of Topiary Tigers"],
+          ["literal", [3.5, -2.1]],
+          ["literal", [3.5, -0.8]]
+        ],
+        "icon-size": ["interpolate", ["exponential", 1.25], ["zoom"], 16, 0.1, 22, 1],
+        "text-anchor": "top-left",
+        "text-field": [
+          "format",
+          ["get", "name"],
+          "\n",
+          ["get", "subtitle"],
+          { "text-font": ["literal", ["Open Sans Regular"]] }
+        ],
+        "text-max-width": 9
+      },
+      "filter": [
+        "all",
+        ["match", ["get", "category_name"], ["Public Art"], true, false],
+        ["match", ["get", "landmark_icon"], ["landmark_the_princeton_line"], false, true],
+        ["match", ["get", "status"], ["construction"], false, true]
+      ],
+      "type": "symbol",
+      "source": "composite",
+      "id": "public-art",
+      "paint": {
+        "text-opacity": ["step", ["zoom"], 0, 18, 1],
+        "icon-opacity": ["step", ["zoom"], 0, 16, 1]
+      },
+      "source-layer": "poi_label"
+    },
+    {
+      "layout": {
+        "text-field": [
+          "format",
+          ["upcase", ["get", "name"]],
+          "\n",
+          ["get", "subtitle"],
+          { "text-font": ["literal", ["Open Sans Semibold"]] }
+        ],
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
+        "text-size": ["interpolate", ["exponential", 1.5], ["zoom"], 14, 10, 19, 20],
+        "text-line-height": 1.1,
+        "text-max-width": 12
+      },
+      "filter": ["match", ["get", "class"], ["construction"], true, false],
+      "type": "symbol",
+      "source": "composite",
+      "id": "constuction_label",
+      "paint": { "text-color": "#002e2c", "text-opacity": ["step", ["zoom"], 0, 17, 1] },
+      "source-layer": "poi_label"
+    },
+    {
+      "layout": {
+        "icon-image": ["get", "icon"],
+        "icon-size": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          14,
+          ["match", ["get", "category_name"], ["Entrance"], 0.05, ["College"], 0.14, 0.1],
+          19,
+          ["match", ["get", "category_name"], ["Entrance"], 0.3, ["College"], 0.5, 0.4]
+        ]
+      },
+      "filter": ["match", ["get", "type"], ["bus_stop"], true, false],
+      "type": "symbol",
+      "source": "composite",
+      "id": "bus_stops",
+      "paint": {
+        "icon-opacity": [
+          "step",
+          ["zoom"],
+          0,
+          14,
+          ["match", ["get", "style_rank"], [2], 0, 1],
+          17,
+          1,
+          18,
+          1
+        ]
+      },
+      "source-layer": "poi_label"
+    },
+    {
+      "layout": {
+        "text-line-height": 1.1,
+        "text-size": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          14,
+          [
+            "case",
+            ["match", ["get", "style_rank"], [2], true, false],
+            10,
+            ["match", ["get", "type"], ["pitch", "park"], true, false],
+            6,
+            8
+          ],
+          19,
+          [
+            "case",
+            ["match", ["get", "style_rank"], [1], true, false],
+            30,
+            ["match", ["get", "type"], ["residential_college"], true, false],
+            30,
+            ["match", ["get", "type"], ["pitch", "park"], true, false],
+            20,
+            ["==", ["get", "landmark"], true],
+            30,
+            22
+          ]
+        ],
+        "icon-offset": [
+          "case",
+          ["match", ["get", "type"], ["residential_college"], true, false],
+          ["literal", [-55, 0]],
+          ["match", ["get", "category_name"], ["Entrance"], true, false],
+          ["literal", [0, 0]],
+          ["literal", [0, -65]]
+        ],
+        "icon-image": ["get", "icon"],
+        "text-transform": [
+          "match",
+          ["get", "type"],
+          ["residential_college", "pitch", "park"],
+          "uppercase",
+          "none"
+        ],
+        "text-font": [
+          "case",
+          ["match", ["get", "type"], ["residential_college"], true, false],
+          ["literal", ["Open Sans Bold", "Arial Unicode MS Regular"]],
+          ["match", ["get", "style_rank"], [1], true, false],
+          ["literal", ["Open Sans Bold", "Arial Unicode MS Regular"]],
+          ["match", ["get", "type"], ["pitch", "park"], true, false],
+          ["literal", ["Open Sans Bold", "Arial Unicode MS Regular"]],
+          ["match", ["get", "type"], ["parking"], true, false],
+          ["literal", ["Open Sans SemiBold", "Arial Unicode MS Regular"]],
+          ["==", ["get", "landmark"], true],
+          ["literal", ["Open Sans Bold", "Arial Unicode MS Regular"]],
+          ["match", ["get", "style_rank"], [2], true, false],
+          ["literal", ["Open Sans SemiBold", "Arial Unicode MS Regular"]],
+          ["literal", ["Open Sans SemiBold", "Arial Unicode MS Regular"]]
+        ],
+        "icon-rotate": ["get", "rotation"],
+        "text-justify": ["match", ["get", "category_name"], ["College"], "left", "center"],
+        "text-padding": 0,
+        "icon-size": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          14,
+          ["match", ["get", "category_name"], ["Entrance"], 0.05, ["College"], 0.14, 0.1],
+          19,
+          ["match", ["get", "category_name"], ["Entrance"], 0.3, ["College"], 0.5, 0.4]
+        ],
+        "text-anchor": [
+          "case",
+          ["match", ["get", "type"], ["residential_college"], true, false],
+          "left",
+          ["has", "icon"],
+          "top",
+          "center"
+        ],
+        "text-field": [
+          "case",
+          ["==", ["get", "is_label_shown"], true],
+          [
+            "format",
+            ["get", "name"],
+            "\n",
+            ["get", "subtitle"],
+            { "font-scale": 0.8, "text-font": ["literal", ["Open Sans Semibold"]] }
+          ],
+          ["case", ["==", ["get", "is_label_shown"], true], "", ""]
+        ],
+        "icon-padding": 0,
+        "text-max-width": ["match", ["get", "type"], ["residential_college"], 5, 6]
+      },
+      "type": "symbol",
+      "source": "composite",
+      "id": "poi-label",
+      "paint": {
+        "text-opacity": [
+          "step",
+          ["zoom"],
+          0,
+          14,
+          [
+            "case",
+            ["match", ["get", "style_rank"], [1], true, false],
+            1,
+            ["match", ["get", "type"], ["residential_college", "pitch", "park"], true, false],
+            1,
+            0
+          ],
+          16,
+          [
+            "case",
+            ["match", ["get", "style_rank"], [1], true, false],
+            1,
+            ["match", ["get", "style_rank"], [2, 3], true, false],
+            1,
+            [
+              "match",
+              ["get", "type"],
+              ["residential_college", "pitch", "parking", "park"],
+              true,
+              false
+            ],
+            1,
+            0
+          ],
+          18,
+          [
+            "case",
+            ["match", ["get", "style_rank"], [1], true, false],
+            1,
+            ["match", ["get", "style_rank"], [2, 3], true, false],
+            1,
+            [
+              "match",
+              ["get", "type"],
+              ["residential_college", "pitch", "parking", "park"],
+              true,
+              false
+            ],
+            1,
+            0
+          ]
+        ],
+        "icon-opacity": [
+          "step",
+          ["zoom"],
+          0,
+          14,
+          ["match", ["get", "style_rank"], [2], 0, 1],
+          17,
+          1,
+          18,
+          1
+        ],
+        "text-color": [
+          "case",
+          ["match", ["get", "type"], ["pitch", "park"], true, false],
+          "#3e7443",
+          ["match", ["get", "style_rank"], [3], true, false],
+          "#34413f",
+          "#002e2c"
+        ]
+      },
+      "source-layer": "poi_label",
+      "filter": [
+        "all",
+        ["match", ["get", "category_name"], ["Public Art"], false, true],
+        ["match", ["get", "source"], ["dorm_entrance"], false, true],
+        ["match", ["get", "category_name"], ["Entrance"], false, true],
+        ["match", ["get", "class"], ["circulation"], false, true],
+        ["match", ["get", "type"], ["park", "pitch"], false, true],
+        [
+          "match",
+          ["get", "status"],
+          ["construction", "temporarily_closed", "permanently_closed"],
+          false,
+          true
+        ],
+        ["==", ["get", "is_label_shown"], true],
+        ["match", ["get", "id"], [526], false, true]
+      ]
+    },
+    {
+      "id": "road-line (1)",
+      "type": "line",
+      "paint": { "line-color": "#cbd7cb", "line-width": 20 },
+      "source": "composite",
+      "source-layer": "road_line",
+      "filter": ["match", ["get", "CLASS"], ["street", "secondary", "tertiary"], true, false],
+      "layout": { "visibility": "none" }
+    },
+    {
+      "id": "place-label",
+      "type": "symbol",
+      "paint": {
+        "text-color": "#002e2c",
+        "text-opacity": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          13.5,
+          0,
+          14,
+          1,
+          15,
+          1,
+          18,
+          0
+        ]
+      },
+      "layout": {
+        "text-field": ["to-string", ["get", "name"]],
+        "text-transform": "uppercase",
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
+        "text-size": ["interpolate", ["exponential", 1.9], ["zoom"], 12, 20, 18, 50],
+        "text-max-width": 5,
+        "text-line-height": 0.9,
+        "text-padding": 0,
+        "text-letter-spacing": 0.1
+      },
+      "source": "composite",
+      "source-layer": "place_label",
+      "filter": ["match", ["get", "type"], ["quarter"], false, true]
+    },
+    {
+      "id": "quarter-label",
+      "type": "symbol",
+      "paint": {
+        "text-color": "#002e2c",
+        "text-opacity": [
+          "interpolate",
+          ["exponential", 1.5],
+          ["zoom"],
+          0,
+          1,
+          13,
+          1,
+          15,
+          ["match", ["get", "name"], ["Princeton University"], 0, 1],
+          18,
+          0
+        ]
+      },
+      "layout": {
+        "text-field": ["to-string", ["get", "name"]],
+        "text-transform": "uppercase",
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
+        "text-size": ["interpolate", ["exponential", 1.9], ["zoom"], 12, 20, 18, 50],
+        "text-max-width": 5,
+        "text-line-height": 0.9,
+        "text-padding": 0,
+        "text-letter-spacing": 0.05
+      },
+      "source": "composite",
+      "source-layer": "place_label",
+      "filter": ["match", ["get", "type"], ["quarter"], true, false]
+    }
+  ],
+  "created": "2023-01-18T11:11:40.410Z",
+  "modified": "2026-02-17T14:15:03.609Z",
+  "id": "cld1kdenc001001m89xs12zvl",
+  "owner": "applied-information-group",
+  "visibility": "private",
+  "protected": false,
+  "draft": false
+}
