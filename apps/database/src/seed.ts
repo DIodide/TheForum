@@ -4,6 +4,7 @@
  * Run: bun run db:seed   (from apps/database)
  */
 
+import { eq } from "drizzle-orm";
 import { db } from "./db";
 import {
   events,
@@ -755,16 +756,30 @@ async function seed() {
     },
   ];
 
-  // Events have no unique constraint on title, so skip ones that already
-  // exist to keep re-runs of the seed from inserting duplicates.
-  const existingTitles = new Set(
-    (await db.select({ title: events.title }).from(events)).map((e) => e.title),
+  // Events have no unique constraint on title, so re-runs match on title. Events
+  // that already exist get their datetime/endDatetime refreshed (so the seed
+  // stays future-facing no matter how long ago it was first run); new titles
+  // get a full insert + tags.
+  const existingEventsByTitle = new Map(
+    (await db.select({ id: events.id, title: events.title }).from(events)).map((e) => [
+      e.title,
+      e.id,
+    ]),
   );
 
   const insertedEvents: { id: string; tags: Tag[] }[] = [];
+  let refreshedCount = 0;
   for (const e of eventList) {
-    if (existingTitles.has(e.title)) continue;
     const { tags: tagList, ...vals } = e;
+    const existingId = existingEventsByTitle.get(e.title);
+    if (existingId) {
+      await db
+        .update(events)
+        .set({ datetime: vals.datetime, endDatetime: vals.endDatetime })
+        .where(eq(events.id, existingId));
+      refreshedCount++;
+      continue;
+    }
     const [inserted] = await db.insert(events).values(vals).returning({ id: events.id });
     if (inserted) {
       insertedEvents.push({ id: inserted.id, tags: tagList });
@@ -776,9 +791,7 @@ async function seed() {
       }
     }
   }
-  console.log(
-    `  Events: ${insertedEvents.length} inserted, ${existingTitles.size} already present`,
-  );
+  console.log(`  Events: ${insertedEvents.length} inserted, ${refreshedCount} dates refreshed`);
 
   /* ═══ 9. RSVPs ═══ */
   const allUserIds = [...userMap.values()];
