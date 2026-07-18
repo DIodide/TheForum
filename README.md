@@ -93,7 +93,7 @@ The database URL is `postgresql://forum:forum_password@localhost:5434/the_forum`
 Optionally fill the database with realistic demo data:
 
 ```bash
-cd apps/database && bun run db:seed
+bun run db:seed
 ```
 
 ### 4. Run the app
@@ -124,6 +124,7 @@ bun run build        # build all packages
 bun run db:up        # start Postgres        db:down     stop it (data persists)
 bun run db:push      # push schema (dev)     db:generate generate SQL migrations
 bun run db:migrate   # apply migrations      db:studio   visual DB browser
+bun run db:seed      # seed demo data (safe to re-run any time)
 ```
 
 Pre-commit hooks (Husky + lint-staged) automatically run Biome on staged files —
@@ -186,4 +187,4 @@ Re-run `bun install` from the repo root (the `prepare` script reinstalls hooks).
 Expected unless you've run `uv sync` in `backends/fastapi` and `uv` is on your PATH.
 
 **Wipe the database and start fresh**
-`docker compose down -v` (deletes the data volume), then `bun run db:up && bun run db:push`.
+`docker compose down -v` (deletes the data volume), then `bun run db:up && bun run db:push && bun run db:seed`.
