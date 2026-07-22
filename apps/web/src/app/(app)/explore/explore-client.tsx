@@ -192,8 +192,8 @@ export function ExploreClient({
       {/* RIGHT PANEL */}
       <div className="hidden xl:flex flex-col w-[320px] flex-shrink-0 overflow-y-auto pt-[8px] pr-[14px] pl-[4px] pb-[24px]">
         {/* Create Event */}
-        <div className="relative h-[80px] mb-[14px]">
-          <div className="absolute left-[8px] top-0 w-[190px] h-[44px] rounded-[14px] bg-forum-turquoise flex items-center justify-center rotate-[13deg]" />
+        <div className="relative h-[80px] mt-[20px] mb-[14px]">
+          <div className="absolute left-[8px] top-0 w-[190px] h-[44px] rounded-[14px] bg-forum-turquoise flex items-center justify-center rotate-[10deg]" />
           <Link
             href="/events/create"
             className="absolute left-0 top-[20px] w-[190px] h-[44px] rounded-[14px] bg-forum-cerulean flex items-center justify-center gap-[6px] hover:opacity-90 transition-opacity shadow-md"

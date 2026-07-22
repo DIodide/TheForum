@@ -17,7 +17,7 @@ const PILLS: { key: FilterKey; label: string; icon: typeof Users }[] = [
 
 export function MapFilterPills({ activeFilters, onToggle }: MapFilterPillsProps) {
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center justify-center gap-2 flex-wrap">
       {PILLS.map(({ key, label, icon: Icon }) => {
         const isActive = activeFilters.has(key);
         return (

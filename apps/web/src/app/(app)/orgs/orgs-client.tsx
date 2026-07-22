@@ -107,7 +107,7 @@ export function OrgsClient({ initialOrgs, recommendedOrgs }: OrgsClientProps) {
           />
         </div>
         <Link href="/orgs/create">
-          <Button className="bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl h-11 gap-1.5">
+          <Button className="bg-forum-cerulean hover:bg-forum-cerulean/90 text-white rounded-xl h-11 gap-1.5">
             <Plus size={14} />
             Create
           </Button>
@@ -115,17 +115,17 @@ export function OrgsClient({ initialOrgs, recommendedOrgs }: OrgsClientProps) {
       </div>
 
       {/* Category filters */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-cerulean">
         {ORG_CATEGORIES.map(({ id, label }) => (
           <button
             key={id}
             type="button"
             onClick={() => handleCategoryChange(id)}
             className={cn(
-              "px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+              "px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border",
               activeCategory === id
-                ? "bg-indigo-500 text-white"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200",
+                ? "bg-forum-cerulean-light border-forum-cerulean text-forum-cerulean"
+                : "border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200",
             )}
           >
             {label}
