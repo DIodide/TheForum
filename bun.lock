@@ -39,13 +39,8 @@
       "devDependencies": {
         "@types/node": "^22.13.4",
         "drizzle-kit": "^0.31.10",
-        "tsx": "^4.21.0",
         "typescript": "^5.7.3",
       },
-    },
-    "apps/listserv-mcp-experimental": {
-      "name": "@the-forum/listserv-mcp-experimental",
-      "version": "0.0.1",
     },
     "apps/listserv-scraper": {
       "name": "@the-forum/listserv-scraper",
@@ -792,8 +787,6 @@
     "@the-forum/database": ["@the-forum/database@workspace:apps/database"],
 
     "@the-forum/fastapi": ["@the-forum/fastapi@workspace:backends/fastapi"],
-
-    "@the-forum/listserv-mcp-experimental": ["@the-forum/listserv-mcp-experimental@workspace:apps/listserv-mcp-experimental"],
 
     "@the-forum/listserv-scraper": ["@the-forum/listserv-scraper@workspace:apps/listserv-scraper"],
 
