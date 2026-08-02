@@ -4,7 +4,7 @@
  * Run: bun run db:seed   (from apps/database)
  */
 
-import { sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "./db";
 import {
   events,
@@ -41,6 +41,12 @@ function hours(n: number) {
 function pickN<T>(arr: T[], n: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, n);
+}
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 const now = Date.now();
@@ -812,17 +818,53 @@ async function seed() {
     },
   ];
 
-  // Events have no unique constraint on title, so skip ones that already
-  // exist to keep re-runs of the seed from inserting duplicates.
-  const existingTitles = new Set(
-    (await db.select({ title: events.title }).from(events)).map((e) => e.title),
+  // Titles aren't a safe identity — they're not unique and could collide with a
+  // real user-created event. Each seed event instead gets a stable key derived
+  // from its title (`seed:<slug>`), stored in `sourceMessageId` with
+  // `source = "seed"`. Re-runs only ever match rows tagged `source = "seed"`,
+  // so a reseed can never touch a real user's or listserv-imported event, and
+  // the DB's existing unique constraint on `sourceMessageId` guarantees no two
+  // seed rows can silently collide.
+  const seedKeyCounts = new Map<string, string[]>();
+  for (const e of eventList) {
+    const key = `seed:${slugify(e.title)}`;
+    seedKeyCounts.set(key, [...(seedKeyCounts.get(key) ?? []), e.title]);
+  }
+  for (const [key, titles] of seedKeyCounts) {
+    if (titles.length > 1) {
+      throw new Error(
+        `Duplicate seed event key "${key}" from titles: ${titles.join(", ")}. Seed event titles must be distinct.`,
+      );
+    }
+  }
+
+  const existingSeedEvents = new Map(
+    (
+      await db
+        .select({ id: events.id, sourceMessageId: events.sourceMessageId })
+        .from(events)
+        .where(eq(events.source, "seed"))
+    ).map((e) => [e.sourceMessageId, e.id]),
   );
 
   const insertedEvents: { id: string; tags: Tag[] }[] = [];
+  let refreshedCount = 0;
   for (const e of eventList) {
-    if (existingTitles.has(e.title)) continue;
     const { tags: tagList, ...vals } = e;
-    const [inserted] = await db.insert(events).values(vals).returning({ id: events.id });
+    const seedKey = `seed:${slugify(e.title)}`;
+    const existingId = existingSeedEvents.get(seedKey);
+    if (existingId) {
+      await db
+        .update(events)
+        .set({ datetime: vals.datetime, endDatetime: vals.endDatetime })
+        .where(eq(events.id, existingId));
+      refreshedCount++;
+      continue;
+    }
+    const [inserted] = await db
+      .insert(events)
+      .values({ ...vals, source: "seed", sourceMessageId: seedKey })
+      .returning({ id: events.id });
     if (inserted) {
       insertedEvents.push({ id: inserted.id, tags: tagList });
       if (tagList.length > 0) {
@@ -833,9 +875,7 @@ async function seed() {
       }
     }
   }
-  console.log(
-    `  Events: ${insertedEvents.length} inserted, ${existingTitles.size} already present`,
-  );
+  console.log(`  Events: ${insertedEvents.length} inserted, ${refreshedCount} dates refreshed`);
 
   /* ═══ 9. RSVPs ═══ */
   const allUserIds = [...userMap.values()];

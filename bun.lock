@@ -40,7 +40,6 @@
       "devDependencies": {
         "@types/node": "^22.13.4",
         "drizzle-kit": "^0.31.10",
-        "tsx": "^4.21.0",
         "typescript": "^5.7.3",
       },
     },
