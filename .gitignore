@@ -22,7 +22,7 @@ build/
 .forum_venv/
 
 # ---- Database ----
-drizzle/
+# drizzle/
 
 # ---- Python ----
 __pycache__/
