@@ -13,5 +13,7 @@ thefuzz[speedup]>=0.22.0
 python-dateutil>=2.9.0
 numpy
 joblib
-scikit-learn
-pandas
+# Pinned: models/event_classifier_model.joblib was pickled with 1.6.1, and
+# sklearn only guarantees pickle compatibility for the same version.
+# Re-export the model before bumping this.
+scikit-learn==1.6.1

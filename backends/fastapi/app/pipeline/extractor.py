@@ -57,34 +57,27 @@ def _get_client() -> OpenAI:
     return _client
 
 
-# Classifier is loaded lazily (on first use) rather than at import time, and
-# resolved relative to this source file rather than the process's current
-# working directory. A relative path like "models/logreg.pkl" resolved
-# against cwd is fragile — it silently depends on how/where the process was
-# started (Docker WORKDIR, systemd unit, pytest invoked from a different
-# directory, etc.), and could load a *different* file of the same name
-# without any error at all. Loading lazily also means a missing/bad model
-# fails loudly the first time extract_event actually runs, instead of
-# crashing on import (or on a completely unrelated code path importing this
-# module).
+# Classifier is loaded lazily (on first use) rather than at import time, so a
+# missing/bad model fails loudly the first time extract_event actually runs,
+# instead of crashing on import (or on a completely unrelated code path
+# importing this module).
 _classifier = None
 
 
 def _resolve_model_path() -> Path:
-    model_path = Path(settings.ml_model_path)
-    if not model_path.is_absolute():
-        # Anchor relative paths to this package's directory rather than cwd.
-        model_path = Path(__file__).resolve().parent / model_path
-    return model_path
+    """Resolve settings.ml_model_path anchored to the repo root, not the cwd.
 
-def _resolve_model_path() -> Path:
+    A relative path like "models/event_classifier_model.joblib" resolved
+    against cwd would silently depend on how/where the process was started
+    (Docker WORKDIR, systemd unit, pytest invoked from a different directory).
+    __file__ is .../backends/fastapi/app/pipeline/extractor.py, so parents[4]
+    is the repo root. Absolute paths are respected as-is.
     """
-    Dynamically resolves the absolute path to the ML model from the repo root.
-    __file__ points to: .../backends/fastapi/app/pipeline/extractor.py
-    .parents[4] points to: .../ (the repo root)
-    """
+    model_path = Path(settings.ml_model_path)
+    if model_path.is_absolute():
+        return model_path
     repo_root = Path(__file__).resolve().parents[4]
-    return repo_root / settings.ml_model_path
+    return repo_root / model_path
 
 def _get_classifier():
     global _classifier
@@ -116,7 +109,10 @@ def clean_body_text(html_content: str) -> str:
     if boilerplate_marker in clean_text:
         clean_text = clean_text.split(boilerplate_marker)[0]
 
-    clean_text = clean_text.replace("*", "").replace("-", "")
+    # Strip markdown-style emphasis noise. Keep hyphens — removing them would
+    # corrupt times ("3-5pm" → "35pm") and hyphenated words in the visible
+    # description as well as the embedded text.
+    clean_text = clean_text.replace("*", "")
 
     keywords_to_remove = [
         "forwarded message",
@@ -169,22 +165,34 @@ def classify_event(embedding: list[float]) -> bool:
 # COSINE SIMILARITY TAGGING
 # =========================
 
+# Tag embeddings are static per deployment (seeded into the DB), so fetch and
+# normalize them once instead of a full table scan + numpy rebuild per email.
+_tag_cache: tuple[list[str], np.ndarray] | None = None
+
+
+def _get_tag_matrix() -> tuple[list[str], np.ndarray] | None:
+    """Return (tag_names, L2-normalized embedding matrix), cached after first load."""
+    global _tag_cache
+    if _tag_cache is None:
+        tag_records = db.get_tag_embeddings()
+        # expected: [{ "tag": str, "embedding": list[float] }]
+        if not tag_records:
+            return None
+        tag_names = [t["tag"] for t in tag_records]
+        tag_vectors = np.array([t["embedding"] for t in tag_records])
+        tag_norms = tag_vectors / np.linalg.norm(tag_vectors, axis=1, keepdims=True)
+        _tag_cache = (tag_names, tag_norms)
+    return _tag_cache
+
+
 def assign_tags(embedding: list[float], threshold: float) -> list[str]:
-    # Load tag embeddings from DB
-    tag_records = db.get_tag_embeddings()
-    # expected: [{ "tag": str, "embedding": list[float] }]
-
-    if not tag_records:
+    cached = _get_tag_matrix()
+    if cached is None:
         return []
-
-    tag_names = [t["tag"] for t in tag_records]
-    tag_vectors = np.array([t["embedding"] for t in tag_records])
+    tag_names, tag_norms = cached
 
     email_vec = np.array(embedding)
-
-    # Normalize
     email_norm = email_vec / np.linalg.norm(email_vec)
-    tag_norms = tag_vectors / np.linalg.norm(tag_vectors, axis=1, keepdims=True)
 
     # Cosine similarity
     scores = np.dot(tag_norms, email_norm)
@@ -193,7 +201,8 @@ def assign_tags(embedding: list[float], threshold: float) -> list[str]:
 
     assigned = []
 
-    # Always take top
+    # Always take the top tag so every event gets at least one, even when
+    # nothing clears the threshold.
     top_idx = ranked[0]
     assigned.append(tag_names[top_idx])
 
@@ -250,6 +259,11 @@ def extract_event(email: PreprocessedEmail) -> ExtractedEvent | None:
             tags=tags,
         )
 
+    except FileNotFoundError:
+        # Deployment/config problem (e.g. missing model file) — every email
+        # would fail identically, so propagate instead of silently dropping
+        # 100% of traffic one message at a time.
+        raise
     except Exception:
         logger.exception("Error in extract_event for %s", email.message_id)
         return None

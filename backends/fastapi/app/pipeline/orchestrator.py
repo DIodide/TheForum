@@ -163,7 +163,9 @@ def process_raw_emails(raw_emails: list[dict]) -> dict:
             # Resolve creator and org
             creator_id, org_id = _resolve_creator(email, config)
 
-            # Insert event
+            # Insert event. needs_review events (fallback timestamp — the real
+            # event date is unknown) are kept private until a human confirms
+            # the date, so they never hit the public feed with wrong data.
             event_id = db.insert_event(
                 title=extracted.title,
                 description=extracted.description,
@@ -174,6 +176,7 @@ def process_raw_emails(raw_emails: list[dict]) -> dict:
                 creator_id=creator_id,
                 source_message_id=email.message_id,
                 tags=extracted.tags,
+                is_public=not needs_review,
             )
 
             if needs_review:
