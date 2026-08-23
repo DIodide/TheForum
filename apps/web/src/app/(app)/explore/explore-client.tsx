@@ -35,7 +35,7 @@ const demoEvent: FeedEvent = {
   // Use a fixed demo timestamp so server and client HTML match during hydration
   datetime: formatEventDateTime(new Date("2026-06-17T22:25:00Z")),
   location: "Lewis 122",
-  tags: ["music", "free-food", "performance"],
+  tags: ["music", "free food", "performing arts"],
   flyerUrl: null,
   rsvpCount: 42,
   friendsAttending: [
