@@ -5,28 +5,32 @@ import { useState } from "react";
 import { cn } from "~/lib/utils";
 
 const QUICK_FILTERS = [
-  { id: "free-food", label: "free food" },
+  { id: "free food", label: "free food" },
   { id: "tech", label: "tech talk" },
   { id: "career", label: "career" },
-  { id: "social", label: "social" },
+  { id: "social event", label: "social" },
   { id: "music", label: "music" },
-  { id: "art", label: "art" },
-  { id: "sports", label: "sports" },
+  { id: "visual arts", label: "art" },
+  { id: "athletics", label: "sports" },
 ] as const;
 
 const ALL_FILTERS = [
   ...QUICK_FILTERS,
-  { id: "academic", label: "academic" },
-  { id: "cultural", label: "cultural" },
-  { id: "performance", label: "performance" },
-  { id: "workshop", label: "workshop" },
-  { id: "speaker", label: "speaker" },
+  { id: "academics", label: "academics" },
+  { id: "culture", label: "culture" },
+  { id: "performing arts", label: "performing arts" },
+  { id: "speaker event", label: "speaker" },
+  { id: "research", label: "research" },
+  { id: "entrepreneurship", label: "entrepreneurship" },
+  { id: "stem", label: "stem" },
+  { id: "literature", label: "literature" },
   { id: "wellness", label: "wellness" },
-  { id: "outdoor", label: "outdoor" },
+  { id: "outdoors", label: "outdoors" },
+  { id: "sustainability", label: "sustainability" },
   { id: "gaming", label: "gaming" },
-  { id: "community-service", label: "service" },
-  { id: "religious", label: "religious" },
-  { id: "political", label: "political" },
+  { id: "community service", label: "service" },
+  { id: "religion", label: "religion" },
+  { id: "politics", label: "politics" },
 ] as const;
 
 interface EventFiltersProps {
