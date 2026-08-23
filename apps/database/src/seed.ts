@@ -4,11 +4,13 @@
  * Run: bun run db:seed   (from apps/database)
  */
 
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./db";
 import {
   events,
   campusLocations,
+  eventTagEmbeddings,
+  type eventTagEnum,
   eventTags,
   friendships,
   interactions,
@@ -22,9 +24,7 @@ import {
   userRegions,
   users,
 } from "./schema";
-import { eventTagEmbeddings, type eventTagEnum } from "./schema/index";
 
-// IMPORT JSON DATA TO SEED EVENT TAG EMBEDDINGS
 type TagEmbeddingRecord = {
   tag: (typeof eventTagEnum.enumValues)[number];
   description: string;
@@ -54,13 +54,9 @@ const now = Date.now();
 async function seed() {
   /* ═══ Event Tag Embeddings ═══ */
 
-  // 2. Only declare tagEmbeddingData once using Bun's runtime reader
-  // 2. Only declare tagEmbeddingData once using Bun's runtime reader
   const tagEmbeddingData = (await Bun.file(
     `${import.meta.dir}/seeddata/eventTags_embeddings.json`,
   ).json()) as TagEmbeddingRecord[];
-
-  /* ═══ Event Tag Embeddings ═══ */
 
   for (const row of tagEmbeddingData) {
     if (row.embedding.length !== 1536) {
@@ -68,7 +64,6 @@ async function seed() {
     }
   }
 
-  // 3. Insert and handle conflicts
   await db
     .insert(eventTagEmbeddings)
     .values(
@@ -80,7 +75,6 @@ async function seed() {
     .onConflictDoUpdate({
       target: eventTagEmbeddings.tagName,
       set: {
-        // sql needs to be imported from 'drizzle-orm'
         embedding: sql`excluded.embedding`,
       },
     });

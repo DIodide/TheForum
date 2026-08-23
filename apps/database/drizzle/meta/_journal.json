@@ -22,20 +22,6 @@
       "when": 1785720843992,
       "tag": "0002_update_enums",
       "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1785858138809,
-      "tag": "0003_init_schema",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1785858455846,
-      "tag": "0004_update_database",
-      "breakpoints": true
     }
   ]
 }

@@ -15,7 +15,6 @@ import {
 
 // ── Enums ─────────────────────────────────────────────────
 
-// YUBI has modified event tags
 export const eventTagEnum = pgEnum("event_tag", [
   "free food",
   "career",
