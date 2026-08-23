@@ -8,16 +8,16 @@ import { EventCoverArt } from "~/components/events/event-cover-art";
 import { AvatarStack } from "~/components/social/avatar-stack";
 
 export const CATEGORY_COLORS: Record<string, { bg: string; accent: string; text: string }> = {
-  art: { bg: "rgba(255,156,133,0.1)", accent: "#fb923c", text: "#9a3412" },
+  "visual arts": { bg: "rgba(255,156,133,0.1)", accent: "#fb923c", text: "#9a3412" },
   tech: { bg: "rgba(162,239,240,0.15)", accent: "#a78bfa", text: "#5b21b6" },
   music: { bg: "rgba(254,232,130,0.15)", accent: "#fbbf24", text: "#854d0e" },
-  sports: { bg: "rgba(162,239,240,0.15)", accent: "#60a5fa", text: "#1e3a8a" },
-  social: { bg: "rgba(255,211,234,0.2)", accent: "#f472b6", text: "#9d174d" },
+  athletics: { bg: "rgba(162,239,240,0.15)", accent: "#60a5fa", text: "#1e3a8a" },
+  "social event": { bg: "rgba(255,211,234,0.2)", accent: "#f472b6", text: "#9d174d" },
   career: { bg: "rgba(162,239,240,0.15)", accent: "#34d399", text: "#065f46" },
-  "free-food": { bg: "rgba(255,156,133,0.1)", accent: "#FF7151", text: "#991b1b" },
-  academic: { bg: "rgba(162,239,240,0.15)", accent: "#0A9CD5", text: "#0c4a6e" },
-  cultural: { bg: "rgba(254,232,130,0.15)", accent: "#f59e0b", text: "#78350f" },
-  workshop: { bg: "rgba(162,239,240,0.15)", accent: "#14b8a6", text: "#134e4a" },
+  "free food": { bg: "rgba(255,156,133,0.1)", accent: "#FF7151", text: "#991b1b" },
+  academics: { bg: "rgba(162,239,240,0.15)", accent: "#0A9CD5", text: "#0c4a6e" },
+  culture: { bg: "rgba(254,232,130,0.15)", accent: "#f59e0b", text: "#78350f" },
+  "performing arts": { bg: "rgba(162,239,240,0.15)", accent: "#14b8a6", text: "#134e4a" },
 };
 
 const DEFAULT_COLOR = { bg: "rgba(255,156,133,0.1)", accent: "#D9D9D9", text: "#585858" };

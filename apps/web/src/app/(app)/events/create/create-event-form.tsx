@@ -159,25 +159,31 @@ export function CreateEventForm({ locations, userOrgs }: CreateEventFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Must match eventTagEnum in apps/database/src/schema (client component, so
+  // the list is inlined rather than importing the server-only schema package)
   const VALID_TAGS = [
-    "free-food",
-    "workshop",
-    "performance",
-    "speaker",
-    "social",
+    "free food",
     "career",
-    "sports",
-    "music",
-    "art",
-    "academic",
-    "cultural",
-    "community-service",
-    "religious",
-    "political",
+    "research",
+    "academics",
     "tech",
+    "entrepreneurship",
+    "politics",
+    "visual arts",
+    "performing arts",
+    "literature",
+    "culture",
+    "music",
     "gaming",
-    "outdoor",
+    "athletics",
+    "religion",
+    "sustainability",
+    "outdoors",
     "wellness",
+    "community service",
+    "speaker event",
+    "social event",
+    "stem",
   ];
 
   const doCreate = (status: "published" | "draft") => {
