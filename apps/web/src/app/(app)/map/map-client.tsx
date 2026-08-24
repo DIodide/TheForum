@@ -198,7 +198,9 @@ export function MapClient({ initialEvents }: MapClientProps) {
               shows through the gaps between them. */}
           <div
             className={cn(
-              "absolute top-16 right-0 bottom-0 z-10 w-[320px] max-w-[85vw] transition-transform duration-300 ease-out",
+              // Full width on phones — a 320px rail leaves too little map beside
+              // it to be worth keeping.
+              "absolute top-16 right-0 bottom-0 z-10 w-full transition-transform duration-300 ease-out sm:w-[320px]",
               panelOpen ? "translate-x-0" : "translate-x-full",
             )}
           >

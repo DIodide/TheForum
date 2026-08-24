@@ -1,6 +1,6 @@
 "use client";
 
-import { Expand } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -11,13 +11,13 @@ import {
   toggleRsvp,
   toggleSave,
 } from "~/actions/events";
-import { Panel } from "~/components/common/panel";
 import { SearchInput } from "~/components/common/search-input";
 import { EmptyState, EventCardSkeletonList } from "~/components/common/states";
 import { EventCard } from "~/components/events/event-card";
 import { EventFilters } from "~/components/events/event-filters";
 import { PageHeading, PageShell, SectionHeading } from "~/components/layout/page-shell";
-import { formatEventDateTime } from "~/lib/date-format";
+import { Button } from "~/components/ui/button";
+import { formatEventDateTime, formatRelativeDay } from "~/lib/date-format";
 
 interface ExploreClientProps {
   initialEvents: FeedEvent[];
@@ -210,109 +210,118 @@ export function ExploreClient({
       </div>
 
       {/* RIGHT PANEL */}
+      {/*
+        Nudged down so "Find My Friends" starts level with the "Today is…" line
+        rather than the greeting above it: the h1 is 52px at this breakpoint
+        plus the 8px gap to its description.
+      */}
       <aside
         aria-label="Highlights"
-        className="hidden w-[320px] shrink-0 flex-col gap-6 overflow-y-auto xl:flex"
+        className="hidden w-[320px] shrink-0 flex-col gap-8 overflow-y-auto xl:flex xl:pt-[60px]"
       >
         {/* Find My Friends */}
         <section>
           <SectionHeading>Find My Friends</SectionHeading>
-          <Link
-            href="/map"
-            className="group relative block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forum-cerulean"
+          {friendsEvents.length === 0 ? (
+            <p className="font-dm-sans text-[13px] text-forum-light-gray">
+              None of your friends have added an event yet.
+            </p>
+          ) : (
+            /* Hairline dividers instead of gaps — keeps a longer list calm. */
+            <ul className="divide-y divide-forum-medium-gray">
+              {friendsEvents.slice(0, 4).map((event) => {
+                const friend = event.friendsAttending[0];
+                return (
+                  <li key={event.id} className="flex items-center gap-3 py-3 first:pt-1">
+                    {friend?.avatarUrl ? (
+                      <img
+                        src={friend.avatarUrl}
+                        alt=""
+                        className="size-10 shrink-0 rounded-full object-cover ring-2 ring-forum-medium-gray"
+                      />
+                    ) : (
+                      <span
+                        aria-hidden
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-forum-cerulean font-dm-sans text-[14px] font-bold text-white ring-2 ring-forum-medium-gray"
+                      >
+                        {friend?.displayName[0]?.toUpperCase() ?? "?"}
+                      </span>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className="font-dm-sans text-[13px] leading-snug text-black line-clamp-2">
+                        <span className="font-bold text-forum-cerulean">
+                          {friend?.displayName.split(" ")[0] ?? "A friend"}
+                        </span>{" "}
+                        added <span className="font-bold text-forum-cerulean">{event.title}</span>{" "}
+                        to their calendar.
+                      </p>
+                      <p className="mt-1 truncate font-dm-sans text-[11px] text-forum-light-gray">
+                        {event.location} @ {event.datetime}
+                      </p>
+                    </div>
+
+                    <Button
+                      asChild
+                      variant="coral"
+                      size="xs"
+                      className="shrink-0 rounded-full px-3 text-[10px] font-bold tracking-wide"
+                    >
+                      <Link href={`/events/${event.id}`}>VIEW EVENT</Link>
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="mt-4 w-full rounded-full text-[10px] font-bold tracking-wide text-forum-dark-gray"
           >
-            <div className="h-[240px] overflow-hidden rounded-lg border border-forum-border">
-              <div className="w-full h-full bg-[#f0f4ee] relative">
-                <div className="absolute inset-0 opacity-12">
-                  <div className="absolute top-0 left-[25%] w-[1px] h-full bg-gray-400" />
-                  <div className="absolute top-0 left-[55%] w-[1px] h-full bg-gray-400" />
-                  <div className="absolute top-0 left-[80%] w-[1px] h-full bg-gray-400" />
-                  <div className="absolute top-[30%] left-0 w-full h-[1px] bg-gray-400" />
-                  <div className="absolute top-[60%] left-0 w-full h-[1px] bg-gray-400" />
-                </div>
-                <span className="absolute top-[6%] right-[5%] text-[7px] font-bold text-gray-400 tracking-widest uppercase">
-                  Morrison
-                </span>
-                <span className="absolute top-[42%] left-[10%] text-[8px] font-bold text-gray-500 tracking-wider uppercase">
-                  Versity Place
-                </span>
-                <span className="absolute bottom-[6%] right-[6%] text-[7px] font-bold text-gray-400 tracking-widest uppercase">
-                  Museum
-                </span>
-                <span className="absolute bottom-[18%] left-[3%] text-[7px] font-bold text-gray-400">
-                  Dillon Gym
-                </span>
-                <div className="absolute top-[16%] right-[8%]">
-                  <div className="bg-white/95 rounded-full px-[8px] py-[2px] shadow text-[9px] font-bold text-black">
-                    Select Location
-                  </div>
-                </div>
-                <div className="absolute top-[22%] right-[20%] flex flex-col items-center">
-                  <div className="w-[36px] h-[36px] rounded-full border-[2px] border-white shadow bg-forum-turquoise/40 flex items-center justify-center text-[12px] font-bold">
-                    AJ
-                  </div>
-                  <span className="mt-[1px] bg-white/90 rounded-full px-[5px] text-[8px] font-bold text-black">
-                    AJ
-                  </span>
-                </div>
-                <div className="absolute bottom-[24%] left-[20%] flex flex-col items-center">
-                  <div className="w-[36px] h-[36px] rounded-full border-[2px] border-white shadow bg-forum-pink/60 flex items-center justify-center text-[12px] font-bold">
-                    PK
-                  </div>
-                  <span className="mt-[1px] bg-white/90 rounded-full px-[5px] text-[8px] font-bold text-black">
-                    PK
-                  </span>
-                </div>
-                <div className="absolute bottom-[24%] left-[40%] flex flex-col items-center">
-                  <div className="w-[36px] h-[36px] rounded-full border-[2px] border-white shadow bg-forum-yellow/60 flex items-center justify-center text-[12px] font-bold">
-                    AR
-                  </div>
-                  <span className="mt-[1px] bg-white/90 rounded-full px-[5px] text-[8px] font-bold text-black">
-                    AR
-                  </span>
-                </div>
-              </div>
-              <div className="absolute top-[8px] right-[8px]">
-                <Expand
-                  size={14}
-                  className="text-forum-dark-gray group-hover:text-black transition-colors"
-                />
-              </div>
-            </div>
-          </Link>
+            <Link href="/friends">
+              VIEW ALL FRIENDS
+              <ExternalLink />
+            </Link>
+          </Button>
         </section>
 
         {/* Upcoming Events */}
         <section>
           <SectionHeading>Upcoming Events</SectionHeading>
-          <Panel size="sm" className="flex flex-col">
-            {upcomingList.map((event) => (
-              <Link
-                key={event.id}
-                href={`/events/${event.id}`}
-                className="flex items-center gap-2.5 rounded-lg px-0.5 py-2 transition-colors hover:bg-forum-turquoise/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forum-cerulean"
-              >
-                <div className="size-[40px] shrink-0 overflow-hidden rounded border-2 border-forum-medium-gray">
-                  {event.flyerUrl ? (
-                    <img src={event.flyerUrl} alt="" className="size-full object-cover" />
-                  ) : (
-                    <div className="size-full bg-forum-pink/40" />
-                  )}
-                </div>
-                <p className="min-w-0 flex-1 font-dm-sans text-[13px] leading-snug text-black line-clamp-2">
-                  {event.title}
-                </p>
-                <span className="shrink-0 rounded border border-forum-border px-1.5 py-[3px] font-dm-sans text-[9px] font-bold tracking-wide text-forum-light-gray">
-                  DETAILS
-                </span>
-              </Link>
-            ))}
-            {upcomingList.length === 0 && (
-              <p className="py-1.5 font-dm-sans text-[12px] text-forum-light-gray">
-                No upcoming events yet.
-              </p>
-            )}
-          </Panel>
+          {upcomingList.length === 0 ? (
+            <p className="font-dm-sans text-[13px] text-forum-light-gray">
+              No upcoming events yet.
+            </p>
+          ) : (
+            <ul className="divide-y divide-forum-medium-gray">
+              {upcomingList.map((event) => (
+                <li key={event.id} className="flex items-center gap-3 py-3 first:pt-1">
+                  <div className="size-12 shrink-0 overflow-hidden rounded-lg bg-forum-turquoise/40">
+                    {event.flyerUrl && (
+                      <img src={event.flyerUrl} alt="" className="size-full object-cover" />
+                    )}
+                  </div>
+
+                  <p className="min-w-0 flex-1 font-dm-sans text-[13px] leading-snug text-black line-clamp-2">
+                    <span className="font-bold">{event.title}</span> is happening{" "}
+                    {event.rawDatetime ? formatRelativeDay(new Date(event.rawDatetime)) : "soon"}!
+                  </p>
+
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="xs"
+                    className="shrink-0 rounded-full px-3 text-[10px] font-bold tracking-wide text-forum-dark-gray"
+                  >
+                    <Link href={`/events/${event.id}`}>DETAILS</Link>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </aside>
     </PageShell>

@@ -54,6 +54,110 @@ export interface FeedEvent {
   isSaved: boolean;
 }
 
+/** Accepted friendships are stored one-directional, so both columns are read. */
+async function loadFriendIds(userId: string): Promise<string[]> {
+  const [outgoing, incoming] = await Promise.all([
+    db
+      .select({ friendId: friendships.friendId })
+      .from(friendships)
+      .where(and(eq(friendships.userId, userId), eq(friendships.status, "accepted"))),
+    db
+      .select({ friendId: friendships.userId })
+      .from(friendships)
+      .where(and(eq(friendships.friendId, userId), eq(friendships.status, "accepted"))),
+  ]);
+  return [...outgoing, ...incoming].map((r) => r.friendId);
+}
+
+interface EventEnrichment {
+  tags: Map<string, string[]>;
+  attendees: Map<string, NonNullable<FeedEvent["attendees"]>>;
+  friends: Map<string, FeedEvent["friendsAttending"]>;
+  rsvpedByMe: Set<string>;
+  savedByMe: Set<string>;
+}
+
+/**
+ * Tags, attendees, friend attendance and the viewer's own RSVP/save state for
+ * a page of events.
+ *
+ * Four call sites were each hard-coding `tags: []`, `rsvpCount: 0`,
+ * `friendsAttending: []` and `isRsvped/isSaved: false`, so those screens could
+ * never show a tag or the right button state no matter how they were styled.
+ *
+ * Everything is fetched as one query per field and grouped in memory. The
+ * per-event version issued several queries per row, all concurrent, each
+ * holding a connection — which is how the pool got exhausted.
+ */
+async function loadEventEnrichment(
+  eventIds: string[],
+  userId: string,
+  friendIds: string[],
+): Promise<EventEnrichment> {
+  const empty: EventEnrichment = {
+    tags: new Map(),
+    attendees: new Map(),
+    friends: new Map(),
+    rsvpedByMe: new Set(),
+    savedByMe: new Set(),
+  };
+  if (eventIds.length === 0) return empty;
+
+  const [tagRows, attendeeRows, myRsvps, mySaves] = await Promise.all([
+    db
+      .select({ eventId: eventTags.eventId, tag: eventTags.tag })
+      .from(eventTags)
+      .where(inArray(eventTags.eventId, eventIds)),
+    db
+      .select({
+        eventId: rsvps.eventId,
+        id: users.id,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(rsvps)
+      .innerJoin(users, eq(rsvps.userId, users.id))
+      .where(inArray(rsvps.eventId, eventIds)),
+    db
+      .select({ eventId: rsvps.eventId })
+      .from(rsvps)
+      .where(and(inArray(rsvps.eventId, eventIds), eq(rsvps.userId, userId))),
+    db
+      .select({ eventId: savedEvents.eventId })
+      .from(savedEvents)
+      .where(and(inArray(savedEvents.eventId, eventIds), eq(savedEvents.userId, userId))),
+  ]);
+
+  const friendIdSet = new Set(friendIds);
+  const result: EventEnrichment = {
+    tags: new Map(),
+    attendees: new Map(),
+    friends: new Map(),
+    rsvpedByMe: new Set(myRsvps.map((r) => r.eventId)),
+    savedByMe: new Set(mySaves.map((r) => r.eventId)),
+  };
+
+  for (const row of tagRows) {
+    const list = result.tags.get(row.eventId);
+    if (list) list.push(row.tag);
+    else result.tags.set(row.eventId, [row.tag]);
+  }
+
+  for (const { eventId, ...person } of attendeeRows) {
+    const all = result.attendees.get(eventId);
+    if (all) all.push(person);
+    else result.attendees.set(eventId, [person]);
+
+    if (friendIdSet.has(person.id)) {
+      const mine = result.friends.get(eventId);
+      if (mine) mine.push(person);
+      else result.friends.set(eventId, [person]);
+    }
+  }
+
+  return result;
+}
+
 export async function getFeedEvents(params?: {
   search?: string;
   tags?: string[];
@@ -549,6 +653,8 @@ export async function getSimilarEvents(
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
+  const userId = session.user.id;
+
   const conditions = [gt(events.datetime, new Date())];
 
   // Events with matching tags or same org, excluding current event
@@ -589,21 +695,33 @@ export async function getSimilarEvents(
     .orderBy(events.datetime)
     .limit(4);
 
-  return rawEvents.map((event) => ({
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    orgId: event.orgId,
-    orgName: event.orgName,
-    datetime: formatEventDateTime(event.datetime),
-    location: event.locationName ?? "TBD",
-    tags: [],
-    flyerUrl: event.flyerUrl,
-    rsvpCount: 0,
-    friendsAttending: [],
-    isRsvped: false,
-    isSaved: false,
-  }));
+  const friendIds = await loadFriendIds(userId);
+  const extra = await loadEventEnrichment(
+    rawEvents.map((e) => e.id),
+    userId,
+    friendIds,
+  );
+
+  return rawEvents.map((event) => {
+    const attendees = extra.attendees.get(event.id) ?? [];
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      orgId: event.orgId,
+      orgName: event.orgName,
+      datetime: formatEventDateTime(event.datetime),
+      rawDatetime: event.datetime.toISOString(),
+      location: event.locationName ?? "TBD",
+      tags: extra.tags.get(event.id) ?? [],
+      flyerUrl: event.flyerUrl,
+      rsvpCount: attendees.length,
+      attendees,
+      friendsAttending: extra.friends.get(event.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(event.id),
+      isSaved: extra.savedByMe.has(event.id),
+    };
+  });
 }
 
 type EventTagValue = typeof eventTags.$inferSelect.tag;
@@ -845,83 +963,18 @@ export async function getMyEvents(): Promise<{
     .orderBy(events.datetime);
 
   /*
-   * Enrich all three tabs at once.
-   *
-   * These fields used to be hard-coded — `tags: []`, `friendsAttending: []`,
-   * `rsvpCount: 0`, `isRsvped: false`, `isSaved: false` — so My Events could
-   * never show a tag, a friend, or the correct RSVP state regardless of how
-   * the card was styled. One batched query per field across all three lists.
+   * Enrich all three tabs at once. These fields used to be hard-coded, so My
+   * Events could never show a tag, a friend, or the correct RSVP state
+   * regardless of how the card was styled.
    */
   const allIds = [
     ...new Set([...createdEvents, ...rsvpedEvents, ...savedEventsResult].map((e) => e.id)),
   ];
-
-  const [outgoing, incoming] = await Promise.all([
-    db
-      .select({ friendId: friendships.friendId })
-      .from(friendships)
-      .where(and(eq(friendships.userId, userId), eq(friendships.status, "accepted"))),
-    db
-      .select({ friendId: friendships.userId })
-      .from(friendships)
-      .where(and(eq(friendships.friendId, userId), eq(friendships.status, "accepted"))),
-  ]);
-  const friendIdSet = new Set([...outgoing, ...incoming].map((r) => r.friendId));
-
-  const [tagRows, attendeeRows, myRsvpRows, mySaveRows] =
-    allIds.length === 0
-      ? [[], [], [], []]
-      : await Promise.all([
-          db
-            .select({ eventId: eventTags.eventId, tag: eventTags.tag })
-            .from(eventTags)
-            .where(inArray(eventTags.eventId, allIds)),
-          db
-            .select({
-              eventId: rsvps.eventId,
-              id: users.id,
-              displayName: users.displayName,
-              avatarUrl: users.avatarUrl,
-            })
-            .from(rsvps)
-            .innerJoin(users, eq(rsvps.userId, users.id))
-            .where(inArray(rsvps.eventId, allIds)),
-          db
-            .select({ eventId: rsvps.eventId })
-            .from(rsvps)
-            .where(and(inArray(rsvps.eventId, allIds), eq(rsvps.userId, userId))),
-          db
-            .select({ eventId: savedEvents.eventId })
-            .from(savedEvents)
-            .where(and(inArray(savedEvents.eventId, allIds), eq(savedEvents.userId, userId))),
-        ]);
-
-  const tagsByEvent = new Map<string, string[]>();
-  for (const row of tagRows) {
-    const list = tagsByEvent.get(row.eventId);
-    if (list) list.push(row.tag);
-    else tagsByEvent.set(row.eventId, [row.tag]);
-  }
-
-  const attendeesByEvent = new Map<string, NonNullable<FeedEvent["attendees"]>>();
-  const friendsByEvent = new Map<string, FeedEvent["friendsAttending"]>();
-  for (const { eventId, ...person } of attendeeRows) {
-    const all = attendeesByEvent.get(eventId);
-    if (all) all.push(person);
-    else attendeesByEvent.set(eventId, [person]);
-
-    if (friendIdSet.has(person.id)) {
-      const mine = friendsByEvent.get(eventId);
-      if (mine) mine.push(person);
-      else friendsByEvent.set(eventId, [person]);
-    }
-  }
-
-  const myRsvps = new Set(myRsvpRows.map((r) => r.eventId));
-  const mySaves = new Set(mySaveRows.map((r) => r.eventId));
+  const friendIds = await loadFriendIds(userId);
+  const extra = await loadEventEnrichment(allIds, userId, friendIds);
 
   const mapEvent = (e: (typeof createdEvents)[0]): FeedEvent => {
-    const attendees = attendeesByEvent.get(e.id) ?? [];
+    const attendees = extra.attendees.get(e.id) ?? [];
     return {
       id: e.id,
       title: e.title,
@@ -931,13 +984,13 @@ export async function getMyEvents(): Promise<{
       datetime: formatEventDateTime(e.datetime),
       rawDatetime: e.datetime.toISOString(),
       location: e.locationName ?? "TBD",
-      tags: tagsByEvent.get(e.id) ?? [],
+      tags: extra.tags.get(e.id) ?? [],
       flyerUrl: e.flyerUrl,
       rsvpCount: attendees.length,
       attendees,
-      friendsAttending: friendsByEvent.get(e.id) ?? [],
-      isRsvped: myRsvps.has(e.id),
-      isSaved: mySaves.has(e.id),
+      friendsAttending: extra.friends.get(e.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(e.id),
+      isSaved: extra.savedByMe.has(e.id),
     };
   };
 
@@ -986,21 +1039,34 @@ export async function getSavedEvents(): Promise<FeedEvent[]> {
     .orderBy(events.datetime)
     .limit(5);
 
-  return saved.map((event) => ({
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    orgId: event.orgId,
-    orgName: event.orgName,
-    datetime: formatEventDateTime(event.datetime),
-    location: event.locationName ?? "TBD",
-    tags: [],
-    flyerUrl: event.flyerUrl,
-    rsvpCount: 0,
-    friendsAttending: [],
-    isRsvped: false,
-    isSaved: true,
-  }));
+  const friendIds = await loadFriendIds(userId);
+  const extra = await loadEventEnrichment(
+    saved.map((e) => e.id),
+    userId,
+    friendIds,
+  );
+
+  return saved.map((event) => {
+    const attendees = extra.attendees.get(event.id) ?? [];
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      orgId: event.orgId,
+      orgName: event.orgName,
+      datetime: formatEventDateTime(event.datetime),
+      rawDatetime: event.datetime.toISOString(),
+      location: event.locationName ?? "TBD",
+      tags: extra.tags.get(event.id) ?? [],
+      flyerUrl: event.flyerUrl,
+      rsvpCount: attendees.length,
+      attendees,
+      friendsAttending: extra.friends.get(event.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(event.id),
+      // Everything in this list is saved by definition.
+      isSaved: true,
+    };
+  });
 }
 
 export interface FriendsEvent extends FeedEvent {
@@ -1059,20 +1125,31 @@ export async function getFriendsEvents(): Promise<FriendsEvent[]> {
     .orderBy(desc(sql`friend_count`), events.datetime)
     .limit(20);
 
-  return friendsEvents.map((event) => ({
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    orgId: event.orgId,
-    orgName: event.orgName,
-    datetime: formatEventDateTime(event.datetime),
-    location: event.locationName ?? "TBD",
-    tags: [],
-    flyerUrl: event.flyerUrl,
-    rsvpCount: 0,
-    friendsAttending: [],
-    isRsvped: false,
-    isSaved: false,
-    friendCount: event.friendCount,
-  }));
+  const extra = await loadEventEnrichment(
+    friendsEvents.map((e) => e.id),
+    userId,
+    friendIds,
+  );
+
+  return friendsEvents.map((event) => {
+    const attendees = extra.attendees.get(event.id) ?? [];
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      orgId: event.orgId,
+      orgName: event.orgName,
+      datetime: formatEventDateTime(event.datetime),
+      rawDatetime: event.datetime.toISOString(),
+      location: event.locationName ?? "TBD",
+      tags: extra.tags.get(event.id) ?? [],
+      flyerUrl: event.flyerUrl,
+      rsvpCount: attendees.length,
+      attendees,
+      friendsAttending: extra.friends.get(event.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(event.id),
+      isSaved: extra.savedByMe.has(event.id),
+      friendCount: event.friendCount,
+    };
+  });
 }

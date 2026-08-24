@@ -20,7 +20,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 function Avatar({
   name,
   avatarUrl,
-  size = 56,
+  // 44px reads fine on a phone row and still leaves room for the name and
+  // its actions; 56 crowded them.
+  size = 44,
 }: {
   name: string;
   avatarUrl?: string | null;
@@ -150,7 +152,8 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
           <TabsTrigger
             key={id}
             value={id}
-            className="flex-1 py-4 font-dm-sans text-[16px] font-semibold after:bottom-[-1px] after:h-0.5 after:bg-forum-cerulean data-[state=active]:text-black"
+            // Type scales down on phones so three tabs fit without clipping.
+            className="min-w-0 flex-1 px-1 py-3 font-dm-sans text-[13px] font-semibold after:bottom-[-1px] after:h-0.5 after:bg-forum-cerulean data-[state=active]:text-black sm:px-2 sm:py-4 sm:text-[16px]"
           >
             {label}
             {count > 0 && (
@@ -287,8 +290,13 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
           <TabsContent value="requests">
             {pending.incoming.length > 0 ? (
               <div className="flex flex-col gap-3">
+                {/* Rows wrap on phones so Accept/Decline don't squeeze the name */}
                 {pending.incoming.map((req) => (
-                  <Panel key={req.id} size="sm" className="flex items-center gap-4">
+                  <Panel
+                    key={req.id}
+                    size="sm"
+                    className="flex flex-wrap items-center gap-x-4 gap-y-3"
+                  >
                     <Avatar name={req.displayName} avatarUrl={req.avatarUrl} />
                     <div className="min-w-0 flex-1">
                       <p className="font-dm-sans text-[15px] text-black">

@@ -102,7 +102,8 @@ export function MyEventsClient({ created, rsvped, saved }: MyEventsClientProps) 
           <TabsTrigger
             key={id}
             value={id}
-            className="flex-1 py-4 font-dm-sans text-[18px] font-semibold after:bottom-[-1px] after:h-0.5 after:bg-forum-cerulean data-[state=active]:text-black"
+            // Type scales down on phones so three tabs fit without clipping.
+            className="min-w-0 flex-1 px-1 py-3 font-dm-sans text-[13px] font-semibold after:bottom-[-1px] after:h-0.5 after:bg-forum-cerulean data-[state=active]:text-black sm:px-2 sm:py-4 sm:text-[18px]"
           >
             {label}
           </TabsTrigger>

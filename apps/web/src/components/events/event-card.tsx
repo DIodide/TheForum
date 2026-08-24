@@ -220,7 +220,8 @@ export function EventCard({
             </div>
           )}
 
-          <div className="ml-auto flex flex-wrap items-center gap-2">
+          {/* Full-width action row on phones; pushed right once there's room */}
+          <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
             {calendarUrl && (
               <Button asChild variant="outline" size="sm" className="rounded-full">
                 <a href={calendarUrl} target="_blank" rel="noopener noreferrer">
