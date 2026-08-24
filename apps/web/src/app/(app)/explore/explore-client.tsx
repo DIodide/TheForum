@@ -3,6 +3,7 @@
 import { Expand } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   type FeedEvent,
   type FriendsEvent,
@@ -72,6 +73,11 @@ export function ExploreClient({
   const [events, setEvents] = useState(fallbackEvents);
   const [_total, setTotal] = useState(initialEvents.length > 0 ? initialTotal : 1);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  /*
+   * Hidden events stay in the list as collapsed stubs rather than being
+   * filtered out, so hiding stays reversible without a reload.
+   */
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [isPending, startTransition] = useTransition();
   const firstName = useMemo(() => userName.split(" ")[0] || "there", [userName]);
@@ -121,10 +127,16 @@ export function ExploreClient({
     [savedEvents, events],
   );
 
+  /*
+   * Single column that scrolls with the page on phones; the two-column layout
+   * with its own internal scroll only kicks in at xl, where the right rail
+   * appears. Nesting a scroll container inside the page scroller on a phone
+   * made the feed feel stuck.
+   */
   return (
-    <PageShell width="wide" className="flex h-full gap-8">
+    <PageShell width="wide" className="flex flex-col gap-8 xl:h-full xl:flex-row">
       {/* CENTER — Feed */}
-      <div className="flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto">
+      <div className="flex min-w-0 flex-1 flex-col gap-5 xl:overflow-y-auto">
         <PageHeading
           description={
             <>
@@ -144,7 +156,7 @@ export function ExploreClient({
 
         <SearchInput
           label="Search events"
-          placeholder="Search for free boba, music concerts, tabling events"
+          placeholder="Search for events or people"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => {
@@ -178,9 +190,18 @@ export function ExploreClient({
                 onRsvpToggle={() => handleRsvpToggle(event.id)}
                 onShare={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/events/${event.id}`);
+                  toast.success("Link copied to clipboard");
                 }}
+                isHidden={hiddenIds.has(event.id)}
                 onHide={() => {
-                  setEvents((prev) => prev.filter((e) => e.id !== event.id));
+                  setHiddenIds((prev) => new Set(prev).add(event.id));
+                }}
+                onUnhide={() => {
+                  setHiddenIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(event.id);
+                    return next;
+                  });
                 }}
               />
             ))

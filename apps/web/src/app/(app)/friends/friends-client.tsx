@@ -237,7 +237,7 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
                   <Panel
                     key={friend.id}
                     size="sm"
-                    className="group flex items-center gap-4 transition-colors hover:border-forum-cerulean"
+                    className="flex items-center gap-4 transition-colors hover:border-forum-cerulean"
                   >
                     <Avatar name={friend.displayName} avatarUrl={friend.avatarUrl} />
                     <div className="min-w-0 flex-1">
@@ -250,15 +250,17 @@ export function FriendsClient({ initialFriends, initialPending }: FriendsClientP
                       </p>
                     </div>
                     {/*
-                      Kept reachable by keyboard: the control is always in the
-                      tab order and reveals itself on focus, not just on hover.
+                      Always visible rather than hover-revealed: a control you
+                      cannot see is a control you cannot find, and hover doesn't
+                      exist on touch at all. It stays low-contrast until hover,
+                      where it turns coral to signal the destructive action.
                     */}
                     <Button
                       variant="ghost"
                       size="icon-sm"
                       aria-label={`Remove ${friend.displayName} from friends`}
                       onClick={() => handleRemove(friend.id)}
-                      className="text-forum-medium-gray opacity-0 transition-opacity hover:text-forum-coral focus-visible:opacity-100 group-hover:opacity-100"
+                      className="text-forum-light-gray transition-colors hover:bg-forum-coral/10 hover:text-forum-coral"
                     >
                       <UserMinus />
                     </Button>
