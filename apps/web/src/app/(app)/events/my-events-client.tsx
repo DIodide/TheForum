@@ -10,6 +10,7 @@ import { cn } from "~/lib/utils";
 
 const TABS = [
   { id: "created", label: "Events Created" },
+  { id: "rsvped", label: "Events RSVP'd" },
   { id: "saved", label: "Events Saved" },
 ] as const;
 
@@ -83,7 +84,7 @@ function EventListCard({ event }: { event: FeedEvent }) {
 export function MyEventsClient({ created, rsvped, saved }: MyEventsClientProps) {
   const [activeTab, setActiveTab] = useState<TabId>("created");
 
-  const eventMap: Record<TabId, FeedEvent[]> = { created, saved };
+  const eventMap: Record<TabId, FeedEvent[]> = { created, rsvped, saved };
   const events = eventMap[activeTab];
 
   return (
@@ -131,12 +132,18 @@ export function MyEventsClient({ created, rsvped, saved }: MyEventsClientProps) 
       ) : (
         <div className="flex flex-col items-center justify-center py-[60px]">
           <p className="font-serif text-[24px] text-forum-dark-gray mb-[8px]">
-            {activeTab === "created" ? "No events created yet" : "No saved events"}
+            {activeTab === "created"
+              ? "No events created yet"
+              : activeTab === "rsvped"
+                ? "No RSVP'd events"
+                : "No saved events"}
           </p>
           <p className="text-[14px] font-dm-sans text-forum-light-gray mb-[24px]">
             {activeTab === "created"
               ? "Share something with campus — create your first event."
-              : "Bookmark events you're interested in."}
+              : activeTab === "rsvped"
+                ? "Events you've RSVP'd to will show up here."
+                : "Bookmark events you're interested in."}
           </p>
         </div>
       )}

@@ -12,14 +12,14 @@ const ORG_CATEGORIES = [
   { id: "all", label: "All" },
   { id: "career", label: "Career" },
   { id: "affinity", label: "Affinity" },
-  { id: "performance", label: "Performance" },
-  { id: "academic", label: "Academic" },
-  { id: "athletic", label: "Athletic" },
-  { id: "social", label: "Social" },
-  { id: "cultural", label: "Cultural" },
-  { id: "religious", label: "Religious" },
-  { id: "political", label: "Political" },
-  { id: "service", label: "Service" },
+  { id: "performing arts", label: "Performing Arts" },
+  { id: "academics", label: "Academics" },
+  { id: "athletics", label: "Athletics" },
+  { id: "social event", label: "Social" },
+  { id: "culture", label: "Culture" },
+  { id: "religion", label: "Religion" },
+  { id: "politics", label: "Politics" },
+  { id: "community service", label: "Service" },
 ];
 
 function orgColor(name: string) {
