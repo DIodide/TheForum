@@ -16,29 +16,80 @@ import { PageHeading, PageShell, SectionHeading } from "~/components/layout/page
 import { Button } from "~/components/ui/button";
 
 const INTEREST_TAGS = [
-  { id: "free food", label: "free food" },
-  { id: "tech", label: "technology" },
-  { id: "stem", label: "science and engineering" },
-  { id: "visual arts", label: "visual arts" },
-  { id: "wellness", label: "fitness & health" },
-  { id: "academics", label: "academics" },
-  { id: "research", label: "research" },
-  { id: "career", label: "career" },
-  { id: "entrepreneurship", label: "entrepreneurship" },
-  { id: "music", label: "music" },
-  { id: "social event", label: "social" },
-  { id: "athletics", label: "sports" },
-  { id: "performing arts", label: "performing arts" },
-  { id: "culture", label: "culture" },
-  { id: "literature", label: "literature" },
-  { id: "community service", label: "service" },
-  { id: "religion", label: "religion" },
-  { id: "politics", label: "politics" },
-  { id: "gaming", label: "gaming" },
-  { id: "outdoors", label: "outdoors" },
-  { id: "sustainability", label: "sustainability" },
-  { id: "speaker event", label: "speaker" },
-];
+  { id: "free-food", label: "Free Food" },
+  { id: "career-recruiting", label: "Career & Recruiting" },
+  { id: "research", label: "Research" },
+  { id: "stem", label: "STEM" },
+  { id: "academics", label: "Academics" },
+  { id: "tech", label: "Tech" },
+  { id: "entrepreneurship", label: "Entrepreneurship" },
+  { id: "politics-policy", label: "Politics & Policy" },
+  { id: "visual-arts", label: "Visual Arts" },
+  { id: "performing-arts", label: "Performing Arts" },
+  { id: "literature", label: "Literature" },
+  { id: "culture", label: "Culture" },
+  { id: "music", label: "Music" },
+  { id: "gaming", label: "Gaming" },
+  { id: "athletics", label: "Athletics" },
+  { id: "religion", label: "Religion" },
+  { id: "sustainability", label: "Sustainability" },
+  { id: "outdoor-adventure", label: "Outdoor & Adventure" },
+  { id: "wellness-self-care", label: "Wellness & Self-Care" },
+  { id: "community-service", label: "Community Service" },
+  { id: "speaker-event", label: "Speaker Event" },
+  { id: "social-event", label: "Social Event" },
+] as const;
+
+const LEGACY_INTEREST_ALIASES: Record<string, string> = {
+  career: "career-recruiting",
+  careerrecruiting: "career-recruiting",
+  academic: "research",
+  academics: "academics",
+  tech: "tech",
+  political: "politics-policy",
+  politics: "politics-policy",
+  art: "visual-arts",
+  visual: "visual-arts",
+  performance: "performing-arts",
+  performing: "performing-arts",
+  cultural: "culture",
+  culture: "culture",
+  sports: "athletics",
+  athletic: "athletics",
+  religious: "religion",
+  religion: "religion",
+  outdoor: "outdoor-adventure",
+  outdoors: "outdoor-adventure",
+  wellness: "wellness-self-care",
+  speaker: "speaker-event",
+  social: "social-event",
+  "free-food": "free-food",
+  "free food": "free-food",
+  "community-service": "community-service",
+  "community service": "community-service",
+  "politics-policy": "politics-policy",
+  "politics policy": "politics-policy",
+  "visual-arts": "visual-arts",
+  "visual arts": "visual-arts",
+  "performing-arts": "performing-arts",
+  "performing arts": "performing-arts",
+  "wellness-self-care": "wellness-self-care",
+  "wellness self care": "wellness-self-care",
+  "speaker-event": "speaker-event",
+  "speaker event": "speaker-event",
+  "social-event": "social-event",
+  "social event": "social-event",
+  stem: "stem",
+};
+
+function normalizeInterestValue(tag: string): string {
+  const normalized = tag.trim().toLowerCase().replace(/\s+/g, "-");
+  return LEGACY_INTEREST_ALIASES[normalized] ?? normalized;
+}
+
+function dedupeInterestValues(values: string[]): string[] {
+  return [...new Set(values.map((value) => normalizeInterestValue(value)).filter(Boolean))];
+}
 
 const CLASS_YEARS = ["2025", "2026", "2027", "2028", "2029", "Grad"];
 
@@ -82,7 +133,7 @@ export function SettingsClient({ profile, friends }: SettingsClientProps) {
   const [isPending, startTransition] = useTransition();
   const initialClassYear = profile.classYear ?? "";
   const initialMajor = profile.major ?? "";
-  const initialInterests = profile.interests;
+  const initialInterests = dedupeInterestValues(profile.interests);
   const initialAvatar = profile.avatarUrl;
 
   const [classYear, setClassYear] = useState(initialClassYear);
@@ -94,7 +145,10 @@ export function SettingsClient({ profile, friends }: SettingsClientProps) {
   const [tagSearch, setTagSearch] = useState("");
 
   const toggleInterest = (id: string) => {
-    setInterests((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+    setInterests((prev) => {
+      const next = prev.includes(id) ? prev.filter((interest) => interest !== id) : [...prev, id];
+      return dedupeInterestValues(next);
+    });
   };
 
   const interestsChanged =
@@ -110,13 +164,15 @@ export function SettingsClient({ profile, friends }: SettingsClientProps) {
   const handleSave = () => {
     startTransition(async () => {
       try {
+        const sanitizedInterests = dedupeInterestValues(interests);
         await updateProfile({
           classYear,
           major,
           isOrgLeader,
-          interests,
+          interests: sanitizedInterests,
           regions: profile.regions,
         });
+        setInterests(sanitizedInterests);
         toast.success("Settings saved");
       } catch {
         toast.error("Could not save settings. Please try again.");
