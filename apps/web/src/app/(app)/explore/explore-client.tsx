@@ -2,7 +2,7 @@
 
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   type FeedEvent,
@@ -12,7 +12,7 @@ import {
   toggleSave,
 } from "~/actions/events";
 import { SearchInput } from "~/components/common/search-input";
-import { EmptyState, EventCardSkeletonList } from "~/components/common/states";
+import { EmptyState, ErrorState, EventCardSkeletonList } from "~/components/common/states";
 import { EventCard } from "~/components/events/event-card";
 import { EventFilters } from "~/components/events/event-filters";
 import { PageHeading, PageShell, SectionHeading } from "~/components/layout/page-shell";
@@ -80,16 +80,26 @@ export function ExploreClient({
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [isPending, startTransition] = useTransition();
+  /** Set when a feed fetch fails, so the list can offer a retry. */
+  const [loadError, setLoadError] = useState(false);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout>>(null);
   const firstName = useMemo(() => userName.split(" ")[0] || "there", [userName]);
 
   const refreshEvents = useCallback((filters: string[], search: string) => {
     startTransition(async () => {
-      const result = await getFeedEvents({
-        tags: filters.length > 0 ? filters : undefined,
-        search: search || undefined,
-      });
-      setEvents(result.events);
-      setTotal(result.total);
+      try {
+        const result = await getFeedEvents({
+          tags: filters.length > 0 ? filters : undefined,
+          search: search || undefined,
+        });
+        setEvents(result.events);
+        setTotal(result.total);
+        setLoadError(false);
+      } catch {
+        // Surfaced as an ErrorState with a retry rather than an empty feed,
+        // which reads as "no events" and is a very different thing.
+        setLoadError(true);
+      }
     });
   }, []);
 
@@ -104,22 +114,48 @@ export function ExploreClient({
     [activeFilters, searchQuery, refreshEvents],
   );
 
-  const handleSearch = useCallback(() => {
-    if (searchQuery.trim()) refreshEvents(activeFilters, searchQuery.trim());
-  }, [searchQuery, activeFilters, refreshEvents]);
+  /*
+   * Debounced as you type, matching Orgs. Explore used to require Enter, so
+   * the two search fields behaved differently for no reason.
+   */
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+      searchTimeout.current = setTimeout(() => {
+        refreshEvents(activeFilters, value.trim());
+      }, 300);
+    },
+    [activeFilters, refreshEvents],
+  );
 
+  /** Roll the optimistic update back if the server rejects it. */
   const handleSaveToggle = useCallback(async (eventId: string) => {
-    const result = await toggleSave(eventId);
-    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, isSaved: result.saved } : e)));
+    try {
+      const result = await toggleSave(eventId);
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, isSaved: result.saved } : e)),
+      );
+    } catch {
+      toast.error("Couldn't update saved events. Please try again.");
+      setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, isSaved: !e.isSaved } : e)));
+    }
   }, []);
 
   const handleRsvpToggle = useCallback(async (eventId: string) => {
-    const result = await toggleRsvp(eventId);
-    setEvents((prev) =>
-      prev.map((e) =>
-        e.id === eventId ? { ...e, isRsvped: result.rsvped, rsvpCount: result.count } : e,
-      ),
-    );
+    try {
+      const result = await toggleRsvp(eventId);
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === eventId ? { ...e, isRsvped: result.rsvped, rsvpCount: result.count } : e,
+        ),
+      );
+    } catch {
+      toast.error("Couldn't update your RSVP. Please try again.");
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, isRsvped: !e.isRsvped } : e)),
+      );
+    }
   }, []);
 
   const upcomingList = useMemo(
@@ -158,17 +194,29 @@ export function ExploreClient({
           label="Search events"
           placeholder="Search for events or people"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSearch();
-          }}
+          onChange={(e) => handleSearchChange(e.target.value)}
         />
 
         <EventFilters activeFilters={activeFilters} onFilterToggle={handleFilterToggle} />
 
+        {/* Result count, so a filtered feed says how filtered it is */}
+        {(searchQuery.trim() || activeFilters.length > 0) && !loadError && (
+          <p className="font-dm-sans text-[12px] text-forum-light-gray">
+            {isPending
+              ? "Searching…"
+              : `${events.length} ${events.length === 1 ? "event" : "events"} match`}
+          </p>
+        )}
+
         {/* Feed */}
         <div className="flex flex-col gap-5">
-          {isPending && events.length === 0 ? (
+          {loadError ? (
+            <ErrorState
+              title="Couldn't load events"
+              description="Something went wrong fetching the feed."
+              onRetry={() => refreshEvents(activeFilters, searchQuery.trim())}
+            />
+          ) : isPending && events.length === 0 ? (
             <EventCardSkeletonList />
           ) : events.length === 0 ? (
             <EmptyState

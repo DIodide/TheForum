@@ -57,15 +57,18 @@ export function PageShell({
 }
 
 /**
- * Right padding that keeps a page's top-right control clear of the TopBar.
+ * Keeps a page's top-right control clear of the floating TopBar.
  *
  * The TopBar (notification bell + avatar) is absolutely positioned over the
  * content area on every route, so anything sharing that band — a page heading's
  * trailing action — collides with it once the viewport is narrower than the
- * shell's max width. Roughly 24px page padding + 36px bell + 12px gap + 40px
- * avatar + 24px padding, rounded up.
+ * shell's max width.
+ *
+ * From `sm` up it reserves ~140px on the right: 24px page padding + 36px bell +
+ * 12px gap + 40px avatar + 24px padding, rounded up. On phones that would eat
+ * over a third of the screen, so the content drops *below* the bar instead.
  */
-export const TOP_BAR_CLEARANCE = "pr-[140px]";
+export const TOP_BAR_CLEARANCE = "pt-14 sm:pt-0 sm:pr-[140px]";
 
 /**
  * Page-level `<h1>`. One ramp for every page — previously these ranged from

@@ -142,6 +142,13 @@ export function EventCard({
   const compact = density === "compact";
   const wide = density === "wide";
 
+  /*
+   * Ingested events often have no location, and the server substitutes the
+   * string "TBD" for a missing one — rendering that verbatim next to a map pin
+   * reads as a bug. Treat it as absent and drop the row instead.
+   */
+  const hasLocation = Boolean(location) && location !== "TBD";
+
   const displayedFriendNames = friendsAttending.slice(0, 2).map((friend) => friend.displayName);
   const remainingFriends = friendsAttending.length - displayedFriendNames.length;
 
@@ -305,7 +312,7 @@ export function EventCard({
               </h3>
             </Link>
             <div className="mt-1.5 flex flex-col gap-1">
-              {location && (
+              {hasLocation && (
                 <span className="flex items-center gap-1.5 font-dm-sans text-[13px] text-forum-dark-gray">
                   <MapPin size={12} aria-hidden className="shrink-0 text-forum-light-gray" />
                   {location}
@@ -542,7 +549,7 @@ export function EventCard({
 
       {/* Location & Time */}
       <div className="mt-1 flex flex-col gap-1">
-        {location && (
+        {hasLocation && (
           <div className="flex items-center gap-1.5">
             <MapPin size={11} aria-hidden className="shrink-0 text-forum-light-gray" />
             <span className="truncate font-dm-sans text-[12px] text-forum-dark-gray">
