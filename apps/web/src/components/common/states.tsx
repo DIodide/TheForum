@@ -123,9 +123,10 @@ export function EventCardSkeleton({ className, ...props }: React.ComponentProps<
   );
 }
 
-export function EventCardSkeletonList({ count = 3 }: { count?: number }) {
+/** Mirrors the Explore feed's two-column grid so loading doesn't reflow the page. */
+export function EventCardSkeletonList({ count = 4 }: { count?: number }) {
   return (
-    <output className="flex flex-col gap-5">
+    <output className="grid gap-5 sm:grid-cols-2">
       <span className="sr-only">Loading events…</span>
       {Array.from({ length: count }, (_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list

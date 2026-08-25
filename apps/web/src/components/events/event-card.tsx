@@ -13,7 +13,6 @@ import {
   Plus,
   Share2,
   Trash2,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -38,6 +37,15 @@ export const CATEGORY_COLORS: Record<string, { bg: string; accent: string; text:
 };
 
 const DEFAULT_COLOR = { bg: "rgba(255,156,133,0.1)", accent: "#D9D9D9", text: "#585858" };
+
+/**
+ * Hover wash for the card's utility icons (save, share, hide, open).
+ *
+ * Those glyphs are coral, and the Button `ghost` variant hovers to `--accent`
+ * — full-strength turquoise (#a2eff0) — which clashed behind them. A 25% coral
+ * tint keeps the hover in the same family as the icon it sits under.
+ */
+const UTILITY_HOVER = "hover:bg-forum-coral-light";
 
 export function getCategoryColor(tags: string[]) {
   for (const tag of tags) {
@@ -64,9 +72,15 @@ export interface EventCardProps {
   attendees?: { id: string; displayName: string; avatarUrl?: string | null }[];
   isSaved?: boolean;
   isRsvped?: boolean;
-  /** Actions render only when a handler is supplied. */
-  onSaveToggle?: () => void;
-  onRsvpToggle?: () => void;
+  /*
+   * Actions render only when a handler is supplied.
+   *
+   * These may be async. The card awaits the returned promise and only
+   * announces success once it resolves, so a rejected save/RSVP shows the
+   * owner's error toast alone instead of a success toast beside it.
+   */
+  onSaveToggle?: () => void | Promise<void>;
+  onRsvpToggle?: () => void | Promise<void>;
   onShare?: () => void;
   onHide?: () => void;
   /** When true the card collapses to a stub that can be restored. */
@@ -243,14 +257,19 @@ export function EventCard({
                 size="sm"
                 aria-pressed={isRsvped}
                 className="rounded-full px-6"
-                onClick={() => {
+                onClick={async () => {
                   logInteraction({
                     itemId: id,
                     interactionType: "rsvp",
                     metadata: { source, position },
                   });
-                  onRsvpToggle();
-                  if (isRsvped) toast(`Removed your RSVP to ${title}`);
+                  const wasRsvped = isRsvped;
+                  try {
+                    await onRsvpToggle();
+                  } catch {
+                    return; // the owner already surfaced the failure
+                  }
+                  if (wasRsvped) toast(`Removed your RSVP to ${title}`);
                   else toast.success(`You're going to ${title}`);
                 }}
               >
@@ -270,11 +289,17 @@ export function EventCard({
                 <Button
                   variant="ghost"
                   size="icon-sm"
+                  className={UTILITY_HOVER}
                   aria-label={isSaved ? `Unsave ${title}` : `Save ${title}`}
                   aria-pressed={isSaved}
-                  onClick={() => {
-                    onSaveToggle();
-                    toast(isSaved ? `Removed ${title} from saved` : `Saved ${title}`);
+                  onClick={async () => {
+                    const wasSaved = isSaved;
+                    try {
+                      await onSaveToggle();
+                    } catch {
+                      return;
+                    }
+                    toast(wasSaved ? `Removed ${title} from saved` : `Saved ${title}`);
                   }}
                 >
                   {isSaved ? (
@@ -288,13 +313,20 @@ export function EventCard({
                 <Button
                   variant="ghost"
                   size="icon-sm"
+                  className={UTILITY_HOVER}
                   aria-label={`Share ${title}`}
                   onClick={onShare}
                 >
                   <Share2 className="text-forum-coral" />
                 </Button>
               )}
-              <Button asChild variant="ghost" size="icon-sm" aria-label={`Open ${title}`}>
+              <Button
+                asChild
+                variant="ghost"
+                size="icon-sm"
+                className={UTILITY_HOVER}
+                aria-label={`Open ${title}`}
+              >
                 <Link href={`/events/${id}`} onClick={trackClick}>
                   <Maximize2 className="text-forum-coral" />
                 </Link>
@@ -426,23 +458,29 @@ export function EventCard({
               <Button
                 variant="ghost"
                 size="icon-sm"
+                className={UTILITY_HOVER}
                 aria-label={isSaved ? `Unsave ${title}` : `Save ${title}`}
                 aria-pressed={isSaved}
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault();
                   logInteraction({
                     itemId: id,
                     interactionType: "save",
                     metadata: { source, position },
                   });
-                  onSaveToggle();
-                  toast(isSaved ? `Removed ${title} from saved` : `Saved ${title}`);
+                  const wasSaved = isSaved;
+                  try {
+                    await onSaveToggle();
+                  } catch {
+                    return;
+                  }
+                  toast(wasSaved ? `Removed ${title} from saved` : `Saved ${title}`);
                 }}
               >
                 {isSaved ? (
-                  <BookmarkCheck className="text-forum-cerulean" />
+                  <BookmarkCheck className="text-forum-coral" />
                 ) : (
-                  <Bookmark className="text-forum-dark-gray" />
+                  <Bookmark className="text-forum-coral" />
                 )}
               </Button>
             )}
@@ -450,6 +488,7 @@ export function EventCard({
               <Button
                 variant="ghost"
                 size="icon-sm"
+                className={UTILITY_HOVER}
                 aria-label={`Share ${title}`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -461,7 +500,7 @@ export function EventCard({
                   onShare();
                 }}
               >
-                <Share2 className="text-forum-dark-gray" />
+                <Share2 className="text-forum-coral" />
               </Button>
             )}
             {/* Hide was previously an unreachable prop — no control ever called it. */}
@@ -469,6 +508,7 @@ export function EventCard({
               <Button
                 variant="ghost"
                 size="icon-sm"
+                className={UTILITY_HOVER}
                 aria-label={`Hide ${title}`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -481,13 +521,19 @@ export function EventCard({
                   toast(`Hid ${title}`, { description: "Use Unhide to bring it back." });
                 }}
               >
-                <EyeOff className="text-forum-dark-gray" />
+                <EyeOff className="text-forum-coral" />
               </Button>
             )}
           </div>
-          <Button asChild variant="ghost" size="icon-sm" aria-label={`Open ${title}`}>
+          <Button
+            asChild
+            variant="ghost"
+            size="icon-sm"
+            className={UTILITY_HOVER}
+            aria-label={`Open ${title}`}
+          >
             <Link href={`/events/${id}`} onClick={trackClick}>
-              <Maximize2 className="text-forum-dark-gray" />
+              <Maximize2 className="text-forum-coral" />
             </Link>
           </Button>
         </div>
@@ -581,7 +627,7 @@ export function EventCard({
               key={tag}
               className={cn(
                 "rounded-[10px] px-2 py-px font-dm-sans text-[12px] text-black",
-                compact && i === 1 ? "bg-forum-turquoise-50" : "bg-forum-yellow-50",
+                (compact ? i === 1 : i > 0) ? "bg-forum-turquoise-50" : "bg-forum-yellow-50",
               )}
             >
               {tag}
@@ -598,31 +644,43 @@ export function EventCard({
           </div>
         ) : (
           <div className="mt-2.5 flex flex-row items-center gap-2">
-            <AvatarStack users={friendsAttending} size={30} max={5} />
+            <AvatarStack users={friendsAttending} size={30} max={3} />
             <p className="font-dm-sans text-[12px] leading-tight text-forum-dark-gray">
               <span className="font-bold text-forum-coral">
-                {displayedFriendNames.join(
-                  displayedFriendNames.length === 2 && remainingFriends === 0 ? " and " : ", ",
-                )}
-              </span>
-              {remainingFriends > 0 && <span> + {remainingFriends} more</span>}
-              <span> {friendsAttending.length === 1 ? "is" : "are"} also going.</span>
+                {displayedFriendNames.join(", ")}
+                {remainingFriends > 0 && ` + ${remainingFriends} other`}
+              </span>{" "}
+              added this event to their calendar!
             </p>
           </div>
         ))}
 
-      {/* Description — full card only */}
+      {/* Description — full card only. Clamped to the mock's three lines, with
+          "See Details" carrying the rest. */}
       {!compact && description && (
-        <p className="mt-2.5 font-dm-sans text-[12px] leading-relaxed text-black line-clamp-3">
-          {description}
-        </p>
+        <>
+          <p className="mt-2.5 font-dm-sans text-[12px] leading-relaxed text-forum-dark-gray line-clamp-3">
+            {description}
+          </p>
+          <Link
+            href={`/events/${id}`}
+            onClick={trackClick}
+            className="mt-1 self-start font-dm-sans text-[12px] font-medium text-forum-coral hover:underline"
+          >
+            See Details
+          </Link>
+        </>
       )}
 
       {/* Footer actions — right gutter keeps clear of the corner avatar cluster */}
-      {(onRsvpToggle || onLocate) && (
+      {(onRsvpToggle || onLocate || calendarUrl) && (
         <div
+          /* `mt-auto` pins the actions to the card's bottom edge, so RSVP
+             buttons line up across a grid row even when one card's blurb is
+             shorter than its neighbour's. No effect where cards size to their
+             content, as in the map rail. */
           className={cn(
-            "mt-3 flex items-center justify-between gap-2",
+            "mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-3",
             compact && friendsAttending.length > 0 && "pr-20",
           )}
         >
@@ -637,53 +695,78 @@ export function EventCard({
             </button>
           ) : (
             /* Avatar stack + "N attending", clickable to see the full list. */
-            <div className="flex min-w-0 items-center gap-2.5">
-              {attendees.length > 0 && <AvatarStack users={attendees} size={28} max={4} />}
-              {rsvpCount ? (
-                <div className="flex items-center gap-1.5">
-                  <Users size={14} aria-hidden className="shrink-0 text-forum-light-gray" />
+            (attendees.length > 0 || Boolean(rsvpCount)) && (
+              <div className="flex min-w-0 items-center gap-2">
+                {attendees.length > 0 && <AvatarStack users={attendees} size={24} max={3} />}
+                {rsvpCount ? (
                   <AttendeesDialog
                     attendees={attendees}
                     count={rsvpCount}
                     friendIds={new Set(friendsAttending.map((f) => f.id))}
+                    /* Sized to the card's own metadata scale — 14px bold black
+                       shouted over the title's own details — and kept on one
+                       line, which is what wrapped to "4 / attending". */
+                    className="whitespace-nowrap text-[12px] font-medium text-forum-dark-gray"
                   />
-                </div>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
+            )
           )}
 
-          {onRsvpToggle && (
-            <Button
-              variant={isRsvped ? "cerulean" : "coral"}
-              size="sm"
-              aria-pressed={isRsvped}
-              onClick={(e) => {
-                e.preventDefault();
-                logInteraction({
-                  itemId: id,
-                  interactionType: "rsvp",
-                  metadata: { source, position },
-                });
-                onRsvpToggle();
-                // Confirm the action explicitly — the label flip alone was easy
-                // to miss, especially far down the feed.
-                if (isRsvped) {
-                  toast(`Removed your RSVP to ${title}`);
-                } else {
-                  toast.success(`You're going to ${title}`);
-                }
-              }}
-            >
-              {isRsvped ? (
-                <>
-                  <Check />
-                  RSVP'd
-                </>
-              ) : (
-                "RSVP"
-              )}
-            </Button>
-          )}
+          {/* Calendar + RSVP, gathered at the card's bottom-right as in the mock. */}
+          <div className="ml-auto flex items-center gap-2">
+            {calendarUrl && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="text-[11px] font-bold uppercase tracking-wide"
+              >
+                <a href={calendarUrl} target="_blank" rel="noopener noreferrer">
+                  <Plus />
+                  Calendar
+                </a>
+              </Button>
+            )}
+            {onRsvpToggle && (
+              <Button
+                variant={isRsvped ? "cerulean" : "coral"}
+                size="sm"
+                className="text-[11px] font-bold uppercase tracking-wide"
+                aria-pressed={isRsvped}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  logInteraction({
+                    itemId: id,
+                    interactionType: "rsvp",
+                    metadata: { source, position },
+                  });
+                  const wasRsvped = isRsvped;
+                  try {
+                    await onRsvpToggle();
+                  } catch {
+                    return;
+                  }
+                  // Confirm the action explicitly — the label flip alone was easy
+                  // to miss, especially far down the feed.
+                  if (wasRsvped) {
+                    toast(`Removed your RSVP to ${title}`);
+                  } else {
+                    toast.success(`You're going to ${title}`);
+                  }
+                }}
+              >
+                {isRsvped ? (
+                  <>
+                    <Check />
+                    RSVP'd
+                  </>
+                ) : (
+                  "RSVP"
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>

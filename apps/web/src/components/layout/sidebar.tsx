@@ -84,8 +84,22 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
           "w-[64px] group-hover/rail:w-[200px] group-focus-within/rail:w-[200px]",
         )}
       >
-        {/* Rail backdrop — #ECFCFC at 50%. */}
-        <span aria-hidden className="absolute inset-0 bg-[#ECFCFC]/50" />
+        {/*
+          Rail backdrop — #ECFCFC.
+          
+          Half opacity reads fine over the app's near-white pages, but the map
+          is a dense, high-contrast canvas: at 50% the streets and building
+          labels ran straight through the nav labels. Over the map the panel
+          goes nearly solid and blurs what's behind it, so "Home" is read
+          against a flat tint rather than Nassau Street.
+        */}
+        <span
+          aria-hidden
+          className={cn(
+            "absolute inset-0",
+            floating ? "bg-[#ECFCFC]/95 backdrop-blur-md" : "bg-[#ECFCFC]/50",
+          )}
+        />
 
         <nav className="relative flex flex-1 flex-col gap-[6px] px-[12px] pt-[14px]">
           {NAV_ITEMS.map(({ href, icon, label }) => {
