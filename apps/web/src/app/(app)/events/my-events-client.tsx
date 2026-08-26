@@ -50,12 +50,20 @@ export function MyEventsClient({ created, rsvped, saved }: MyEventsClientProps) 
   const [activeTab, setActiveTab] = useState<TabId>("created");
   const [lists, setLists] = useState<Record<TabId, FeedEvent[]>>({ created, rsvped, saved });
 
-  /** Update one event wherever it appears across the three tabs. */
-  const patchEvent = (eventId: string, patch: Partial<FeedEvent>) => {
+  /**
+   * Update one event wherever it appears across the three tabs, and — when
+   * `dropFrom` is given — take it out of the tab it no longer belongs to.
+   *
+   * The tabs *are* the membership: unsaving from Saved or cancelling an RSVP
+   * used to flip the button and leave the card sitting in a list it had just
+   * been removed from, until a reload.
+   */
+  const patchEvent = (eventId: string, patch: Partial<FeedEvent>, dropFrom?: TabId) => {
     setLists((prev) => {
       const next = {} as Record<TabId, FeedEvent[]>;
       for (const key of Object.keys(prev) as TabId[]) {
-        next[key] = prev[key].map((e) => (e.id === eventId ? { ...e, ...patch } : e));
+        const list = key === dropFrom ? prev[key].filter((e) => e.id !== eventId) : prev[key];
+        next[key] = list.map((e) => (e.id === eventId ? { ...e, ...patch } : e));
       }
       return next;
     });
@@ -63,12 +71,18 @@ export function MyEventsClient({ created, rsvped, saved }: MyEventsClientProps) 
 
   const handleSaveToggle = async (eventId: string) => {
     const result = await toggleSave(eventId);
-    patchEvent(eventId, { isSaved: result.saved });
+    patchEvent(eventId, { isSaved: result.saved }, result.saved ? undefined : "saved");
   };
 
   const handleRsvpToggle = async (eventId: string) => {
     const result = await toggleRsvp(eventId);
-    patchEvent(eventId, { isRsvped: result.rsvped, rsvpCount: result.count });
+    patchEvent(
+      eventId,
+      // Attendees ride along with the count so the avatar stack doesn't keep
+      // showing the viewer after they've cancelled.
+      { isRsvped: result.rsvped, rsvpCount: result.count, attendees: result.attendees },
+      result.rsvped ? undefined : "rsvped",
+    );
   };
 
   /*

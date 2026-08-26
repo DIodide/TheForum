@@ -44,7 +44,14 @@ export function EventDetailModal({ eventId, onClose }: EventDetailModalProps) {
     startMutating(async () => {
       const result = await toggleRsvp(event.id);
       setEvent((prev) =>
-        prev ? { ...prev, isRsvped: result.rsvped, rsvpCount: result.count } : prev,
+        prev
+          ? {
+              ...prev,
+              isRsvped: result.rsvped,
+              rsvpCount: result.count,
+              attendees: result.attendees,
+            }
+          : prev,
       );
     });
   };
