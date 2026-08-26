@@ -245,7 +245,12 @@ export function SettingsClient({ profile, friends }: SettingsClientProps) {
           >
             Cancel
           </Button>
-          <Button variant="coral" size="cta" onClick={handleSave} disabled={isPending || !hasChanges}>
+          <Button
+            variant="coral"
+            size="cta"
+            onClick={handleSave}
+            disabled={isPending || !hasChanges}
+          >
             {isPending ? "Saving…" : "Save changes"}
           </Button>
         </div>
