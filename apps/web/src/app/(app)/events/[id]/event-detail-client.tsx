@@ -55,6 +55,8 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
   const [isRsvped, setIsRsvped] = useState(event.isRsvped);
   const [isSaved, setIsSaved] = useState(event.isSaved);
   const [rsvpCount, setRsvpCount] = useState(event.rsvpCount);
+  /* Local, because the avatar stack below has to move with the RSVP button. */
+  const [attendees, setAttendees] = useState(event.attendees);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const color = getCategoryColor(event.tags);
@@ -83,6 +85,7 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
       const result = await toggleRsvp(event.id);
       setIsRsvped(result.rsvped);
       setRsvpCount(result.count);
+      setAttendees(result.attendees);
     });
   };
 
@@ -289,14 +292,12 @@ export function EventDetailClient({ event, similarEvents }: EventDetailClientPro
 
           {/* Attendees */}
           <div className="flex items-center gap-[12px] mt-[16px]">
-            {event.attendees.length > 0 && (
-              <AvatarStack users={event.attendees} size={30} max={6} />
-            )}
+            {attendees.length > 0 && <AvatarStack users={attendees} size={30} max={6} />}
             <div>
               <div className="flex items-center gap-[6px]">
                 <Users size={14} aria-hidden className="text-forum-light-gray" />
                 <AttendeesDialog
-                  attendees={event.attendees}
+                  attendees={attendees}
                   count={rsvpCount}
                   friendIds={new Set(event.friendsAttending.map((f) => f.id))}
                 />

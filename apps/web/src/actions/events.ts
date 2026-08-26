@@ -446,7 +446,19 @@ export async function getFeedEvents(params?: {
   };
 }
 
-export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; count: number }> {
+/** The attendee shape shared by the feed, the detail page and `toggleRsvp`. */
+type Attendee = { id: string; displayName: string; avatarUrl: string | null };
+
+export async function toggleRsvp(eventId: string): Promise<{
+  rsvped: boolean;
+  count: number;
+  /*
+   * The full attendee list after the toggle. Callers render an avatar stack
+   * from this alongside the count, so returning only the count left the
+   * viewer's own face in the stack after they un-RSVP'd.
+   */
+  attendees: Attendee[];
+}> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -456,7 +468,7 @@ export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; co
   const [eventRow] = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
   if (!eventRow) {
     // Return zero count and no-op rsvp change to avoid FK constraint errors
-    return { rsvped: false, count: 0 };
+    return { rsvped: false, count: 0, attendees: [] };
   }
 
   const [existing] = await db
@@ -471,16 +483,24 @@ export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; co
     await db.insert(rsvps).values({ userId, eventId });
   }
 
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+  // Re-read the roster rather than counting: the count and the avatar stack are
+  // rendered from the same data, so they cannot drift out of step this way.
+  const attendees = await db
+    .select({
+      id: users.id,
+      displayName: users.displayName,
+      avatarUrl: users.avatarUrl,
+    })
     .from(rsvps)
+    .innerJoin(users, eq(rsvps.userId, users.id))
     .where(eq(rsvps.eventId, eventId));
 
   revalidatePath("/explore");
 
   return {
     rsvped: !existing,
-    count: countResult?.count ?? 0,
+    count: attendees.length,
+    attendees,
   };
 }
 
@@ -1035,7 +1055,12 @@ export async function getSavedEvents(): Promise<FeedEvent[]> {
     .innerJoin(events, eq(savedEvents.eventId, events.id))
     .leftJoin(campusLocations, eq(events.locationId, campusLocations.id))
     .leftJoin(organizations, eq(events.orgId, organizations.id))
-    .where(eq(savedEvents.userId, userId))
+    /*
+     * Future events only. "Upcoming Events" reads from this list, and without
+     * the datetime bound a saved event from last week surfaced there — with
+     * `formatRelativeDay` cheerfully announcing it was happening "yesterday".
+     */
+    .where(and(eq(savedEvents.userId, userId), gt(events.datetime, new Date())))
     .orderBy(events.datetime)
     .limit(5);
 

@@ -17,7 +17,7 @@ import { EventCard } from "~/components/events/event-card";
 import { EventFilters } from "~/components/events/event-filters";
 import { PageHeading, PageShell, SectionHeading } from "~/components/layout/page-shell";
 import { Button } from "~/components/ui/button";
-import { formatEventDateTime, formatRelativeDay } from "~/lib/date-format";
+import { formatRelativeDay } from "~/lib/date-format";
 
 interface ExploreClientProps {
   initialEvents: FeedEvent[];
@@ -28,28 +28,6 @@ interface ExploreClientProps {
   userName?: string;
   userAvatarUrl?: string | null;
 }
-
-// fake temporary event for UI testing
-const demoEvent: FeedEvent = {
-  // Use a valid UUID so server-side DB operations don't error on demo data
-  id: "00000000-0000-0000-0000-000000000000",
-  title: "Fake Event",
-  description: "Practice event data for UI testing.",
-  orgId: "tigerapps",
-  orgName: "TigerApps",
-  // Use a fixed demo timestamp so server and client HTML match during hydration
-  datetime: formatEventDateTime(new Date("2026-06-17T22:25:00Z")),
-  location: "Lewis 122",
-  tags: ["music", "free food", "performing arts"],
-  flyerUrl: null,
-  rsvpCount: 42,
-  friendsAttending: [
-    { id: "user-1", displayName: "Donald Grump", avatarUrl: null },
-    { id: "user-2", displayName: "Elvis Parsley", avatarUrl: null },
-  ],
-  isRsvped: false,
-  isSaved: false,
-};
 
 function getTodayString() {
   return new Date().toLocaleDateString("en-US", {
@@ -69,9 +47,13 @@ export function ExploreClient({
   userName = "there",
   userAvatarUrl,
 }: ExploreClientProps) {
-  const fallbackEvents = initialEvents.length > 0 ? initialEvents : [demoEvent];
-  const [events, setEvents] = useState(fallbackEvents);
-  const [_total, setTotal] = useState(initialEvents.length > 0 ? initialTotal : 1);
+  /*
+   * Straight from the server, with no demo-event fallback. Substituting a fake
+   * event when the feed came back empty meant the empty state could never
+   * render on first load, which is precisely the case this screen has to handle.
+   */
+  const [events, setEvents] = useState(initialEvents);
+  const [_total, setTotal] = useState(initialTotal);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   /*
    * Hidden events stay in the list as collapsed stubs rather than being
@@ -113,11 +95,23 @@ export function ExploreClient({
     setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, isSaved: result.saved } : e)));
   }, []);
 
+  /*
+   * `attendees` is taken from the response too, not just the count: the card
+   * renders both, so patching the number alone left the viewer's own avatar in
+   * the stack (and in the attendees dialog) after they un-RSVP'd.
+   */
   const handleRsvpToggle = useCallback(async (eventId: string) => {
     const result = await toggleRsvp(eventId);
     setEvents((prev) =>
       prev.map((e) =>
-        e.id === eventId ? { ...e, isRsvped: result.rsvped, rsvpCount: result.count } : e,
+        e.id === eventId
+          ? {
+              ...e,
+              isRsvped: result.rsvped,
+              rsvpCount: result.count,
+              attendees: result.attendees,
+            }
+          : e,
       ),
     );
   }, []);
@@ -156,7 +150,7 @@ export function ExploreClient({
 
         <SearchInput
           label="Search events"
-          placeholder="Search for events or people"
+          placeholder="Search for events"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => {
