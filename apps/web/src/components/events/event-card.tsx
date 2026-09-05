@@ -1,26 +1,51 @@
 "use client";
 
-import { Bookmark, BookmarkCheck, Clock, Expand, EyeOff, MapPin, Share2 } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  Check,
+  Clock,
+  Edit3,
+  Eye,
+  EyeOff,
+  MapPin,
+  Maximize2,
+  Plus,
+  Share2,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { logInteraction } from "~/actions/interactions";
-import { EventCoverArt } from "~/components/events/event-cover-art";
+import { AttendeesDialog } from "~/components/events/attendees-dialog";
 import { AvatarStack } from "~/components/social/avatar-stack";
+import { Button } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 
 export const CATEGORY_COLORS: Record<string, { bg: string; accent: string; text: string }> = {
-  art: { bg: "rgba(255,156,133,0.1)", accent: "#fb923c", text: "#9a3412" },
+  "visual arts": { bg: "rgba(255,156,133,0.1)", accent: "#fb923c", text: "#9a3412" },
   tech: { bg: "rgba(162,239,240,0.15)", accent: "#a78bfa", text: "#5b21b6" },
   music: { bg: "rgba(254,232,130,0.15)", accent: "#fbbf24", text: "#854d0e" },
-  sports: { bg: "rgba(162,239,240,0.15)", accent: "#60a5fa", text: "#1e3a8a" },
-  social: { bg: "rgba(255,211,234,0.2)", accent: "#f472b6", text: "#9d174d" },
+  athletics: { bg: "rgba(162,239,240,0.15)", accent: "#60a5fa", text: "#1e3a8a" },
+  "social event": { bg: "rgba(255,211,234,0.2)", accent: "#f472b6", text: "#9d174d" },
   career: { bg: "rgba(162,239,240,0.15)", accent: "#34d399", text: "#065f46" },
-  "free-food": { bg: "rgba(255,156,133,0.1)", accent: "#FF7151", text: "#991b1b" },
-  academic: { bg: "rgba(162,239,240,0.15)", accent: "#0A9CD5", text: "#0c4a6e" },
-  cultural: { bg: "rgba(254,232,130,0.15)", accent: "#f59e0b", text: "#78350f" },
-  workshop: { bg: "rgba(162,239,240,0.15)", accent: "#14b8a6", text: "#134e4a" },
+  "free food": { bg: "rgba(255,156,133,0.1)", accent: "#FF7151", text: "#991b1b" },
+  academics: { bg: "rgba(162,239,240,0.15)", accent: "#0A9CD5", text: "#0c4a6e" },
+  culture: { bg: "rgba(254,232,130,0.15)", accent: "#f59e0b", text: "#78350f" },
+  "performing arts": { bg: "rgba(162,239,240,0.15)", accent: "#14b8a6", text: "#134e4a" },
 };
 
 const DEFAULT_COLOR = { bg: "rgba(255,156,133,0.1)", accent: "#D9D9D9", text: "#585858" };
+
+/**
+ * Hover wash for the card's utility icons (save, share, hide, open).
+ *
+ * Those glyphs are coral, and the Button `ghost` variant hovers to `--accent`
+ * — full-strength turquoise (#a2eff0) — which clashed behind them. A 25% coral
+ * tint keeps the hover in the same family as the icon it sits under.
+ */
+const UTILITY_HOVER = "hover:bg-forum-coral-light";
 
 export function getCategoryColor(tags: string[]) {
   for (const tag of tags) {
@@ -41,20 +66,61 @@ export interface EventCardProps {
   description?: string | null;
   tags: string[];
   flyerUrl?: string | null;
-  rsvpCount: number;
-  friendsAttending: { id: string; displayName: string; avatarUrl?: string | null }[];
-  isSaved: boolean;
+  rsvpCount?: number;
+  friendsAttending?: { id: string; displayName: string; avatarUrl?: string | null }[];
+  /** Everyone attending — shown as an avatar stack + "N attending". */
+  attendees?: { id: string; displayName: string; avatarUrl?: string | null }[];
+  isSaved?: boolean;
   isRsvped?: boolean;
-  onSaveToggle?: () => void;
-  onRsvpToggle?: () => void;
+  /*
+   * Actions render only when a handler is supplied.
+   *
+   * These may be async. The card awaits the returned promise and only
+   * announces success once it resolves, so a rejected save/RSVP shows the
+   * owner's error toast alone instead of a success toast beside it.
+   */
+  onSaveToggle?: () => void | Promise<void>;
+  onRsvpToggle?: () => void | Promise<void>;
   onShare?: () => void;
   onHide?: () => void;
+  /** When true the card collapses to a stub that can be restored. */
+  isHidden?: boolean;
+  onUnhide?: () => void;
+  /** Extra action, e.g. the map's "Show on map". */
+  onLocate?: () => void;
+  /**
+   * Open the event in place instead of navigating to its page. The map uses
+   * this so opening a card doesn't throw you off the map.
+   */
+  onOpen?: () => void;
+  /**
+   * `default` is the full feed card. `compact` drops the description and the
+   * friends sentence for narrow columns — the map's 320px rail and an org
+   * profile's event list. `wide` is the full-width row used by My Events.
+   */
+  density?: "default" | "compact" | "wide";
+  /** Google Calendar link; renders the Calendar action when supplied. */
+  calendarUrl?: string;
+  /**
+   * Owner controls. Supplied only for events the viewer created, so the
+   * card itself does no permission checking.
+   */
+  editHref?: string;
+  onDelete?: () => void;
   /** Where this card is displayed — logged with interactions */
   source?: "feed" | "search" | "map" | "similar" | "notification";
   /** Position in the list — for position bias correction */
   position?: number;
+  className?: string;
 }
 
+/**
+ * The event card, used on Explore, My Events, the map rail and org profiles.
+ *
+ * Each of those surfaces previously had its own card component, so the same
+ * event rendered with a different title size, tag colour and metadata order
+ * depending on where you saw it. Density is the only thing that varies now.
+ */
 export function EventCard({
   id,
   title,
@@ -65,20 +131,40 @@ export function EventCard({
   location,
   description,
   tags,
-  flyerUrl,
   rsvpCount,
-  friendsAttending,
+  friendsAttending = [],
+  attendees = [],
   isSaved,
   isRsvped,
   onSaveToggle,
   onRsvpToggle,
   onShare,
   onHide,
+  isHidden = false,
+  onUnhide,
+  onLocate,
+  onOpen,
+  density = "default",
+  calendarUrl,
+  editHref,
+  onDelete,
   source = "feed",
   position,
+  className,
 }: EventCardProps) {
-  const color = getCategoryColor(tags);
   const cardRef = useRef<HTMLDivElement>(null);
+  const compact = density === "compact";
+  const wide = density === "wide";
+
+  /*
+   * Ingested events often have no location, and the server substitutes the
+   * string "TBD" for a missing one — rendering that verbatim next to a map pin
+   * reads as a bug. Treat it as absent and drop the row instead.
+   */
+  const hasLocation = Boolean(location) && location !== "TBD";
+
+  const displayedFriendNames = friendsAttending.slice(0, 2).map((friend) => friend.displayName);
+  const remainingFriends = friendsAttending.length - displayedFriendNames.length;
 
   // Track view — IntersectionObserver fires after 1s of visibility
   useEffect(() => {
@@ -105,182 +191,584 @@ export function EventCard({
     logInteraction({ itemId: id, interactionType: "click", metadata: { source, position } });
   };
 
+  const hasUtilityRow = Boolean(onSaveToggle || onShare || onHide);
+
+  /*
+   * Hidden events collapse to a stub rather than disappearing. Removing the
+   * card outright left no way back short of a page reload, so a mis-click was
+   * unrecoverable.
+   */
+  if (isHidden) {
+    return (
+      <div
+        ref={cardRef}
+        className={cn(
+          "card flex w-full items-center justify-between gap-3 rounded-xl px-5 py-3",
+          className,
+        )}
+      >
+        <p className="min-w-0 font-dm-sans text-[13px] text-forum-light-gray">
+          Hidden — <span className="truncate font-medium text-forum-dark-gray">{title}</span>
+        </p>
+        {onUnhide && (
+          <Button variant="quiet" size="sm" className="shrink-0" onClick={onUnhide}>
+            <Eye />
+            Unhide
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  /*
+   * Wide layout: a full-width row for My Events, where each list is a single
+   * column and there's horizontal room to put the details and the blurb side
+   * by side, with the actions gathered in the header.
+   */
+  if (wide) {
+    return (
+      <div ref={cardRef} className={cn("card relative w-full rounded-xl px-5 py-4", className)}>
+        {/* Header: org · calendar/RSVP · utilities */}
+        <div className="mb-3 flex flex-wrap items-center gap-3">
+          {orgName && (
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="size-7 shrink-0 overflow-hidden rounded border-2 border-forum-medium-gray bg-forum-turquoise/30">
+                {orgLogoUrl && <img src={orgLogoUrl} alt="" className="size-full object-cover" />}
+              </div>
+              <span className="truncate font-dm-sans text-[14px] font-bold text-black">
+                {orgName}
+              </span>
+            </div>
+          )}
+
+          {/* Full-width action row on phones; pushed right once there's room */}
+          <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
+            {calendarUrl && (
+              <Button asChild variant="outline" size="sm" className="rounded-full">
+                <a href={calendarUrl} target="_blank" rel="noopener noreferrer">
+                  <Plus />
+                  Calendar
+                </a>
+              </Button>
+            )}
+            {onRsvpToggle && (
+              <Button
+                variant={isRsvped ? "cerulean" : "coral"}
+                size="sm"
+                aria-pressed={isRsvped}
+                className="rounded-full px-6"
+                onClick={async () => {
+                  logInteraction({
+                    itemId: id,
+                    interactionType: "rsvp",
+                    metadata: { source, position },
+                  });
+                  const wasRsvped = isRsvped;
+                  try {
+                    await onRsvpToggle();
+                  } catch {
+                    return; // the owner already surfaced the failure
+                  }
+                  if (wasRsvped) toast(`Removed your RSVP to ${title}`);
+                  else toast.success(`You're going to ${title}`);
+                }}
+              >
+                {isRsvped ? (
+                  <>
+                    <Check />
+                    RSVP'd
+                  </>
+                ) : (
+                  "RSVP"
+                )}
+              </Button>
+            )}
+
+            <div className="flex items-center gap-0.5">
+              {onSaveToggle && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className={UTILITY_HOVER}
+                  aria-label={isSaved ? `Unsave ${title}` : `Save ${title}`}
+                  aria-pressed={isSaved}
+                  onClick={async () => {
+                    const wasSaved = isSaved;
+                    try {
+                      await onSaveToggle();
+                    } catch {
+                      return;
+                    }
+                    toast(wasSaved ? `Removed ${title} from saved` : `Saved ${title}`);
+                  }}
+                >
+                  {isSaved ? (
+                    <BookmarkCheck className="text-forum-coral" />
+                  ) : (
+                    <Bookmark className="text-forum-coral" />
+                  )}
+                </Button>
+              )}
+              {onShare && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className={UTILITY_HOVER}
+                  aria-label={`Share ${title}`}
+                  onClick={onShare}
+                >
+                  <Share2 className="text-forum-coral" />
+                </Button>
+              )}
+              <Button
+                asChild
+                variant="ghost"
+                size="icon-sm"
+                className={UTILITY_HOVER}
+                aria-label={`Open ${title}`}
+              >
+                <Link href={`/events/${id}`} onClick={trackClick}>
+                  <Maximize2 className="text-forum-coral" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Body: details left, social + blurb right */}
+        <div className="grid gap-x-8 gap-y-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          <div className="min-w-0">
+            <Link href={`/events/${id}`} onClick={trackClick}>
+              <h3 className="font-serif text-[22px] leading-tight text-black line-clamp-2 hover:underline">
+                {title}
+              </h3>
+            </Link>
+            <div className="mt-1.5 flex flex-col gap-1">
+              {hasLocation && (
+                <span className="flex items-center gap-1.5 font-dm-sans text-[13px] text-forum-dark-gray">
+                  <MapPin size={12} aria-hidden className="shrink-0 text-forum-light-gray" />
+                  {location}
+                </span>
+              )}
+              <span className="flex items-center gap-1.5 font-dm-sans text-[13px] text-forum-dark-gray">
+                <Clock size={12} aria-hidden className="shrink-0 text-forum-light-gray" />
+                {datetime}
+              </span>
+            </div>
+            {tags.length > 0 && (
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {tags.slice(0, 3).map((tag, i) => (
+                  <span
+                    key={tag}
+                    className={cn(
+                      "rounded-full px-2.5 py-0.5 font-dm-sans text-[13px] text-black",
+                      i === 0 ? "bg-forum-yellow-50" : "bg-forum-turquoise-50",
+                    )}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0">
+            {friendsAttending.length > 0 && (
+              <div className="mb-1.5 flex items-start gap-2">
+                <AvatarStack users={friendsAttending} size={28} max={3} />
+                <p className="font-dm-sans text-[13px] leading-tight text-forum-dark-gray">
+                  <span className="font-bold text-forum-coral">
+                    {displayedFriendNames.join(", ")}
+                  </span>
+                  {remainingFriends > 0 && (
+                    <span className="font-bold text-forum-coral"> + {remainingFriends} other</span>
+                  )}{" "}
+                  added this event to their calendar!
+                </p>
+              </div>
+            )}
+            {description && (
+              <p className="font-dm-sans text-[13px] leading-relaxed text-forum-dark-gray line-clamp-3">
+                {description}
+              </p>
+            )}
+            <Link
+              href={`/events/${id}`}
+              onClick={trackClick}
+              className="mt-1 inline-block font-dm-sans text-[13px] font-medium text-forum-coral hover:underline"
+            >
+              See Details
+            </Link>
+          </div>
+        </div>
+
+        {/*
+          Owner controls, pinned to the card's bottom-right. Only rendered for
+          events you created — the card does no permission checking of its own.
+        */}
+        {(editHref || onDelete) && (
+          <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+            {editHref && (
+              <Button asChild variant="outline" size="sm" className="rounded-full">
+                <Link href={editHref}>
+                  <Edit3 />
+                  Edit
+                </Link>
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-forum-coral/40 text-forum-coral hover:bg-forum-coral/5"
+                onClick={onDelete}
+              >
+                <Trash2 />
+                Delete
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={cardRef}
-      className="rounded-[16px] overflow-hidden relative group"
-      style={{ background: color.bg }}
+      /* Width is owned by the parent list/grid — the card fills its slot so it
+         renders identically on Explore, My Events, Map and org pages. */
+      className={cn(
+        "card group relative flex w-full flex-col overflow-hidden rounded-xl",
+        compact ? "gap-2 p-3" : "gap-0.5 px-5 py-5",
+        className,
+      )}
     >
-      {/* Expand + Hide */}
-      <div className="absolute top-[10px] right-[10px] z-10 flex items-center gap-[4px]">
-        {onHide && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              logInteraction({
-                itemId: id,
-                interactionType: "hide",
-                metadata: { source, position },
-              });
-              onHide();
-            }}
-            className="text-forum-medium-gray hover:text-forum-coral transition-colors p-[2px] rounded-full hover:bg-white/50"
-            title="Not interested"
+      {/*
+        Save, Share, Hide & Expand.
+
+        The icon buttons are 32px boxes around a 16px glyph, so they carry 8px
+        of internal padding. The negative margins cancel that, putting the
+        glyphs on the same left/right edges as the text below.
+      */}
+      {hasUtilityRow && (
+        <div className="-mx-2 flex flex-row justify-between">
+          <div className="flex items-center gap-0.5">
+            {onSaveToggle && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className={UTILITY_HOVER}
+                aria-label={isSaved ? `Unsave ${title}` : `Save ${title}`}
+                aria-pressed={isSaved}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  logInteraction({
+                    itemId: id,
+                    interactionType: "save",
+                    metadata: { source, position },
+                  });
+                  const wasSaved = isSaved;
+                  try {
+                    await onSaveToggle();
+                  } catch {
+                    return;
+                  }
+                  toast(wasSaved ? `Removed ${title} from saved` : `Saved ${title}`);
+                }}
+              >
+                {isSaved ? (
+                  <BookmarkCheck className="text-forum-coral" />
+                ) : (
+                  <Bookmark className="text-forum-coral" />
+                )}
+              </Button>
+            )}
+            {onShare && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className={UTILITY_HOVER}
+                aria-label={`Share ${title}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  logInteraction({
+                    itemId: id,
+                    interactionType: "share",
+                    metadata: { source, position },
+                  });
+                  onShare();
+                }}
+              >
+                <Share2 className="text-forum-coral" />
+              </Button>
+            )}
+            {/* Hide was previously an unreachable prop — no control ever called it. */}
+            {onHide && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className={UTILITY_HOVER}
+                aria-label={`Hide ${title}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  logInteraction({
+                    itemId: id,
+                    interactionType: "hide",
+                    metadata: { source, position },
+                  });
+                  onHide();
+                  toast(`Hid ${title}`, { description: "Use Unhide to bring it back." });
+                }}
+              >
+                <EyeOff className="text-forum-coral" />
+              </Button>
+            )}
+          </div>
+          <Button
+            asChild
+            variant="ghost"
+            size="icon-sm"
+            className={UTILITY_HOVER}
+            aria-label={`Open ${title}`}
           >
-            <EyeOff size={14} />
-          </button>
-        )}
-        <Link
-          href={`/events/${id}`}
-          onClick={trackClick}
-          className="text-forum-medium-gray hover:text-forum-dark-gray transition-colors"
-        >
-          <Expand size={16} />
-        </Link>
-      </div>
-
-      <div className="flex p-[24px] pb-0 gap-[16px]">
-        {/* Flyer */}
-        <div className="w-[140px] h-[150px] rounded-[14px] flex-shrink-0 overflow-hidden">
-          {flyerUrl ? (
-            <img src={flyerUrl} alt={title} className="w-full h-full object-cover" />
-          ) : (
-            <EventCoverArt title={title} tags={tags} className="w-full h-full" />
-          )}
+            <Link href={`/events/${id}`} onClick={trackClick}>
+              <Maximize2 className="text-forum-coral" />
+            </Link>
+          </Button>
         </div>
+      )}
 
-        {/* Content */}
-        <div className="flex flex-col gap-[8px] flex-1 min-w-0">
-          {/* Save & Share */}
-          <div className="flex items-center gap-[6px]">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                logInteraction({
-                  itemId: id,
-                  interactionType: "save",
-                  metadata: { source, position },
-                });
-                onSaveToggle?.();
-              }}
-              className="p-0.5 hover:opacity-70 transition-opacity"
-            >
-              {isSaved ? (
-                <BookmarkCheck size={15} className="text-forum-cerulean" />
-              ) : (
-                <Bookmark size={15} className="text-forum-medium-gray" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                logInteraction({
-                  itemId: id,
-                  interactionType: "share",
-                  metadata: { source, position },
-                });
-                onShare?.();
-              }}
-              className="p-0.5 hover:opacity-70 transition-opacity"
-            >
-              <Share2 size={13} className="text-forum-medium-gray" />
-            </button>
+      {/* Org */}
+      {orgName && (
+        <div className={cn("flex items-center gap-2", !compact && "mt-4")}>
+          <div className="size-6 shrink-0 overflow-hidden rounded border-2 border-forum-medium-gray bg-forum-turquoise/30">
+            {orgLogoUrl && <img src={orgLogoUrl} alt="" className="size-full object-cover" />}
           </div>
-
-          {/* Title */}
-          <Link href={`/events/${id}`} onClick={trackClick}>
-            <h3 className="font-serif text-[18px] leading-[1.2] text-black line-clamp-2 hover:underline">
-              {title}
-            </h3>
-          </Link>
-
-          {/* Org */}
-          {orgName && (
-            <div className="flex items-center gap-[8px]">
-              <div className="w-[24px] h-[24px] rounded-[4px] border-[2px] border-forum-medium-gray overflow-hidden flex-shrink-0 bg-gray-100">
-                {orgLogoUrl ? (
-                  <img src={orgLogoUrl} alt={orgName} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-forum-turquoise/30" />
-                )}
-              </div>
-              <p className="text-[12px] text-forum-dark-gray">
-                <span className="font-medium">from </span>
-                {orgId ? (
-                  <Link
-                    href={`/orgs/${orgId}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="font-bold hover:underline"
-                  >
-                    {orgName}
-                  </Link>
-                ) : (
-                  <span className="font-bold">{orgName}</span>
-                )}
-              </p>
-            </div>
-          )}
-
-          {/* Location & Time */}
-          <div className="flex flex-col gap-[4px]">
-            <div className="flex items-center gap-[5px]">
-              <MapPin size={11} className="text-forum-dark-gray flex-shrink-0" />
-              <span className="text-[12px] text-forum-dark-gray">{location}</span>
-            </div>
-            <div className="flex items-center gap-[5px]">
-              <Clock size={11} className="text-forum-dark-gray flex-shrink-0" />
-              <span className="text-[12px] text-forum-dark-gray">{datetime}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Description */}
-      {description && (
-        <div className="mx-[24px] mt-[8px] rounded-[12px] overflow-hidden">
-          <p className="text-[12px] text-black font-dm-sans leading-relaxed line-clamp-3">
-            {description}
+          <p className="min-w-0 truncate font-dm-sans text-[12px] text-forum-dark-gray">
+            {orgId ? (
+              <Link
+                href={`/orgs/${orgId}`}
+                onClick={(e) => e.stopPropagation()}
+                className="font-bold transition-colors hover:text-forum-cerulean"
+              >
+                {orgName}
+              </Link>
+            ) : (
+              <span className="font-bold">{orgName}</span>
+            )}
           </p>
         </div>
       )}
 
-      {/* Bottom: Tags + RSVP */}
-      <div className="flex items-center justify-between px-[24px] py-[12px]">
-        <div className="flex items-center gap-[6px] flex-wrap">
-          {tags.slice(0, 3).map((tag) => (
+      {/* Title — opens in place when `onOpen` is given, otherwise navigates */}
+      {onOpen ? (
+        <button
+          type="button"
+          onClick={() => {
+            trackClick();
+            onOpen();
+          }}
+          className="mt-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forum-cerulean"
+        >
+          <h3
+            className={cn(
+              "font-serif leading-[1.2] text-black line-clamp-2 hover:underline",
+              compact ? "text-[17px] font-bold" : "text-[18px]",
+            )}
+          >
+            {title}
+          </h3>
+        </button>
+      ) : (
+        <Link href={`/events/${id}`} onClick={trackClick} className="mt-1">
+          <h3
+            className={cn(
+              "font-serif leading-[1.2] text-black line-clamp-2 hover:underline",
+              compact ? "text-[17px] font-bold" : "text-[18px]",
+            )}
+          >
+            {title}
+          </h3>
+        </Link>
+      )}
+
+      {/* Location & Time */}
+      <div className="mt-1 flex flex-col gap-1">
+        {hasLocation && (
+          <div className="flex items-center gap-1.5">
+            <MapPin size={11} aria-hidden className="shrink-0 text-forum-light-gray" />
+            <span className="truncate font-dm-sans text-[12px] text-forum-dark-gray">
+              {location}
+            </span>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5">
+          <Clock size={11} aria-hidden className="shrink-0 text-forum-light-gray" />
+          <span className="font-dm-sans text-[12px] text-forum-dark-gray">{datetime}</span>
+        </div>
+      </div>
+
+      {/*
+        Tags. Compact cards stack them vertically and leave a right-hand gutter
+        so the corner avatars never sit on top of a label.
+      */}
+      {tags.length > 0 && (
+        <div
+          className={cn(
+            "mt-2.5 flex gap-1.5",
+            compact
+              ? cn("flex-col items-start", friendsAttending.length > 0 && "pr-20")
+              : "flex-wrap",
+          )}
+        >
+          {tags.slice(0, compact ? 2 : 3).map((tag, i) => (
             <span
               key={tag}
-              className="px-[8px] py-[1px] rounded-[10px] text-[12px] font-dm-sans text-black"
-              style={{ background: "rgba(254,232,130,0.5)" }}
+              className={cn(
+                "rounded-[10px] px-2 py-px font-dm-sans text-[12px] text-black",
+                (compact ? i === 1 : i > 0) ? "bg-forum-turquoise-50" : "bg-forum-yellow-50",
+              )}
             >
               {tag}
             </span>
           ))}
-          {friendsAttending.length > 0 && (
-            <div className="ml-1">
-              <AvatarStack users={friendsAttending} size={20} />
-            </div>
-          )}
         </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            logInteraction({ itemId: id, interactionType: "rsvp", metadata: { source, position } });
-            onRsvpToggle?.();
-          }}
-          className={`px-[10px] py-[6px] rounded-[8px] text-[12px] font-bold font-dm-sans transition-colors ${
-            isRsvped
-              ? "bg-forum-dark-gray text-white"
-              : "bg-forum-coral text-white hover:opacity-90"
-          }`}
+      )}
+
+      {/* Friends attending — a corner cluster on compact cards, an inline row elsewhere */}
+      {friendsAttending.length > 0 &&
+        (compact ? (
+          <div className="pointer-events-none absolute right-3 bottom-3">
+            <AvatarStack users={friendsAttending} size={34} max={3} />
+          </div>
+        ) : (
+          <div className="mt-2.5 flex flex-row items-center gap-2">
+            <AvatarStack users={friendsAttending} size={30} max={3} />
+            <p className="font-dm-sans text-[12px] leading-tight text-forum-dark-gray">
+              <span className="font-bold text-forum-coral">
+                {displayedFriendNames.join(", ")}
+                {remainingFriends > 0 && ` + ${remainingFriends} other`}
+              </span>{" "}
+              added this event to their calendar!
+            </p>
+          </div>
+        ))}
+
+      {/* Description — full card only. Clamped to the mock's three lines, with
+          "See Details" carrying the rest. */}
+      {!compact && description && (
+        <>
+          <p className="mt-2.5 font-dm-sans text-[12px] leading-relaxed text-forum-dark-gray line-clamp-3">
+            {description}
+          </p>
+          <Link
+            href={`/events/${id}`}
+            onClick={trackClick}
+            className="mt-1 self-start font-dm-sans text-[12px] font-medium text-forum-coral hover:underline"
+          >
+            See Details
+          </Link>
+        </>
+      )}
+
+      {/* Footer actions — right gutter keeps clear of the corner avatar cluster */}
+      {(onRsvpToggle || onLocate || calendarUrl) && (
+        <div
+          /* `mt-auto` pins the actions to the card's bottom edge, so RSVP
+             buttons line up across a grid row even when one card's blurb is
+             shorter than its neighbour's. No effect where cards size to their
+             content, as in the map rail. */
+          className={cn(
+            "mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-3",
+            compact && friendsAttending.length > 0 && "pr-20",
+          )}
         >
-          {isRsvped ? "RSVP'D" : "RSVP NOW"}
-        </button>
-      </div>
+          {onLocate ? (
+            <button
+              type="button"
+              onClick={onLocate}
+              className="flex items-center gap-1 font-dm-sans text-[11px] font-medium text-forum-cerulean hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forum-cerulean"
+            >
+              <MapPin size={10} aria-hidden />
+              Show on map
+            </button>
+          ) : (
+            /* Avatar stack + "N attending", clickable to see the full list. */
+            (attendees.length > 0 || Boolean(rsvpCount)) && (
+              <div className="flex min-w-0 items-center gap-2">
+                {attendees.length > 0 && <AvatarStack users={attendees} size={24} max={3} />}
+                {rsvpCount ? (
+                  <AttendeesDialog
+                    attendees={attendees}
+                    count={rsvpCount}
+                    friendIds={new Set(friendsAttending.map((f) => f.id))}
+                    /* Sized to the card's own metadata scale — 14px bold black
+                       shouted over the title's own details — and kept on one
+                       line, which is what wrapped to "4 / attending". */
+                    className="whitespace-nowrap text-[12px] font-medium text-forum-dark-gray"
+                  />
+                ) : null}
+              </div>
+            )
+          )}
+
+          {/* Calendar + RSVP, gathered at the card's bottom-right as in the mock. */}
+          <div className="ml-auto flex items-center gap-2">
+            {calendarUrl && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="text-[11px] font-bold uppercase tracking-wide"
+              >
+                <a href={calendarUrl} target="_blank" rel="noopener noreferrer">
+                  <Plus />
+                  Calendar
+                </a>
+              </Button>
+            )}
+            {onRsvpToggle && (
+              <Button
+                variant={isRsvped ? "cerulean" : "coral"}
+                size="sm"
+                className="text-[11px] font-bold uppercase tracking-wide"
+                aria-pressed={isRsvped}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  logInteraction({
+                    itemId: id,
+                    interactionType: "rsvp",
+                    metadata: { source, position },
+                  });
+                  const wasRsvped = isRsvped;
+                  try {
+                    await onRsvpToggle();
+                  } catch {
+                    return;
+                  }
+                  // Confirm the action explicitly — the label flip alone was easy
+                  // to miss, especially far down the feed.
+                  if (wasRsvped) {
+                    toast(`Removed your RSVP to ${title}`);
+                  } else {
+                    toast.success(`You're going to ${title}`);
+                  }
+                }}
+              >
+                {isRsvped ? (
+                  <>
+                    <Check />
+                    RSVP'd
+                  </>
+                ) : (
+                  "RSVP"
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

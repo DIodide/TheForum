@@ -27,20 +27,135 @@ import {
 } from "@the-forum/database";
 import { revalidatePath } from "next/cache";
 import { auth } from "~/auth";
+import { formatEventDateTime } from "~/lib/date-format";
 
 export interface FeedEvent {
   id: string;
   title: string;
+  description: string | null;
   orgId: string | null;
   orgName: string | null;
   datetime: string;
+  /** ISO timestamp, for building calendar links client-side. */
+  rawDatetime?: string;
   location: string;
   tags: string[];
   flyerUrl: string | null;
   rsvpCount: number;
   friendsAttending: { id: string; displayName: string; avatarUrl: string | null }[];
+  /**
+   * Everyone who has RSVP'd — powers the "N attending" list on each card.
+   *
+   * Optional because only the Explore feed loads it; the saved/created/friends
+   * queries build the same shape without paying for the extra join.
+   */
+  attendees?: { id: string; displayName: string; avatarUrl: string | null }[];
   isRsvped: boolean;
   isSaved: boolean;
+}
+
+/** Accepted friendships are stored one-directional, so both columns are read. */
+async function loadFriendIds(userId: string): Promise<string[]> {
+  const [outgoing, incoming] = await Promise.all([
+    db
+      .select({ friendId: friendships.friendId })
+      .from(friendships)
+      .where(and(eq(friendships.userId, userId), eq(friendships.status, "accepted"))),
+    db
+      .select({ friendId: friendships.userId })
+      .from(friendships)
+      .where(and(eq(friendships.friendId, userId), eq(friendships.status, "accepted"))),
+  ]);
+  return [...outgoing, ...incoming].map((r) => r.friendId);
+}
+
+interface EventEnrichment {
+  tags: Map<string, string[]>;
+  attendees: Map<string, NonNullable<FeedEvent["attendees"]>>;
+  friends: Map<string, FeedEvent["friendsAttending"]>;
+  rsvpedByMe: Set<string>;
+  savedByMe: Set<string>;
+}
+
+/**
+ * Tags, attendees, friend attendance and the viewer's own RSVP/save state for
+ * a page of events.
+ *
+ * Four call sites were each hard-coding `tags: []`, `rsvpCount: 0`,
+ * `friendsAttending: []` and `isRsvped/isSaved: false`, so those screens could
+ * never show a tag or the right button state no matter how they were styled.
+ *
+ * Everything is fetched as one query per field and grouped in memory. The
+ * per-event version issued several queries per row, all concurrent, each
+ * holding a connection — which is how the pool got exhausted.
+ */
+async function loadEventEnrichment(
+  eventIds: string[],
+  userId: string,
+  friendIds: string[],
+): Promise<EventEnrichment> {
+  const empty: EventEnrichment = {
+    tags: new Map(),
+    attendees: new Map(),
+    friends: new Map(),
+    rsvpedByMe: new Set(),
+    savedByMe: new Set(),
+  };
+  if (eventIds.length === 0) return empty;
+
+  const [tagRows, attendeeRows, myRsvps, mySaves] = await Promise.all([
+    db
+      .select({ eventId: eventTags.eventId, tag: eventTags.tag })
+      .from(eventTags)
+      .where(inArray(eventTags.eventId, eventIds)),
+    db
+      .select({
+        eventId: rsvps.eventId,
+        id: users.id,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(rsvps)
+      .innerJoin(users, eq(rsvps.userId, users.id))
+      .where(inArray(rsvps.eventId, eventIds)),
+    db
+      .select({ eventId: rsvps.eventId })
+      .from(rsvps)
+      .where(and(inArray(rsvps.eventId, eventIds), eq(rsvps.userId, userId))),
+    db
+      .select({ eventId: savedEvents.eventId })
+      .from(savedEvents)
+      .where(and(inArray(savedEvents.eventId, eventIds), eq(savedEvents.userId, userId))),
+  ]);
+
+  const friendIdSet = new Set(friendIds);
+  const result: EventEnrichment = {
+    tags: new Map(),
+    attendees: new Map(),
+    friends: new Map(),
+    rsvpedByMe: new Set(myRsvps.map((r) => r.eventId)),
+    savedByMe: new Set(mySaves.map((r) => r.eventId)),
+  };
+
+  for (const row of tagRows) {
+    const list = result.tags.get(row.eventId);
+    if (list) list.push(row.tag);
+    else result.tags.set(row.eventId, [row.tag]);
+  }
+
+  for (const { eventId, ...person } of attendeeRows) {
+    const all = result.attendees.get(eventId);
+    if (all) all.push(person);
+    else result.attendees.set(eventId, [person]);
+
+    if (friendIdSet.has(person.id)) {
+      const mine = result.friends.get(eventId);
+      if (mine) mine.push(person);
+      else result.friends.set(eventId, [person]);
+    }
+  }
+
+  return result;
 }
 
 export async function getFeedEvents(params?: {
@@ -79,6 +194,20 @@ export async function getFeedEvents(params?: {
     ...friendRows.map((f) => f.friendId),
     ...reverseFriendRows.map((f) => f.friendId),
   ];
+
+  // Get orgs the user follows or belongs to, for the org-affinity signal
+  const followedOrgRows = await db
+    .select({ orgId: orgFollowers.orgId })
+    .from(orgFollowers)
+    .where(eq(orgFollowers.userId, userId));
+  const memberOrgRows = await db
+    .select({ orgId: orgMembers.orgId })
+    .from(orgMembers)
+    .where(eq(orgMembers.userId, userId));
+  const myOrgIds = new Set([
+    ...followedOrgRows.map((o) => o.orgId),
+    ...memberOrgRows.map((o) => o.orgId),
+  ]);
 
   // Build base query conditions — only show published events in the feed
   const conditions = [gt(events.datetime, new Date()), eq(events.status, "published")];
@@ -163,7 +292,14 @@ export async function getFeedEvents(params?: {
     .offset(offset);
 
   // Enrich each event with tags, rsvp counts, friend attendance, user state
-  const enriched: FeedEvent[] = await Promise.all(
+  //
+  // Ranking, in plain English: an event scores higher if (1) its tags match
+  // your interests, (2) it's happening soon, (3) friends of yours are
+  // attending, (4) it belongs to an org you follow or belong to, or (5) it
+  // was posted recently. Scores are deterministic — no randomness — so
+  // refreshing Explore without new data (RSVPs, new events, etc.) never
+  // reorders the feed. Ties break by soonest event first.
+  const enriched: (FeedEvent & { score: number; _rawDatetime: Date })[] = await Promise.all(
     rawEvents.map(async (event) => {
       // Get tags
       const tags = await db
@@ -206,10 +342,16 @@ export async function getFeedEvents(params?: {
 
       // Score for sorting
       const tagNames = tags.map((t) => t.tag);
-      const interestOverlap =
-        myInterestTags.length > 0
-          ? tagNames.filter((t) => myInterestTags.includes(t)).length / myInterestTags.length
-          : 0.5;
+
+      // Fraction of this event's tags that match the user's interests — how
+      // relevant is this event to you, not how much of your profile it covers.
+      const matchedTags = tagNames.filter((t) => myInterestTags.includes(t)).length;
+      const interestRelevance =
+        myInterestTags.length === 0
+          ? 0.5
+          : tagNames.length === 0
+            ? 0
+            : matchedTags / tagNames.length;
 
       const now = Date.now();
       const eventTime = event.datetime.getTime();
@@ -227,28 +369,25 @@ export async function getFeedEvents(params?: {
 
       const friendRsvpScore = Math.min(1.0, friendsAttending.length / 3.0);
 
+      const orgAffinity = event.orgId && myOrgIds.has(event.orgId) ? 1.0 : 0.0;
+
       const hoursSinceCreated = (now - event.createdAt.getTime()) / (1000 * 60 * 60);
       const recencyBoost = hoursSinceCreated <= 24 ? 1.0 : hoursSinceCreated <= 72 ? 0.5 : 0.0;
 
       const score =
-        3.0 * interestOverlap +
+        3.0 * interestRelevance +
         2.0 * timeProximity +
         4.0 * friendRsvpScore +
-        1.0 * recencyBoost +
-        0.5 * Math.random();
+        1.0 * orgAffinity +
+        1.0 * recencyBoost;
 
       return {
         id: event.id,
         title: event.title,
+        description: event.description,
         orgId: event.orgId,
         orgName: event.orgName,
-        datetime: event.datetime.toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        }),
+        datetime: formatEventDateTime(event.datetime),
         location: event.locationName ?? "TBD",
         tags: tagNames,
         flyerUrl: event.flyerUrl,
@@ -256,25 +395,84 @@ export async function getFeedEvents(params?: {
         friendsAttending,
         isRsvped: !!userRsvp,
         isSaved: !!userSave,
-        _score: score,
+        score,
+        _rawDatetime: event.datetime,
       };
     }),
   );
 
-  // Sort by score descending
-  enriched.sort(
-    (a, b) =>
-      (b as unknown as { _score: number })._score - (a as unknown as { _score: number })._score,
-  );
+  /*
+   * Attendees for the "N attending" control on each card.
+   *
+   * One query for the whole page rather than one per event — the enrichment
+   * above already issues several queries per event, and adding another to that
+   * loop is what pushes the connection pool over on a full feed.
+   */
+  const feedIds = enriched.map((e) => e.id);
+  const attendeeRows =
+    feedIds.length === 0
+      ? []
+      : await db
+          .select({
+            eventId: rsvps.eventId,
+            id: users.id,
+            displayName: users.displayName,
+            avatarUrl: users.avatarUrl,
+          })
+          .from(rsvps)
+          .innerJoin(users, eq(rsvps.userId, users.id))
+          .where(inArray(rsvps.eventId, feedIds));
 
-  return { events: enriched, total };
+  const attendeesByEvent = new Map<string, FeedEvent["attendees"]>();
+  for (const { eventId, ...person } of attendeeRows) {
+    const list = attendeesByEvent.get(eventId);
+    if (list) list.push(person);
+    else attendeesByEvent.set(eventId, [person]);
+  }
+
+  // Sort by score descending; ties break by soonest event first, so
+  // refreshing Explore with no new data never reorders the feed.
+  enriched.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a._rawDatetime.getTime() - b._rawDatetime.getTime();
+  });
+
+  return {
+    events: enriched.map(({ score: _score, _rawDatetime, ...event }) => ({
+      ...event,
+      // Carried through so the feed card can build its "+ Calendar" link; the
+      // sort key was being dropped here and the button never rendered.
+      rawDatetime: _rawDatetime.toISOString(),
+      attendees: attendeesByEvent.get(event.id) ?? [],
+    })),
+    total,
+  };
 }
 
-export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; count: number }> {
+/** The attendee shape shared by the feed, the detail page and `toggleRsvp`. */
+type Attendee = { id: string; displayName: string; avatarUrl: string | null };
+
+export async function toggleRsvp(eventId: string): Promise<{
+  rsvped: boolean;
+  count: number;
+  /*
+   * The full attendee list after the toggle. Callers render an avatar stack
+   * from this alongside the count, so returning only the count left the
+   * viewer's own face in the stack after they un-RSVP'd.
+   */
+  attendees: Attendee[];
+}> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
+
+  // If the event doesn't exist in the DB (e.g. a demo/local-only event), no-op
+  const [eventRow] = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
+  if (!eventRow) {
+    // Return zero count and no-op rsvp change to avoid FK constraint errors
+    return { rsvped: false, count: 0, attendees: [] };
+  }
 
   const [existing] = await db
     .select()
@@ -288,16 +486,24 @@ export async function toggleRsvp(eventId: string): Promise<{ rsvped: boolean; co
     await db.insert(rsvps).values({ userId, eventId });
   }
 
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)::int` })
+  // Re-read the roster rather than counting: the count and the avatar stack are
+  // rendered from the same data, so they cannot drift out of step this way.
+  const attendees = await db
+    .select({
+      id: users.id,
+      displayName: users.displayName,
+      avatarUrl: users.avatarUrl,
+    })
     .from(rsvps)
+    .innerJoin(users, eq(rsvps.userId, users.id))
     .where(eq(rsvps.eventId, eventId));
 
   revalidatePath("/explore");
 
   return {
     rsvped: !existing,
-    count: countResult?.count ?? 0,
+    count: attendees.length,
+    attendees,
   };
 }
 
@@ -306,6 +512,12 @@ export async function toggleSave(eventId: string): Promise<{ saved: boolean }> {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
+
+  // If the event doesn't exist in the DB (e.g. demo/local-only event), no-op
+  const [eventRow] = await db.select().from(events).where(eq(events.id, eventId)).limit(1);
+  if (!eventRow) {
+    return { saved: false };
+  }
 
   const [existing] = await db
     .select()
@@ -464,6 +676,8 @@ export async function getSimilarEvents(
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
+  const userId = session.user.id;
+
   const conditions = [gt(events.datetime, new Date())];
 
   // Events with matching tags or same org, excluding current event
@@ -490,6 +704,7 @@ export async function getSimilarEvents(
     .select({
       id: events.id,
       title: events.title,
+      description: events.description,
       datetime: events.datetime,
       flyerUrl: events.flyerUrl,
       locationName: campusLocations.name,
@@ -503,26 +718,33 @@ export async function getSimilarEvents(
     .orderBy(events.datetime)
     .limit(4);
 
-  return rawEvents.map((event) => ({
-    id: event.id,
-    title: event.title,
-    orgId: event.orgId,
-    orgName: event.orgName,
-    datetime: event.datetime.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-    location: event.locationName ?? "TBD",
-    tags: [],
-    flyerUrl: event.flyerUrl,
-    rsvpCount: 0,
-    friendsAttending: [],
-    isRsvped: false,
-    isSaved: false,
-  }));
+  const friendIds = await loadFriendIds(userId);
+  const extra = await loadEventEnrichment(
+    rawEvents.map((e) => e.id),
+    userId,
+    friendIds,
+  );
+
+  return rawEvents.map((event) => {
+    const attendees = extra.attendees.get(event.id) ?? [];
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      orgId: event.orgId,
+      orgName: event.orgName,
+      datetime: formatEventDateTime(event.datetime),
+      rawDatetime: event.datetime.toISOString(),
+      location: event.locationName ?? "TBD",
+      tags: extra.tags.get(event.id) ?? [],
+      flyerUrl: event.flyerUrl,
+      rsvpCount: attendees.length,
+      attendees,
+      friendsAttending: extra.friends.get(event.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(event.id),
+      isSaved: extra.savedByMe.has(event.id),
+    };
+  });
 }
 
 type EventTagValue = typeof eventTags.$inferSelect.tag;
@@ -712,6 +934,7 @@ export async function getMyEvents(): Promise<{
     .select({
       id: events.id,
       title: events.title,
+      description: events.description,
       datetime: events.datetime,
       flyerUrl: events.flyerUrl,
       locationName: campusLocations.name,
@@ -729,6 +952,7 @@ export async function getMyEvents(): Promise<{
     .select({
       id: events.id,
       title: events.title,
+      description: events.description,
       datetime: events.datetime,
       flyerUrl: events.flyerUrl,
       locationName: campusLocations.name,
@@ -747,6 +971,7 @@ export async function getMyEvents(): Promise<{
     .select({
       id: events.id,
       title: events.title,
+      description: events.description,
       datetime: events.datetime,
       flyerUrl: events.flyerUrl,
       locationName: campusLocations.name,
@@ -760,26 +985,37 @@ export async function getMyEvents(): Promise<{
     .where(eq(savedEvents.userId, userId))
     .orderBy(events.datetime);
 
-  const mapEvent = (e: (typeof createdEvents)[0]): FeedEvent => ({
-    id: e.id,
-    title: e.title,
-    orgId: e.orgId,
-    orgName: e.orgName,
-    datetime: e.datetime.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-    location: e.locationName ?? "TBD",
-    tags: [],
-    flyerUrl: e.flyerUrl,
-    rsvpCount: 0,
-    friendsAttending: [],
-    isRsvped: false,
-    isSaved: false,
-  });
+  /*
+   * Enrich all three tabs at once. These fields used to be hard-coded, so My
+   * Events could never show a tag, a friend, or the correct RSVP state
+   * regardless of how the card was styled.
+   */
+  const allIds = [
+    ...new Set([...createdEvents, ...rsvpedEvents, ...savedEventsResult].map((e) => e.id)),
+  ];
+  const friendIds = await loadFriendIds(userId);
+  const extra = await loadEventEnrichment(allIds, userId, friendIds);
+
+  const mapEvent = (e: (typeof createdEvents)[0]): FeedEvent => {
+    const attendees = extra.attendees.get(e.id) ?? [];
+    return {
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      orgId: e.orgId,
+      orgName: e.orgName,
+      datetime: formatEventDateTime(e.datetime),
+      rawDatetime: e.datetime.toISOString(),
+      location: e.locationName ?? "TBD",
+      tags: extra.tags.get(e.id) ?? [],
+      flyerUrl: e.flyerUrl,
+      rsvpCount: attendees.length,
+      attendees,
+      friendsAttending: extra.friends.get(e.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(e.id),
+      isSaved: extra.savedByMe.has(e.id),
+    };
+  };
 
   return {
     created: createdEvents.map(mapEvent),
@@ -811,6 +1047,7 @@ export async function getSavedEvents(): Promise<FeedEvent[]> {
     .select({
       id: events.id,
       title: events.title,
+      description: events.description,
       datetime: events.datetime,
       flyerUrl: events.flyerUrl,
       locationName: campusLocations.name,
@@ -821,30 +1058,43 @@ export async function getSavedEvents(): Promise<FeedEvent[]> {
     .innerJoin(events, eq(savedEvents.eventId, events.id))
     .leftJoin(campusLocations, eq(events.locationId, campusLocations.id))
     .leftJoin(organizations, eq(events.orgId, organizations.id))
-    .where(eq(savedEvents.userId, userId))
+    /*
+     * Future events only. "Upcoming Events" reads from this list, and without
+     * the datetime bound a saved event from last week surfaced there — with
+     * `formatRelativeDay` cheerfully announcing it was happening "yesterday".
+     */
+    .where(and(eq(savedEvents.userId, userId), gt(events.datetime, new Date())))
     .orderBy(events.datetime)
     .limit(5);
 
-  return saved.map((event) => ({
-    id: event.id,
-    title: event.title,
-    orgId: event.orgId,
-    orgName: event.orgName,
-    datetime: event.datetime.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-    location: event.locationName ?? "TBD",
-    tags: [],
-    flyerUrl: event.flyerUrl,
-    rsvpCount: 0,
-    friendsAttending: [],
-    isRsvped: false,
-    isSaved: true,
-  }));
+  const friendIds = await loadFriendIds(userId);
+  const extra = await loadEventEnrichment(
+    saved.map((e) => e.id),
+    userId,
+    friendIds,
+  );
+
+  return saved.map((event) => {
+    const attendees = extra.attendees.get(event.id) ?? [];
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      orgId: event.orgId,
+      orgName: event.orgName,
+      datetime: formatEventDateTime(event.datetime),
+      rawDatetime: event.datetime.toISOString(),
+      location: event.locationName ?? "TBD",
+      tags: extra.tags.get(event.id) ?? [],
+      flyerUrl: event.flyerUrl,
+      rsvpCount: attendees.length,
+      attendees,
+      friendsAttending: extra.friends.get(event.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(event.id),
+      // Everything in this list is saved by definition.
+      isSaved: true,
+    };
+  });
 }
 
 export interface FriendsEvent extends FeedEvent {
@@ -878,6 +1128,7 @@ export async function getFriendsEvents(): Promise<FriendsEvent[]> {
     .select({
       id: events.id,
       title: events.title,
+      description: events.description,
       datetime: events.datetime,
       flyerUrl: events.flyerUrl,
       locationName: campusLocations.name,
@@ -902,25 +1153,31 @@ export async function getFriendsEvents(): Promise<FriendsEvent[]> {
     .orderBy(desc(sql`friend_count`), events.datetime)
     .limit(20);
 
-  return friendsEvents.map((event) => ({
-    id: event.id,
-    title: event.title,
-    orgId: event.orgId,
-    orgName: event.orgName,
-    datetime: event.datetime.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }),
-    location: event.locationName ?? "TBD",
-    tags: [],
-    flyerUrl: event.flyerUrl,
-    rsvpCount: 0,
-    friendsAttending: [],
-    isRsvped: false,
-    isSaved: false,
-    friendCount: event.friendCount,
-  }));
+  const extra = await loadEventEnrichment(
+    friendsEvents.map((e) => e.id),
+    userId,
+    friendIds,
+  );
+
+  return friendsEvents.map((event) => {
+    const attendees = extra.attendees.get(event.id) ?? [];
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      orgId: event.orgId,
+      orgName: event.orgName,
+      datetime: formatEventDateTime(event.datetime),
+      rawDatetime: event.datetime.toISOString(),
+      location: event.locationName ?? "TBD",
+      tags: extra.tags.get(event.id) ?? [],
+      flyerUrl: event.flyerUrl,
+      rsvpCount: attendees.length,
+      attendees,
+      friendsAttending: extra.friends.get(event.id) ?? [],
+      isRsvped: extra.rsvpedByMe.has(event.id),
+      isSaved: extra.savedByMe.has(event.id),
+      friendCount: event.friendCount,
+    };
+  });
 }
