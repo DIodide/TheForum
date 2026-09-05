@@ -2,7 +2,7 @@
 
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   type FeedEvent,
@@ -12,11 +12,12 @@ import {
   toggleSave,
 } from "~/actions/events";
 import { SearchInput } from "~/components/common/search-input";
-import { EmptyState, EventCardSkeletonList } from "~/components/common/states";
+import { EmptyState, ErrorState, EventCardSkeletonList } from "~/components/common/states";
 import { EventCard } from "~/components/events/event-card";
 import { EventFilters } from "~/components/events/event-filters";
 import { PageHeading, PageShell, SectionHeading } from "~/components/layout/page-shell";
 import { Button } from "~/components/ui/button";
+import { buildGCalUrl } from "~/lib/calendar";
 import { formatRelativeDay } from "~/lib/date-format";
 
 interface ExploreClientProps {
@@ -53,7 +54,12 @@ export function ExploreClient({
    * render on first load, which is precisely the case this screen has to handle.
    */
   const [events, setEvents] = useState(initialEvents);
-  const [_total, setTotal] = useState(initialTotal);
+  /*
+   * The full match count, not the page size. `getFeedEvents` pages at 20 while
+   * returning a separate count over every match, so reporting `events.length`
+   * capped the message at "20 events match" no matter how many there were.
+   */
+  const [total, setTotal] = useState(initialTotal);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   /*
    * Hidden events stay in the list as collapsed stubs rather than being
@@ -62,18 +68,48 @@ export function ExploreClient({
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [isPending, startTransition] = useTransition();
+  /** Set when a feed fetch fails, so the list can offer a retry. */
+  const [loadError, setLoadError] = useState(false);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout>>(null);
+  /*
+   * Monotonic id for feed requests. Only the most recently issued one may write
+   * to state: two fetches can be in flight at once (type, then toggle a filter),
+   * and without this the slower-but-older response lands last and wins.
+   */
+  const latestRequest = useRef(0);
   const firstName = useMemo(() => userName.split(" ")[0] || "there", [userName]);
 
+  /** Drop a queued debounced search — it carries whatever filters were active when it was armed. */
+  const cancelPendingSearch = useCallback(() => {
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+      searchTimeout.current = null;
+    }
+  }, []);
+
   const refreshEvents = useCallback((filters: string[], search: string) => {
+    const requestId = ++latestRequest.current;
     startTransition(async () => {
-      const result = await getFeedEvents({
-        tags: filters.length > 0 ? filters : undefined,
-        search: search || undefined,
-      });
-      setEvents(result.events);
-      setTotal(result.total);
+      try {
+        const result = await getFeedEvents({
+          tags: filters.length > 0 ? filters : undefined,
+          search: search || undefined,
+        });
+        if (requestId !== latestRequest.current) return;
+        setEvents(result.events);
+        setTotal(result.total);
+        setLoadError(false);
+      } catch {
+        if (requestId !== latestRequest.current) return;
+        // Surfaced as an ErrorState with a retry rather than an empty feed,
+        // which reads as "no events" and is a very different thing.
+        setLoadError(true);
+      }
     });
   }, []);
+
+  // A queued search outliving the component would fetch for a dead screen.
+  useEffect(() => cancelPendingSearch, [cancelPendingSearch]);
 
   const handleFilterToggle = useCallback(
     (filterId: string) => {
@@ -81,39 +117,90 @@ export function ExploreClient({
         ? activeFilters.filter((f) => f !== filterId)
         : [...activeFilters, filterId];
       setActiveFilters(next);
-      refreshEvents(next, searchQuery);
+      /*
+       * Cancel first. A search queued moments ago captured the *previous*
+       * filters, so letting it fire would re-fetch without the chip the user
+       * just clicked and overwrite this result — the feed and the active
+       * filters would disagree until the next interaction. The fetch below
+       * already carries the current query, so nothing is lost by dropping it.
+       */
+      cancelPendingSearch();
+      refreshEvents(next, searchQuery.trim());
     },
-    [activeFilters, searchQuery, refreshEvents],
+    [activeFilters, searchQuery, refreshEvents, cancelPendingSearch],
   );
 
-  const handleSearch = useCallback(() => {
-    if (searchQuery.trim()) refreshEvents(activeFilters, searchQuery.trim());
-  }, [searchQuery, activeFilters, refreshEvents]);
+  /*
+   * Debounced as you type, matching Orgs. Explore used to require Enter, so
+   * the two search fields behaved differently for no reason.
+   */
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+      searchTimeout.current = setTimeout(() => {
+        refreshEvents(activeFilters, value.trim());
+      }, 300);
+    },
+    [activeFilters, refreshEvents],
+  );
 
+  /*
+   * Flip the card first so the bookmark reacts on click, then reconcile with
+   * whatever the server actually stored. Without the leading flip there was
+   * nothing to roll back, and the `catch` inverted a value that was still
+   * correct — leaving the UI disagreeing with the database.
+   *
+   * Rethrown so the card knows not to announce success; the error toast here
+   * is the only feedback the failure gets.
+   */
   const handleSaveToggle = useCallback(async (eventId: string) => {
-    const result = await toggleSave(eventId);
-    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, isSaved: result.saved } : e)));
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, isSaved: !e.isSaved } : e)));
+    try {
+      const result = await toggleSave(eventId);
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, isSaved: result.saved } : e)),
+      );
+    } catch (error) {
+      toast.error("Couldn't update saved events. Please try again.");
+      setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, isSaved: !e.isSaved } : e)));
+      throw error;
+    }
   }, []);
 
   /*
-   * `attendees` is taken from the response too, not just the count: the card
-   * renders both, so patching the number alone left the viewer's own avatar in
+   * Same optimistic-then-reconcile shape as `handleSaveToggle`, plus the count
+   * and the roster. The card renders an avatar stack from `attendees` next to
+   * that count, so reconciling the number alone left the viewer's own face in
    * the stack (and in the attendees dialog) after they un-RSVP'd.
    */
   const handleRsvpToggle = useCallback(async (eventId: string) => {
-    const result = await toggleRsvp(eventId);
-    setEvents((prev) =>
-      prev.map((e) =>
-        e.id === eventId
-          ? {
-              ...e,
-              isRsvped: result.rsvped,
-              rsvpCount: result.count,
-              attendees: result.attendees,
-            }
-          : e,
-      ),
-    );
+    const flip = (e: FeedEvent) => ({
+      ...e,
+      isRsvped: !e.isRsvped,
+      rsvpCount: Math.max(0, e.rsvpCount + (e.isRsvped ? -1 : 1)),
+    });
+
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? flip(e) : e)));
+    try {
+      const result = await toggleRsvp(eventId);
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === eventId
+            ? {
+                ...e,
+                isRsvped: result.rsvped,
+                rsvpCount: result.count,
+                attendees: result.attendees,
+              }
+            : e,
+        ),
+      );
+    } catch (error) {
+      toast.error("Couldn't update your RSVP. Please try again.");
+      setEvents((prev) => prev.map((e) => (e.id === eventId ? flip(e) : e)));
+      throw error;
+    }
   }, []);
 
   const upcomingList = useMemo(
@@ -126,11 +213,18 @@ export function ExploreClient({
    * with its own internal scroll only kicks in at xl, where the right rail
    * appears. Nesting a scroll container inside the page scroller on a phone
    * made the feed feel stuck.
+   *
+   * The shell runs full width rather than `wide` (max-w-7xl) so the row's right
+   * edge is the content area's right edge. That is what keeps the highlights
+   * rail still while the nav rail expands: only the shell's *left* edge moves,
+   * so the greeting, search field and cards slide right and the feed narrows,
+   * while the rail — pinned to the right by `ml-auto` — does not budge. With a
+   * capped shell the whole row re-centred and the rail travelled with it.
    */
   return (
-    <PageShell width="wide" className="flex flex-col gap-8 xl:h-full xl:flex-row">
-      {/* CENTER — Feed */}
-      <div className="flex min-w-0 flex-1 flex-col gap-5 xl:overflow-y-auto">
+    <PageShell width="full" className="flex flex-col gap-8 xl:h-full xl:flex-row">
+      {/* CENTER — Feed. Capped so cards stay card-sized on very wide displays. */}
+      <div className="flex min-w-0 max-w-[1000px] flex-1 flex-col gap-5 xl:overflow-y-auto">
         <PageHeading
           description={
             <>
@@ -144,7 +238,7 @@ export function ExploreClient({
             </>
           }
         >
-          <span className="font-normal">Hi </span>
+          <span className="font-normal">Hello </span>
           <span className="font-bold italic">{firstName},</span>
         </PageHeading>
 
@@ -152,17 +246,32 @@ export function ExploreClient({
           label="Search events"
           placeholder="Search for events"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSearch();
-          }}
+          onChange={(e) => handleSearchChange(e.target.value)}
         />
 
         <EventFilters activeFilters={activeFilters} onFilterToggle={handleFilterToggle} />
 
+        {/* Result count, so a filtered feed says how filtered it is */}
+        {(searchQuery.trim() || activeFilters.length > 0) && !loadError && (
+          <p className="font-dm-sans text-[12px] text-forum-light-gray">
+            {isPending
+              ? "Searching…"
+              : `${total} ${total === 1 ? "event matches" : "events match"}`}
+          </p>
+        )}
+
         {/* Feed */}
         <div className="flex flex-col gap-5">
-          {isPending && events.length === 0 ? (
+          {loadError ? (
+            <ErrorState
+              title="Couldn't load events"
+              description="Something went wrong fetching the feed."
+              onRetry={() => {
+                cancelPendingSearch();
+                refreshEvents(activeFilters, searchQuery.trim());
+              }}
+            />
+          ) : isPending && events.length === 0 ? (
             <EventCardSkeletonList />
           ) : events.length === 0 ? (
             <EmptyState
@@ -174,31 +283,50 @@ export function ExploreClient({
               }
             />
           ) : (
-            events.map((event, index) => (
-              <EventCard
-                key={event.id}
-                {...event}
-                source="feed"
-                position={index}
-                onSaveToggle={() => handleSaveToggle(event.id)}
-                onRsvpToggle={() => handleRsvpToggle(event.id)}
-                onShare={() => {
-                  navigator.clipboard.writeText(`${window.location.origin}/events/${event.id}`);
-                  toast.success("Link copied to clipboard");
-                }}
-                isHidden={hiddenIds.has(event.id)}
-                onHide={() => {
-                  setHiddenIds((prev) => new Set(prev).add(event.id));
-                }}
-                onUnhide={() => {
-                  setHiddenIds((prev) => {
-                    const next = new Set(prev);
-                    next.delete(event.id);
-                    return next;
-                  });
-                }}
-              />
-            ))
+            /*
+             * Two columns from `sm` up. Cards stretch to the row height so a
+             * short description doesn't leave its neighbour's RSVP row floating
+             * at a different height.
+             */
+            <div className="grid gap-5 sm:grid-cols-2">
+              {events.map((event, index) => (
+                <EventCard
+                  key={event.id}
+                  {...event}
+                  className="h-full"
+                  calendarUrl={
+                    event.rawDatetime
+                      ? buildGCalUrl({
+                          title: event.title,
+                          description: event.description,
+                          datetime: new Date(event.rawDatetime),
+                          endDatetime: null,
+                          locationName: event.location,
+                        })
+                      : undefined
+                  }
+                  source="feed"
+                  position={index}
+                  onSaveToggle={() => handleSaveToggle(event.id)}
+                  onRsvpToggle={() => handleRsvpToggle(event.id)}
+                  onShare={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/events/${event.id}`);
+                    toast.success("Link copied to clipboard");
+                  }}
+                  isHidden={hiddenIds.has(event.id)}
+                  onHide={() => {
+                    setHiddenIds((prev) => new Set(prev).add(event.id));
+                  }}
+                  onUnhide={() => {
+                    setHiddenIds((prev) => {
+                      const next = new Set(prev);
+                      next.delete(event.id);
+                      return next;
+                    });
+                  }}
+                />
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -211,7 +339,7 @@ export function ExploreClient({
       */}
       <aside
         aria-label="Highlights"
-        className="hidden w-[320px] shrink-0 flex-col gap-8 overflow-y-auto xl:flex xl:pt-[60px]"
+        className="hidden w-[320px] shrink-0 flex-col gap-8 overflow-y-auto xl:ml-auto xl:flex xl:pt-[60px]"
       >
         {/* Find My Friends */}
         <section>

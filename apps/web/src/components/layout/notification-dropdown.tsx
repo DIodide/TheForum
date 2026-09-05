@@ -10,6 +10,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from "~/actions/notifications";
+import { ErrorState } from "~/components/common/states";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
 
@@ -31,13 +32,21 @@ export function NotificationDropdown() {
   const [open, setOpen] = useState(false);
   const [limit, setLimit] = useState(20);
 
+  const [loadFailed, setLoadFailed] = useState(false);
+
   const fetchNotifications = useCallback(async () => {
     try {
       const data = await getNotifications();
       setItems(data.items);
       setUnreadCount(data.unreadCount);
+      setLoadFailed(false);
     } catch {
-      // silently fail
+      /*
+       * Recorded rather than swallowed. This polls on a 60s interval, so a
+       * toast per failure would be spam — the dropdown says so instead, and
+       * only when you open it.
+       */
+      setLoadFailed(true);
     }
   }, []);
 
@@ -114,6 +123,13 @@ export function NotificationDropdown() {
                 }}
               />
             ))
+          ) : loadFailed ? (
+            /* An empty list and a failed fetch mean very different things. */
+            <ErrorState
+              title="Couldn't load notifications"
+              description="Check your connection and try again."
+              onRetry={fetchNotifications}
+            />
           ) : (
             <div className="py-[50px] text-center">
               <Bell size={28} className="text-forum-medium-gray mx-auto mb-3" />

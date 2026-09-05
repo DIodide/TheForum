@@ -440,6 +440,9 @@ export async function getFeedEvents(params?: {
   return {
     events: enriched.map(({ score: _score, _rawDatetime, ...event }) => ({
       ...event,
+      // Carried through so the feed card can build its "+ Calendar" link; the
+      // sort key was being dropped here and the button never rendered.
+      rawDatetime: _rawDatetime.toISOString(),
       attendees: attendeesByEvent.get(event.id) ?? [],
     })),
     total,
